@@ -34,7 +34,7 @@
 :root{
   --bg:#0a0a0b; --bg2:#101013; --panel:#0d0d0f;
   --ink:#e8e4da; --dim:rgba(232,228,218,.55); --line:rgba(232,228,218,.16);
-  --acc:#6fd8ff; --acc-ink:#081016;            /* ← голубой акцент */
+  --acc:#6fd8ff; --acc-ink:#081016;
   --fd:'Unbounded',sans-serif; --fb:'Golos Text',sans-serif; --fm:'JetBrains Mono',monospace;
   --nav-h:72px;
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
@@ -78,14 +78,14 @@ html.lenis, html.lenis body{height:auto}
 @keyframes blink{50%{opacity:.15}}
 @keyframes vhsFlick{0%,88%{opacity:1}90%{opacity:.25}92%{opacity:1}95%{opacity:.4}97%{opacity:1}}
 
-/* VHS-пропеллер: хроматический двоится, мерцает как OSD-символ */
+/* VHS-пропеллер */
 .vhs-ghost{filter:drop-shadow(2px 0 rgba(255,70,130,.5)) drop-shadow(-2px 0 rgba(90,210,255,.5))}
 .prop{width:24px;height:24px;fill:var(--acc);flex:none;animation:spin 5s linear infinite, vhsFlick 6s steps(1) infinite}
 .prop-o{width:.92em;height:.92em;fill:var(--ink);margin:0 .02em;flex:none;animation:spin 6s linear infinite, vhsFlick 5s steps(1) infinite}
 .mq-prop{width:clamp(14px,1.8vw,22px);height:clamp(14px,1.8vw,22px);fill:var(--acc);margin:0 clamp(10px,1.4vw,18px);flex:none;animation:spin 6s linear infinite}
 .badge-core{fill:var(--acc)}
 
-/* кнопки — минимум 44-48px */
+/* кнопки */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:15px 28px;border:1px solid var(--line);font:600 12px/1 var(--fb);letter-spacing:.16em;text-transform:uppercase;color:var(--ink);transition:transform .35s cubic-bezier(.2,.8,.2,1),background .3s,color .3s,border-color .3s;white-space:normal;max-width:100%;text-align:center}
 .btn .arr{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 .btn:hover .arr{transform:translateX(6px)}
@@ -142,7 +142,6 @@ body.menu-open #menu{clip-path:inset(0 0 0% 0);visibility:visible}
 @keyframes kb{from{transform:scale(1.02)}to{transform:scale(1.12) translate(1.5%,-1.5%)}}
 @keyframes vhsJitter{0%,91%{translate:0 0}92%{translate:3px 0}93%{translate:-2px 1px}94%{translate:0 0}97%{translate:2px 0}98%{translate:0 0}}
 .hero-media::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,11,.94) 0%,rgba(10,10,11,.35) 45%,rgba(10,10,11,.55) 100%)}
-/* VHS-слой */
 .vhs{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .vhs-scan{position:absolute;inset:-6px;background:repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px);opacity:.55;animation:vhsScan 6s linear infinite}
 @keyframes vhsScan{to{transform:translateY(6px)}}
@@ -169,7 +168,7 @@ body.loaded .hero-badge{opacity:1}
 .hero-badge svg{width:100%;height:100%;animation:spin 16s linear infinite}
 .hero-badge text{font-family:var(--fm);font-size:12.5px;letter-spacing:.32em;fill:var(--dim);text-transform:uppercase}
 
-/* ============ MARQUEE (VHS-пропеллеры) ============ */
+/* ============ MARQUEE ============ */
 .marquee{border-block:1px solid var(--line);overflow:hidden;padding:20px 0;background:var(--bg)}
 .mq-track{display:flex;width:max-content;align-items:center;animation:mq 32s linear infinite;will-change:transform}
 .marquee:hover .mq-track{animation-play-state:paused}
@@ -220,6 +219,7 @@ body.loaded .hero-badge{opacity:1}
 .work-top{display:flex;justify-content:space-between;padding:14px 16px;color:var(--dim);gap:12px;flex-wrap:wrap}
 .work-media .work-top{position:absolute;top:0;left:0;right:0}
 .work-top span:first-child{color:var(--ink)}
+.w-has{color:var(--acc)!important}
 .work-bottom{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;padding:16px;gap:12px;flex-wrap:wrap}
 .work-bottom h3{font-family:var(--fd);font-weight:900;font-size:clamp(20px,3.4vw,52px);text-transform:uppercase;line-height:1;overflow-wrap:anywhere}
 .work-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.7);opacity:0;transition:.4s;background:var(--acc);color:var(--acc-ink);padding:14px 20px;min-height:44px;display:inline-flex;align-items:center;white-space:nowrap;max-width:90%}
@@ -335,9 +335,11 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 .case-head{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:4vh;flex-wrap:wrap}
 #caseClose,#caseClose2{border:1px solid var(--line);padding:15px 20px;min-height:48px;font:400 11px var(--fm);letter-spacing:.14em;transition:.3s;text-transform:uppercase}
 #caseClose:hover,#caseClose2:hover{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
-.case-media{position:relative;overflow:hidden;margin-bottom:5vh}
+.case-media{position:relative;overflow:hidden;margin-bottom:5vh;background:#000}
 .case-media img{width:100%;aspect-ratio:21/9;object-fit:cover;filter:grayscale(.15) contrast(1.06)}
-.case-media video{width:100%;aspect-ratio:21/9;object-fit:cover;display:block}
+.case-media video{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.case-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+.case-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .case-media .work-play{opacity:1;transform:translate(-50%,-50%)}
 .case-note{padding:16px 0;color:var(--dim)}
 .case-title{font-family:var(--fd);font-weight:900;font-size:clamp(36px,6.4vw,110px);text-transform:uppercase;line-height:.95;margin-bottom:4vh;overflow-wrap:anywhere}
@@ -424,7 +426,7 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   .case-meta{grid-template-columns:1fr}
   .case-meta div{border-right:none;border-bottom:1px solid var(--line)}
   .case-meta div:last-child{border-bottom:none}
-  .case-media img,.case-media video{aspect-ratio:16/9}
+  .case-media img{aspect-ratio:16/9}
   .collab{flex:0 0 56%}
   .eq-num{font-size:clamp(70px,24vw,160px)}
   .about-lines{font-size:clamp(26px,7.4vw,50px)}
@@ -540,7 +542,7 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   </div>
 </section>
 
-<!-- MARQUEE с VHS-пропеллерами -->
+<!-- MARQUEE -->
 <div class="marquee" aria-hidden="true">
   <div class="mq-track">
     <span>РЕКЛАМА</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
@@ -605,7 +607,7 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   <div class="wrap">
     <div class="sec-head"><span class="mono">03 / РАБОТЫ</span><span class="mono">06 ПРОЕКТОВ / 2024—2026</span></div>
     <h2 class="h-mega h-sec" data-clip>ПРОДАКШН<span class="acc">.</span></h2>
-    <p class="mono works-note" data-reveal>[ ПОСТЕРЫ — ВРЕМЕННЫЕ. ВИДЕО И ПОЛНЫЕ КЕЙСЫ — ПО КЛИКУ. НОВЫЕ ПРОЕКТЫ ДОБАВЛЯЮТСЯ В МАССИВ PROJECTS. ]</p>
+    <p class="mono works-note" data-reveal>[ ССЫЛКИ НА РОЛИКИ ВСТАВЛЯЮТСЯ В МАССИВ PROJECTS → ПОЛЕ VIDEO (YOUTUBE / VK ВИДЕО) ]</p>
     <div class="works-grid" id="worksGrid" style="margin-top:8vh"></div>
   </div>
 </section>
@@ -780,7 +782,7 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
 <script>
 /* =================================================================
-   ПРОПЕЛЛЕР — single page / v7
+   ПРОПЕЛЛЕР — single page / v8 (YouTube + VK Видео в портфолио)
    РЕДАКТИРУЕМОЕ: CONFIG / COLLABS / PROJECTS / SERVICES / PRICES
 ================================================================== */
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -791,35 +793,32 @@ const DESKTOP = FINE && !TOUCH && WIDE && !RM;
 const $ = s => document.querySelector(s);
 
 /* ---------- РЕДАКТИРУЕМЫЕ ДАННЫЕ ---------- */
-/* EDIT: вставьте реальные ссылки — пустые строки оставляют плейсхолдер */
 const CONFIG = { contacts: { telegram:'', whatsapp:'', vk:'', instagram:'', phone:'', email:'' } };
 
-/* EDIT: фото и имена брендов/людей. Если IMG пустая — показывается плейсхолдер [ФОТО] */
 const COLLABS = [
-  {name:'RAREMOD', img:'https://yt3.googleusercontent.com/IJt7kANLa52RoR3U7mQ77YB66SyvDAmaXYQj3WMryyehaSvo2fVPSAUMELn0lQq3aWpJ7sSsCg=s900-c-k-c0x00ffffff-no-rj'},
-  {name:'LILDRUGHILL', img:'https://avatars.yandex.net/get-music-content/20712233/2ed6f6c3.p.5608970/m1000x1000'},
-  {name:'LIL KRYSTALLL', img:'https://avatars.yandex.net/get-music-content/14304155/1f3cb53f.p.5766526/m1000x1000'},
-  {name:'SLAVA MARLOW', img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIPEyrrorcwtlTWJk4jb5HRNEIoxhaNP2QqjaJaKlAEY286999VEFFvxc&s=10'},
-  {name:'Olegha77', img:'https://i.yapx.ru/eII16.jpg5QQ%3D%3D?uid=585208373&filename=photo_2026-05-02_18-34-04.jpg&disposition=inline&hash=&limit=0&content_type=image%2Fjpeg&owner_uid=585208373&tknv=v3&is_direct_zip_experiment=1&size=1905x953'},
-  {name:'TATWOLE', img:'https://images.news.ru/photo/4c03cbf0-58b9-11ef-bab9-02420a0000c9_780.jpg'},
-  {name:'СК «КРЕПОСТЬ»', img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnY_SclJBaZ96LNOrATYwtOoWT9WkCYBEUmgV2fo10DA&s'},
-  {name:'RUTEX', img:'https://sun9-76.vkuserphoto.ru/s/v1/ig2/ScXDekulA91xv82DeGxUz5Cfd00NzkTsjSgzEiCOjQIx8VYxDazLKC1QXRbZQH98ExS5qBU_4lVJK3Qu7ikcIVZ5.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1024x1024&from=bu&u=17_jmtEfCfzmMS46iCKf9Co94NwzUWI8J7HZTKa5RQg&cs=1024x0'},
-  {name:'ROD DANCE', img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYjVs6dd7BDkmi07dn7Do_MYJjJtx_qN6xypQpqSeCHw&s'},
-  {name:'MARK KUKLIN', img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpjuOmni2CAebxpljuTRJSTvcMV0aQhkIC-V5ZI__79DFGcUgxyxm5e0Hk&s=10'}
+  {name:'RAREMOD', img:''},
+  {name:'LILDRUGHILL', img:''},
+  {name:'LIL KRYSTALLL', img:''},
+  {name:'SLAVA MARLOW', img:''},
+  {name:'Olegha77', img:''},
+  {name:'TATWOLE', img:''},
+  {name:'СК «КРЕПОСТЬ»', img:''},
+  {name:'RUTEX', img:''},
+  {name:'ROD DANCE', img:''},
+  {name:'MARK KUKLIN', img:''}
 ];
 
-/* EDIT: тарифы меняются здесь */
 const PRICES = [
   {name:'ПОЧАСОВАЯ', val:'5 000 ₽/ЧАС', forOne:'почасовая съёмка — платите только за время', inc:['2 оператора','набор оборудования','выезд на локацию','подготовка к съёмке','съёмка на локации','передача материала через облачное хранилище','хранение материала в течение месяца'], hot:false},
-  {name:'СМЕНА', val:'ОТ 20 000 ₽', forOne:'для съёмок на целый день / большого объёма контента', inc:['2 оператора','1 съёмочный день','идеи и сценарии','подготовка к съёмке','передача материала через облачное хранилище','хранение материала в течение месяца'], hot:false},
-  {name:'ПРОДАКШН', val:'ОТ 35 000 ₽', forOne:'полноценный рекламный / коммерческий проект', inc:['концепция и сценарий','полный цикл производства','2 оператора на площадке','монтаж, цвет, звук','версии под все площадки'], hot:true},
-  {name:'МОНТАЖ', val:'ОТ 1 500 ₽', forOne:'монтаж видео из вашего или нашего материала', inc:['монтаж видео','цветокоррекция','обработка звука','графика','ретушь','любой формат видео'], hot:false},
+  {name:'SMENA', val:'ОТ 20 000 ₽', forOne:'для съёмок на целый день / большого объёма контента', inc:['2 оператора','1 съёмочный день','идеи и сценарии','подготовка к съёмке','передача материала через облачное хранилище','хранение материала в течение месяца'], hot:false},
+  {name:'PRODUCTION', val:'ОТ 35 000 ₽', forOne:'полноценный рекламный / коммерческий проект', inc:['концепция и сценарий','полный цикл производства','2 оператора на площадке','монтаж, цвет, звук','версии под все площадки'], hot:true},
+  {name:'MONTAЖ', val:'ОТ 1 500 ₽', forOne:'монтаж видео из вашего или нашего материала', inc:['монтаж видео','цветокоррекция','обработка звука','графика','ретушь','любой формат видео'], hot:false},
   {name:'CUSTOM', val:'ПО ЗАПРОСУ', forOne:'если проект нестандартный', inc:['клип / мероприятие / YouTube','любой формат и хронометраж','смета от 24 часов'], hot:false}
 ];
 
 const IMG = {
   hero:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1031a4ec7-9393-4930-b2aa-461d6c837e59.png',
-  car:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSY8iE0LmSjakqFo02vLtnV3BuH9hmQV9Fdu9o8lk8nQA&s=10',
+  car:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1ce9569b0-88ba-4849-8d27-aafe6a3b2723.png',
   music:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/10b2ec472-fb7d-40b6-8faf-7e8746d1079d.png',
   fashion:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1207e6f50-8178-4023-a4da-555b4af7a6c4.png',
   interview:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/12c296023-039e-4002-9c9c-fdba6b324853.png',
@@ -828,20 +827,29 @@ const IMG = {
   backstage:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/18994c49e-541f-426e-8f0f-254b2eeb5e8e.png'
 };
 
-/* EDIT: новые проекты добавляются сюда.
-   videoUrl — ссылка на .mp4; если указана — в кейсе появится реальное видео */
+/* ================================================================
+   ПОРТФОЛИО — СЮДА ВСТАВЛЯТЬ ССЫЛКИ НА РОЛИКИ.
+   Поле video принимает обычную ссылку из:
+     • YouTube:  https://youtu.be/XXXXXXXXXXX
+                 https://www.youtube.com/watch?v=XXXXXXXXXXX
+                 https://www.youtube.com/shorts/XXXXXXXXXXX
+     • VK Видео: https://vk.com/video-123456_789
+                 https://vkvideo.ru/video-123456_789
+   Ролик автоматически подгрузится плеером внутри кейса.
+   Если ролика пока нет — оставляйте video:''
+================================================================== */
 const PROJECTS = [
-  {type:'COMMERCIAL', title:'ИНТЕРВЬЮ', client:'Olegha77', year:'2026', format:'ИНТЕРВЬЮ', img:IMG.car, cls:'w-full', videoUrl:'<iframe width="560" height="315" src="https://www.youtube.com/embed/La9zX2E-9dk?si=USaAG0_M5X6eqYIZ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>',
+  {type:'COMMERCIAL', title:'NIGHT DRIVE', client:'[БРЕНД]', year:'2026', format:'РЕКЛАМА • 45 SEC', img:IMG.car, cls:'w-full', video:'',
    task:'Показать продукт за 30–45 секунд так, чтобы зритель не свайпнул.', idea:'Ночной город, мокрый асфальт, световые линии. Продукт — как главный герой фильма.', process:'Концепция → локация → съёмка вдвоём (2 камеры) → монтаж и цвет в плёночном грейде.'},
-  {type:'MUSIC VIDEO', title:'STATIC', client:'[АРТИСТ]', year:'2025', format:'КЛИП • 3 MIN', img:IMG.music, cls:'w-tall', videoUrl:'',
+  {type:'MUSIC VIDEO', title:'STATIC', client:'[АРТИСТ]', year:'2025', format:'КЛИП • 3 MIN', img:IMG.music, cls:'w-tall', video:'',
    task:'Клип с характером при ограниченном бюджете.', idea:'Одна локация, дым, лазеры и силуэт. Свет работает вместо декораций.', process:'Раскадровка → съёмочная ночь → монтаж в ритм трека → мастер под все площадки.'},
-  {type:'FASHION', title:'BETON', client:'[БРЕНД]', year:'2025', format:'LOOKBOOK • 90 SEC', img:IMG.fashion, cls:'w-side', videoUrl:'',
+  {type:'FASHION', title:'BETON', client:'[БРЕНД]', year:'2025', format:'LOOKBOOK • 90 SEC', img:IMG.fashion, cls:'w-side', video:'',
    task:'Имиджевое видео коллекции для соцсетей и показов.', idea:'Бетон, жёсткий свет, длинные тени. Одежда говорит — камера молчит.', process:'Мудборд → студия → съёмка + бэкстейдж → вертикальные и горизонтальные версии.'},
-  {type:'INTERVIEW', title:'ПОДКАСТЫ', client:'[КЛИЕНТ]', year:'2025', format:'ПОДКАСТ • 12 MIN', img:IMG.interview, cls:'w-editorial', videoUrl:'',
+  {type:'INTERVIEW', title:'ПОДКАСТЫ', client:'[КЛИЕНТ]', year:'2025', format:'ПОДКАСТ • 12 MIN', img:IMG.interview, cls:'w-editorial', video:'',
    task:'Разговорное видео, которое досматривают.', idea:'Тёмная студия, один источник света, крупные планы и паузы.', process:'Сценарий вопросов → студийный свет → 2 камеры → монтаж с ритмом дыхания.'},
-  {type:'EVENT', title:'LIVE', client:'[ПЛОЩАДКА]', year:'2024', format:'АФТЕРМУВИ • 2 MIN', img:IMG.concert, cls:'w-wide', videoUrl:'',
+  {type:'EVENT', title:'LIVE', client:'[ПЛОЩАДКА]', year:'2024', format:'АФТЕРМУВИ • 2 MIN', img:IMG.concert, cls:'w-wide', video:'',
    task:'Передать энергию события тем, кого там не было.', idea:'Снимать не сцену, а то, что между: руки, дым, свет, крик.', process:'Двое на площадке → основная камера + детали → афтермуви за 72 часа.'},
-  {type:'CONTENT', title:'REELS', client:'[БЛОГЕР]', year:'2024', format:'REELS • СЕРИЯ', img:IMG.reels, cls:'w-offset', videoUrl:'',
+  {type:'CONTENT', title:'REELS', client:'[БЛОГЕР]', year:'2024', format:'REELS • СЕРИЯ', img:IMG.reels, cls:'w-offset', video:'',
    task:'Постоянный контент без выгорания автора.', idea:'Формат-конструктор: рубрики, свет, монтаж — автор просто приходит и говорит.', process:'Упаковка формата → съёмочный день на 8 роликов → монтаж пачками → публикация по плану.'}
 ];
 
@@ -855,6 +863,25 @@ const SERVICES = [
   {n:'07', name:'МОНТАЖ', tags:'МОНТАЖ / ЦВЕТ / ЗВУК', img:IMG.backstage},
   {n:'08', name:'ИДЕИ', tags:'КОНЦЕПТ / СЦЕНАРИЙ / РЕЖИССУРА', img:IMG.hero}
 ];
+
+/* ---------- КОНВЕРТЕР ССЫЛОК → ЭМБЕД-ПЛЕЕР ---------- */
+function toEmbed(url){
+  if(!url) return '';
+  url = String(url).trim();
+  // уже готовый эмбед
+  if(/youtube\.com\/embed\//i.test(url) || /video_ext\.php/i.test(url)) return url;
+  // YouTube: watch / youtu.be / shorts / live
+  let m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+  if(m) return 'https://www.youtube.com/embed/'+m[1]+'?rel=0&modestbranding=1';
+  // VK Видео: vk.com/video-XXXX_YYYY или vkvideo.ru/video-XXXX_YYYY
+  m = url.match(/(?:vk\.com|vkvideo\.ru)\/(?:video|clip)(-?\d+)_(\d+)/i);
+  if(m) return 'https://vk.com/video_ext.php?oid='+m[1]+'&id='+m[2]+'&hd=2';
+  // параметры в ссылке (например ?z=video-123_456)
+  m = url.match(/[?&]z=(?:video|clip)(-?\d+)_(\d+)/i);
+  if(m) return 'https://vk.com/video_ext.php?oid='+m[1]+'&id='+m[2]+'&hd=2';
+  return '';
+}
+PROJECTS.forEach(p=>{ p.embed = toEmbed(p.video); });
 
 /* ---------- КОНТАКТЫ ИЗ CONFIG ---------- */
 document.querySelectorAll('[data-contact]').forEach(a=>{
@@ -878,13 +905,14 @@ $('#collabGrid').innerHTML = COLLABS.map(c=>`
 /* ---------- РЕНДЕР: РАБОТЫ ---------- */
 $('#worksGrid').innerHTML = PROJECTS.map((p,i)=>{
   const idx = String(i+1).padStart(2,'0');
+  const hasVideo = p.embed ? '<span class="w-has">▶ WATCH</span>' : '';
   if(p.cls==='w-editorial') return `
   <article class="work w-editorial" data-i="${i}">
     <div class="we-left">
-      <div class="work-top mono"><span>${idx} / ${p.type}</span><span>${p.year}</span></div>
+      <div class="work-top mono"><span>${idx} / ${p.type}</span><span>${p.year}</span>${hasVideo}</div>
       <h3 class="we-title outl">${p.title}</h3>
       <div class="mono">${p.client} • ${p.format}</div>
-      <button class="btn work-open" data-cursor="OPEN PROJECT →">OPEN PROJECT →</button>
+      <button class="btn work-open" data-cursor="OPEN PROJECT →">${p.embed ? 'СМОТРЕТЬ ▶' : 'OPEN PROJECT →'}</button>
     </div>
     <div class="work-media" data-cursor="OPEN PROJECT →">
       <img src="${p.img}" alt="${p.title} — ${p.type}" loading="lazy">
@@ -896,7 +924,7 @@ $('#worksGrid').innerHTML = PROJECTS.map((p,i)=>{
     <div class="work-media" data-cursor="OPEN PROJECT →">
       <img src="${p.img}" alt="${p.title} — ${p.type}" loading="lazy">
       <div class="work-veil"></div><div class="work-play mono">▶ PLAY</div>
-      <div class="work-top mono"><span>${idx} / ${p.type}</span><span>${p.year}</span></div>
+      <div class="work-top mono"><span>${idx} / ${p.type}</span><span>${p.year}</span>${hasVideo}</div>
       <div class="work-bottom"><h3>${p.title}</h3><span class="mono">${p.client} • ${p.format}</span></div>
     </div>
   </article>`;
@@ -945,7 +973,7 @@ addEventListener('load', ()=>{ _ready = true; tryHide(); });
 setTimeout(hideLoader, 1600);
 if(document.readyState === 'complete') _ready = true;
 
-/* ---------- LENIS: собственный rAF-драйвер ---------- */
+/* ---------- LENIS ---------- */
 let lenis = null;
 const hasGSAP = !!window.gsap;
 const hasST = !!(window.gsap && window.ScrollTrigger);
@@ -1124,19 +1152,29 @@ document.addEventListener('mouseout', e=>{
   });
 })();
 
-/* ---------- МОДАЛКА КЕЙСА ---------- */
+/* ---------- МОДАЛКА КЕЙСА (с YouTube / VK плеером) ---------- */
 const modal = $('#caseModal'), caseBody = $('#caseBody');
 function lockScroll(on){ document.documentElement.style.overflow = on ? 'hidden' : ''; }
 function openCase(i){
   const p = PROJECTS[i], idx = String(i+1).padStart(2,'0');
   const strip = [IMG.backstage, PROJECTS[(i+1)%PROJECTS.length].img, PROJECTS[(i+2)%PROJECTS.length].img];
-  const media = p.videoUrl
-    ? `<video src="${p.videoUrl}" poster="${p.img}" controls autoplay muted loop playsinline></video>`
-    : `<img src="${p.img}" alt="${p.title}">
-       <button class="work-play mono" id="casePlay" data-cursor="PLAY ▶">▶ [ДОБАВИТЬ ВИДЕО]</button>`;
+
+  /* медиа: эмбед-плеер (если вставлена ссылка) → иначе постер-заглушка */
+  let media;
+  if(p.embed){
+    media = `<div class="case-frame">
+      <iframe src="${p.embed}" title="${p.title} — ${p.type}" loading="lazy"
+        allow="autoplay; fullscreen; encrypted-media; picture-in-picture; accelerometer; gyroscope"
+        allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>`;
+  } else {
+    media = `<img src="${p.img}" alt="${p.title}">
+      <button class="work-play mono" id="casePlay" data-cursor="PLAY ▶">▶ [ДОБАВИТЬ ВИДЕО]</button>`;
+  }
+
   caseBody.innerHTML = `
     <div class="case-head">
-      <span class="mono"><b>${idx} / ${p.type}</b> • ${p.year}</span>
+      <span class="mono"><b>${idx} / ${p.type}</b> • ${p.year}${p.embed ? ' • <span class="acc">▶ WATCH</span>' : ''}</span>
       <button id="caseClose" data-cursor="CLOSE ×">ЗАКРЫТЬ ×</button>
     </div>
     <h3 class="case-title">${p.title}</h3>
@@ -1171,12 +1209,14 @@ function openCase(i){
   $('#caseNext').onclick = ()=>openCase((i+1)%PROJECTS.length);
   $('#caseCta').onclick = closeCase;
   const pl = $('#casePlay');
-  if(pl) pl.onclick = ()=>{ pl.outerHTML = '<div class="case-note mono">[ ЗДЕСЬ БУДЕТ ФИНАЛЬНОЕ ВИДЕО. ССЫЛКА: PROJECTS['+i+'].videoUrl ]</div>'; };
+  if(pl) pl.onclick = ()=>{ pl.outerHTML = '<div class="case-note mono">[ ЗДЕСЬ БУДЕТ РОЛИК. ВСТАВЬТЕ ССЫЛКУ ИЗ YOUTUBE / VK В PROJECTS['+i+'].video ]</div>'; };
 }
 function closeCase(){
   modal.classList.remove('open');
   lockScroll(false);
   lenis && lenis.start();
+  /* останавливаем плеер: очищаем iframe после закрытия */
+  setTimeout(()=>{ if(!modal.classList.contains('open')) caseBody.innerHTML = ''; }, 450);
 }
 modal.addEventListener('click', e=>{ if(e.target === modal) closeCase(); });
 $('#worksGrid').addEventListener('click', e=>{
