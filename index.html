@@ -1,3 +1,18 @@
+<!-- ================================================================
+АРХИТЕКТУРА (ответы на вопросы перед реализацией):
+1. Стек: чистый статический HTML/CSS/JS (один файл), шрифты/анимации через CDN, хостинг — GitHub Pages.
+2. Проекты сейчас: захардкожены в массиве PROJECTS внутри index.html.
+3. Категорий как сущности нет — только тип проекта в метаданных карточки.
+4. Меняем: портфолио переезжает во внешний data/projects.json + фильтр по категориям; добавляется /admin/.
+5. Архитектура: публичный сайт читает JSON (raw.githubusercontent → fallback data/projects.json → встроенные дефолты). Админка редактирует данные и коммитит projects.json в репозиторий через GitHub REST API.
+6. Данные: файл data/projects.json в этом же репозитории (title, category, cover, video, images[], links[], added, id). Никаких СУБД.
+7. Backend/сервер НЕ нужен: запись идёт напрямую в GitHub токеном, который вводится в админке и хранится только в браузере админа.
+8. Сервисы: только GitHub (страницы + API).
+9. Всё бесплатно. Токен — бесплатный fine-grained PAT с правом Contents: Read&Write ТОЛЬКО на репозиторий portfolio.
+10. Изменения в GitHub: обновлённый index.html, новый файл data/projects.json, новая папка admin/index.html. Секретов в коде нет.
+Важно про безопасность: токен не лежит в коде сайта — он вводится вами на странице /admin/ и хранится в localStorage только вашего устройства.
+После публикации сайт обновляется за ~1–2 минуты (пересборка GitHub Pages); публичная страница дополнительно читает raw-версию JSON, поэтому изменения видны почти сразу.
+================================================================= -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -6,15 +21,13 @@
 <title>ПРОПЕЛЛЕР — видеопродакшн / съёмка / контент</title>
 <meta name="description" content="ПРОПЕЛЛЕР — команда операторов и контент-креаторов. Съёмка рекламы, Reels, YouTube, мероприятий, клипов и коммерческого видео. Москва и Орёл.">
 <meta name="theme-color" content="#0a0a0b">
-<!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:title" content="ПРОПЕЛЛЕР — видеопродакшн / съёмка / контент">
 <meta property="og:description" content="Видео, которое не хочется скипнуть. Два оператора. Одна цена. Москва × Орёл.">
 <meta property="og:image" content="https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1031a4ec7-9393-4930-b2aa-461d6c837e59.png">
-<!-- JSON-LD -->
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Organization","name":"ПРОПЕЛЛЕР","description":"Видеопродакшн полного цикла: реклама, Reels, YouTube, клипы, мероприятия, контент. Москва и Орёл.","areaServed":["Москва","Орёл"],"knowsAbout":["видеосъёмка","рекламные ролики","монтаж","цветокоррекция","контент-продакшн"]}
+{"@context":"https://schema.org","@type":"Organization","name":"ПРОПЕЛЛЕР","description":"Видеопродакшн полного цикла: реклама, Reels, YouTube, клипы, мероприятия, контент. Москва и Орёл.","areaServed":["Москва","Орёл"]}
 </script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <style>
@@ -30,7 +43,6 @@
 @font-face{font-family:'JetBrains Mono';src:url(https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
 </style>
 <style>
-/* ============ БАЗА ============ */
 :root{
   --bg:#0a0a0b; --bg2:#101013; --panel:#0d0d0f;
   --ink:#e8e4da; --dim:rgba(232,228,218,.55); --line:rgba(232,228,218,.16);
@@ -56,8 +68,6 @@ a,button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 ::-webkit-scrollbar-thumb{background:#26262a;border:2px solid var(--bg)}
 :focus-visible{outline:1px solid var(--acc);outline-offset:3px}
 html.has-cursor, html.has-cursor a, html.has-cursor button{cursor:none}
-
-/* Lenis служебные классы */
 html.lenis, html.lenis body{height:auto}
 .lenis.lenis-smooth{scroll-behavior:auto!important}
 .lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
@@ -78,14 +88,12 @@ html.lenis, html.lenis body{height:auto}
 @keyframes blink{50%{opacity:.15}}
 @keyframes vhsFlick{0%,88%{opacity:1}90%{opacity:.25}92%{opacity:1}95%{opacity:.4}97%{opacity:1}}
 
-/* VHS-пропеллер */
 .vhs-ghost{filter:drop-shadow(2px 0 rgba(255,70,130,.5)) drop-shadow(-2px 0 rgba(90,210,255,.5))}
 .prop{width:24px;height:24px;fill:var(--acc);flex:none;animation:spin 5s linear infinite, vhsFlick 6s steps(1) infinite}
 .prop-o{width:.92em;height:.92em;fill:var(--ink);margin:0 .02em;flex:none;animation:spin 6s linear infinite, vhsFlick 5s steps(1) infinite}
 .mq-prop{width:clamp(14px,1.8vw,22px);height:clamp(14px,1.8vw,22px);fill:var(--acc);margin:0 clamp(10px,1.4vw,18px);flex:none;animation:spin 6s linear infinite}
 .badge-core{fill:var(--acc)}
 
-/* кнопки */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:15px 28px;border:1px solid var(--line);font:600 12px/1 var(--fb);letter-spacing:.16em;text-transform:uppercase;color:var(--ink);transition:transform .35s cubic-bezier(.2,.8,.2,1),background .3s,color .3s,border-color .3s;white-space:normal;max-width:100%;text-align:center}
 .btn .arr{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 .btn:hover .arr{transform:translateX(6px)}
@@ -94,7 +102,6 @@ html.lenis, html.lenis body{height:auto}
 .btn-acc{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
 .btn-acc:hover{background:#9ce5ff;border-color:#9ce5ff}
 
-/* ============ LOADER ============ */
 #loader{position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:var(--sat) var(--sar) var(--sab) var(--sal)}
 #loader .l-word{font-family:var(--fd);font-weight:900;font-size:clamp(26px,6vw,72px);letter-spacing:.02em;text-align:center}
 #loader .l-row{display:flex;gap:18px;align-items:center}
@@ -102,7 +109,6 @@ html.lenis, html.lenis body{height:auto}
 #loader .l-bar i{position:absolute;inset:0;background:var(--acc);transform-origin:left;transform:scaleX(0)}
 .rec-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);display:inline-block;animation:blink 1s steps(2) infinite;flex:none}
 
-/* ============ ЗЕРНО / КУРСОР / ПРОГРЕСС ============ */
 #grain{position:fixed;inset:0;width:100%;height:100%;z-index:9990;pointer-events:none;opacity:.07}
 #progress{position:fixed;top:0;left:0;height:2px;width:100%;background:var(--acc);transform-origin:left;transform:scaleX(0);z-index:990;pointer-events:none}
 #cursor{position:fixed;top:0;left:0;z-index:9999;pointer-events:none;display:none}
@@ -112,7 +118,6 @@ html.has-cursor #cursor{display:block}
 #cursor.on .c-label{opacity:1;scale:1}
 #cursor.link .c-dot{width:44px;height:44px;background:transparent;border:1px solid var(--ink)}
 
-/* ============ NAV ============ */
 #nav{position:fixed;top:0;left:0;right:0;z-index:800;display:flex;align-items:center;padding-top:var(--sat);padding-inline:var(--sal) var(--sar);transition:background .4s,border-color .4s;border-bottom:1px solid transparent}
 #nav.scrolled{background:rgba(10,10,11,.92);border-color:var(--line)}
 #nav .nav-in{display:flex;align-items:center;justify-content:space-between;gap:14px;width:min(1680px,92vw);margin-inline:auto}
@@ -128,14 +133,12 @@ html.has-cursor #cursor{display:block}
 body.menu-open #burger i:nth-child(1){transform:translateY(4px) rotate(45deg)}
 body.menu-open #burger i:nth-child(2){transform:translateY(-4px) rotate(-45deg)}
 
-/* меню мобильное */
 #menu{position:fixed;inset:0;background:var(--bg);z-index:850;display:flex;flex-direction:column;justify-content:center;padding:calc(90px + var(--sat)) calc(8vw + var(--sar)) calc(40px + var(--sab)) calc(8vw + var(--sal));clip-path:inset(0 0 100% 0);transition:clip-path .6s cubic-bezier(.7,0,.2,1);visibility:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 body.menu-open #menu{clip-path:inset(0 0 0% 0);visibility:visible}
 #menu a.m-link{font-family:var(--fd);font-weight:900;font-size:clamp(22px,6.4vw,64px);text-transform:uppercase;line-height:1.3;color:var(--ink);display:flex;gap:16px;align-items:baseline;padding:1vh 0;min-height:48px}
 #menu a.m-link span{font:400 11px var(--fm);color:var(--acc)}
 #menu .m-foot{margin-top:5vh;display:flex;flex-direction:column;gap:10px}
 
-/* ============ HERO + VHS ============ */
 #hero{min-height:100svh;display:flex;align-items:flex-end;position:relative;overflow:hidden;padding:calc(var(--nav-h) + var(--sat) + 4vh) 0 calc(9vh + var(--sab))}
 .hero-media{position:absolute;inset:0;z-index:-1;transform:translateZ(0)}
 .hero-media img{width:100%;height:100%;object-fit:cover;filter:grayscale(.2) contrast(1.1) brightness(.82) saturate(1.15);animation:kb 46s ease-in-out infinite alternate, vhsJitter 7s steps(1) infinite}
@@ -168,14 +171,12 @@ body.loaded .hero-badge{opacity:1}
 .hero-badge svg{width:100%;height:100%;animation:spin 16s linear infinite}
 .hero-badge text{font-family:var(--fm);font-size:12.5px;letter-spacing:.32em;fill:var(--dim);text-transform:uppercase}
 
-/* ============ MARQUEE ============ */
 .marquee{border-block:1px solid var(--line);overflow:hidden;padding:20px 0;background:var(--bg)}
 .mq-track{display:flex;width:max-content;align-items:center;animation:mq 32s linear infinite;will-change:transform}
 .marquee:hover .mq-track{animation-play-state:paused}
 .mq-track span{font-family:var(--fd);font-weight:700;font-size:clamp(13px,1.8vw,24px);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
 @keyframes mq{to{transform:translateX(-50%)}}
 
-/* ============ КТО МЫ ============ */
 .about-grid{display:grid;grid-template-columns:7fr 5fr;gap:6vw;align-items:end;margin-top:6vh}
 .about-lines{font-family:var(--fd);font-weight:900;text-transform:uppercase;font-size:clamp(28px,5vw,84px);line-height:1.06}
 .about-lines .outl{display:block}
@@ -186,7 +187,6 @@ body.loaded .hero-badge{opacity:1}
 .eq-num .eq-sign{color:var(--acc)}
 .eq-cap{max-width:30ch}
 
-/* ============ С КЕМ РАБОТАЛИ ============ */
 .collab-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1.5vw}
 .collab{border:1px solid var(--line);background:var(--panel);transition:border-color .35s,transform .35s;min-width:0}
 .collab:hover{border-color:var(--acc);transform:translateY(-6px)}
@@ -196,7 +196,11 @@ body.loaded .hero-badge{opacity:1}
 .collab-name{font-family:var(--fd);font-weight:700;font-size:clamp(13px,1.15vw,18px);text-transform:uppercase;line-height:1.25;padding:15px 15px 17px;transition:color .3s;overflow-wrap:anywhere}
 .collab-note{margin-top:4vh}
 
-/* ============ РАБОТЫ ============ */
+/* ============ РАБОТЫ (динамические) ============ */
+.cat-bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:5vh}
+.cat-btn{border:1px solid var(--line);padding:13px 20px;min-height:44px;font:600 11px/1 var(--fb);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);transition:.3s}
+.cat-btn:hover{border-color:var(--ink);color:var(--ink)}
+.cat-btn.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
 .works-grid{display:grid;grid-template-columns:repeat(12,1fr);column-gap:2vw}
 .work{margin-bottom:14vh;position:relative;min-width:0}
 .w-full{grid-column:1/-1}
@@ -228,9 +232,9 @@ body.loaded .hero-badge{opacity:1}
 .we-title{font-family:var(--fd);font-weight:900;font-size:clamp(44px,7.6vw,150px);line-height:.94;transition:color .4s,-webkit-text-stroke-color .4s;overflow-wrap:anywhere}
 .work:hover .we-title{color:var(--acc);-webkit-text-stroke-color:var(--acc)}
 .works-note{margin-top:2vh}
+.w-empty{grid-column:1/-1;padding:8vh 0;color:var(--dim)}
 
-/* ============ УСЛУГИ ============ */
-#svcList{border-bottom:1px solid var(--line)}
+.svcList{border-bottom:1px solid var(--line)}
 .svc{display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:3vw;padding:3.2vh 2vw;border-top:1px solid var(--line);transition:background .35s,color .35s;position:relative;min-width:0}
 .svc:hover{background:var(--ink)}
 .svc:hover .svc-name{color:var(--bg);transform:translateX(1.5vw)}
@@ -243,7 +247,6 @@ body.loaded .hero-badge{opacity:1}
 .svc-sub{margin:6vh 0 0;max-width:34ch;color:var(--dim)}
 .svc-sub b{color:var(--acc);font-weight:400}
 
-/* ============ КРЕАТИВ ============ */
 #creative{background:var(--bg2);border-block:1px solid var(--line)}
 .cr-grid{display:grid;grid-template-columns:1fr 1fr;gap:6vw;align-items:start}
 .cr-big{font-family:var(--fd);font-weight:900;text-transform:uppercase;font-size:clamp(32px,4.6vw,96px);line-height:1}
@@ -254,7 +257,6 @@ body.loaded .hero-badge{opacity:1}
 .chain li::before{content:'↓';position:absolute;left:-5vw;margin-left:-14px;color:var(--acc)}
 .chain li:last-child{color:var(--acc)}
 
-/* ============ 2=1 ============ */
 .two-grid{display:grid;grid-template-columns:1fr 1fr;gap:5vw;align-items:start}
 .two-sticky{position:sticky;top:calc(14vh + var(--nav-h))}
 .two-title{font-family:var(--fd);font-weight:900;text-transform:uppercase;font-size:clamp(40px,5.4vw,110px);line-height:1.02;overflow-wrap:anywhere}
@@ -265,7 +267,6 @@ body.loaded .hero-badge{opacity:1}
 .two-media img{width:100%;aspect-ratio:4/5;object-fit:cover;filter:grayscale(.3) contrast(1.08) brightness(.88)}
 .two-media figcaption{position:absolute;top:14px;left:16px;right:16px}
 
-/* ============ СТОИМОСТЬ ============ */
 .price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5vw}
 .price{border:1px solid var(--line);padding:34px 26px;display:flex;flex-direction:column;gap:20px;background:var(--panel);transition:transform .4s,border-color .4s;position:relative;min-width:0}
 .price:hover{transform:translateY(-8px);border-color:var(--dim)}
@@ -279,7 +280,6 @@ body.loaded .hero-badge{opacity:1}
 .price ul li::before{content:'+';position:absolute;left:0;color:var(--acc)}
 .price-note{margin-top:4vh}
 
-/* ============ КОМАНДА ============ */
 .team-grid{display:grid;grid-template-columns:repeat(12,1fr);column-gap:2vw}
 .tm-a{grid-column:1/8;min-width:0}
 .tm-b{grid-column:8/13;margin-top:16vh;min-width:0}
@@ -292,14 +292,12 @@ body.loaded .hero-badge{opacity:1}
 .team-note{margin-top:9vh;display:flex;align-items:center;gap:3vw;flex-wrap:wrap}
 .stamp{border:1px solid var(--acc);color:var(--acc);font:400 11px/1 var(--fm);letter-spacing:.2em;padding:12px 16px;transform:rotate(-4deg);text-transform:uppercase;flex:none}
 
-/* ============ ОТЗЫВЫ ============ */
 .rev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5vw}
 .rev{border:1px dashed var(--line);padding:30px 24px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;gap:20px;color:var(--dim);min-width:0}
 .rev .r-q{font-size:15px;color:rgba(232,228,218,.35)}
 .logo-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:1.5vw;margin-top:6vh}
 .logo-strip div{border:1px dashed var(--line);aspect-ratio:3/1;display:flex;align-items:center;justify-content:center;color:rgba(232,228,218,.3);min-width:0;text-align:center;padding:4px}
 
-/* ============ КОНТАКТЫ ============ */
 #contact .c-title{font-size:clamp(44px,9.5vw,180px)}
 .c-sub{margin:4vh 0 7vh;max-width:44ch;color:var(--dim)}
 .c-sub b{color:var(--ink);font-weight:600}
@@ -318,7 +316,6 @@ body.loaded .hero-badge{opacity:1}
 .c-big:hover{color:var(--acc)}
 .c-geo{margin-left:auto}
 
-/* ============ FOOTER ============ */
 footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));overflow:hidden}
 .f-word{font-family:var(--fd);font-weight:900;font-size:clamp(34px,10.2vw,168px);letter-spacing:-.02em;line-height:.95;text-transform:uppercase;color:transparent;-webkit-text-stroke:1.5px var(--dim);transition:.5s;text-align:center;user-select:none;overflow-wrap:anywhere;max-width:100%}
 .f-word:hover{color:var(--acc);-webkit-text-stroke-color:var(--acc)}
@@ -328,22 +325,19 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 .f-cols a:hover{color:var(--acc)}
 .f-bottom{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:24px}
 
-/* ============ МОДАЛКА КЕЙСА ============ */
+/* ============ МОДАЛКА ПРОЕКТА ============ */
 #caseModal{position:fixed;inset:0;z-index:9000;background:rgba(10,10,11,.96);opacity:0;visibility:hidden;transition:.4s;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-inline:var(--sal) var(--sar)}
 #caseModal.open{opacity:1;visibility:visible}
 .case-in{width:min(1200px,92vw);margin:max(4vh,calc(var(--sat) + 12px)) auto calc(7vh + var(--sab))}
 .case-head{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:4vh;flex-wrap:wrap}
-#caseClose,#caseClose2{border:1px solid var(--line);padding:15px 20px;min-height:48px;font:400 11px var(--fm);letter-spacing:.14em;transition:.3s;text-transform:uppercase}
-#caseClose:hover,#caseClose2:hover{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.case-close{border:1px solid var(--line);padding:15px 20px;min-height:48px;font:400 11px var(--fm);letter-spacing:.14em;transition:.3s;text-transform:uppercase}
+.case-close:hover{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
 .case-media{position:relative;overflow:hidden;margin-bottom:5vh;background:#000}
 .case-media img{width:100%;aspect-ratio:21/9;object-fit:cover;filter:grayscale(.15) contrast(1.06)}
-.case-media video{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
 .case-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000}
 .case-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.case-media .work-play{opacity:1;transform:translate(-50%,-50%)}
-.case-note{padding:16px 0;color:var(--dim)}
 .case-title{font-family:var(--fd);font-weight:900;font-size:clamp(36px,6.4vw,110px);text-transform:uppercase;line-height:.95;margin-bottom:4vh;overflow-wrap:anywhere}
-.case-meta{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--line);margin-bottom:5vh}
+.case-meta{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);margin-bottom:5vh}
 .case-meta div{padding:16px;border-right:1px solid var(--line);min-width:0}
 .case-meta div:last-child{border-right:none}
 .case-meta h5{font:400 10px var(--fm);letter-spacing:.18em;color:var(--dim);margin-bottom:8px;text-transform:uppercase}
@@ -351,27 +345,30 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 .case-txt{display:grid;grid-template-columns:repeat(3,1fr);gap:3vw;margin-bottom:6vh}
 .case-txt h5{font:400 10px var(--fm);letter-spacing:.18em;color:var(--acc);margin-bottom:12px;text-transform:uppercase}
 .case-txt p{color:var(--dim);font-size:14px}
-.case-strip{display:flex;gap:1.5vw;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:14px;margin-bottom:5vh;-webkit-overflow-scrolling:touch}
-.case-strip img{flex:0 0 42%;aspect-ratio:16/10;object-fit:cover;scroll-snap-align:start;filter:grayscale(.3) contrast(1.05)}
+.case-h{font:400 11px var(--fm);letter-spacing:.18em;color:var(--acc);text-transform:uppercase;margin-bottom:16px}
+.case-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2vw;margin-bottom:6vh}
+.case-photos img{width:100%;aspect-ratio:4/5;object-fit:cover;transition:filter .4s,transform .6s;cursor:zoom-in}
+.case-photos img:hover{filter:grayscale(0);transform:scale(1.02)}
+.case-links{display:flex;flex-direction:column;gap:10px;margin-bottom:6vh}
+.case-links a{border:1px solid var(--line);padding:15px 18px;font:400 11px var(--fm);letter-spacing:.12em;text-transform:uppercase;display:flex;justify-content:space-between;gap:12px;transition:.3s;overflow-wrap:anywhere;min-height:48px;align-items:center}
+.case-links a:hover{border-color:var(--acc);color:var(--acc)}
 .case-nav{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .case-nav .btn{flex:1 1 auto}
 
-/* ============ FIXED CTA ============ */
+#photoView{position:fixed;inset:0;z-index:9500;background:rgba(5,5,6,.96);display:none;align-items:center;justify-content:center;padding:calc(20px + var(--sat)) calc(16px + var(--sar)) calc(20px + var(--sab)) calc(16px + var(--sal))}
+#photoView.open{display:flex}
+#photoView img{max-width:100%;max-height:88vh;object-fit:contain}
+
 #fixedCta{position:fixed;left:calc(4vw + var(--sal));right:calc(4vw + var(--sar));bottom:calc(14px + var(--sab));z-index:750;display:none;transform:translateY(140%);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 #fixedCta.show{transform:none}
 
-/* ============ АДАПТИВ ============ */
-@media(max-width:1250px){
-  .nav-links{gap:18px}
-  .nav-links a{font-size:10px}
-}
+@media(max-width:1250px){.nav-links{gap:18px}.nav-links a{font-size:10px}}
 @media(max-width:1100px){
-  .nav-links{display:none}
-  #burger{display:flex}
+  .nav-links{display:none}#burger{display:flex}
   .rev-grid{grid-template-columns:1fr 1fr}
   .logo-strip{grid-template-columns:repeat(3,1fr)}
   .collab-grid{grid-template-columns:repeat(3,1fr)}
-  .case-meta{grid-template-columns:repeat(3,1fr)}
+  .case-meta{grid-template-columns:repeat(2,1fr)}
   .case-txt{grid-template-columns:1fr}
 }
 @media(max-width:860px){
@@ -399,8 +396,8 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   #fixedCta{display:inline-flex}
   .svc{grid-template-columns:40px 1fr;gap:5vw;padding:2.6vh 1vw}
   .svc-tags{display:none}
+  .case-photos{grid-template-columns:repeat(2,1fr)}
   .case-meta{grid-template-columns:1fr 1fr}
-  .case-strip img{flex:0 0 80%}
   .c-geo{margin-left:0}
   .cr-big{font-size:clamp(34px,9vw,80px)}
   .two-title{font-size:clamp(32px,9vw,90px)}
@@ -439,6 +436,7 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   .case-nav{flex-direction:column}
   .case-nav .btn{width:100%}
   .f-cols{gap:6vw}
+  .cat-btn{flex:1 1 auto}
 }
 @media(max-width:360px){
   .hero-title{font-size:clamp(25px,9.8vw,60px)}
@@ -454,7 +452,6 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 </head>
 <body class="loading">
 
-<!-- LOADER -->
 <div id="loader" aria-hidden="true">
   <div class="l-row mono"><span class="rec-dot"></span><span>REC</span><span id="loaderCount">000</span></div>
   <div class="l-word">ПРОПЕЛЛЕР</div>
@@ -465,7 +462,6 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 <div id="progress" aria-hidden="true"></div>
 <div id="cursor" aria-hidden="true"><div class="c-dot"></div><div class="c-label"></div></div>
 
-<!-- NAV -->
 <header id="nav">
   <div class="nav-in">
     <a class="logo" href="#hero" data-navlink aria-label="ПРОПЕЛЛЕР — на главную">
@@ -488,7 +484,6 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   </div>
 </header>
 
-<!-- МОБИЛЬНОЕ МЕНЮ -->
 <div id="menu" data-lenis-prevent>
   <nav aria-label="Мобильная навигация">
     <a class="m-link" href="#collabs" data-navlink><span>01</span>С КЕМ РАБОТАЛИ</a>
@@ -506,17 +501,15 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 
 <main id="top">
 
-<!-- ============ HERO ============ -->
 <section id="hero">
   <div class="hero-media">
-    <img src="https://i.yapx.ru/eIKIE.png" alt="ПРОПЕЛЛЕР на съёмочной площадке" fetchpriority="high">
+    <img src="https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1031a4ec7-9393-4930-b2aa-461d6c837e59.png" alt="ПРОПЕЛЛЕР на съёмочной площадке" fetchpriority="high">
     <div class="vhs" aria-hidden="true"><i class="vhs-scan"></i><i class="vhs-band"></i><i class="vhs-glitch"></i></div>
   </div>
   <div class="hud hud-tl"><span class="rec-dot"></span><span>REC</span><span id="tc">00:00:00:00</span><span class="vhs-tag">VHS</span></div>
   <div class="hud hud-tr"><span>FRAME</span><span id="frame">000000</span></div>
   <div class="hud hud-bl"><span>55.7558° N / 37.6173° E — МОСКВА</span></div>
   <div class="hud hud-br"><span>PLAY ▸ / 24 FPS</span></div>
-
   <div class="wrap">
     <p class="mono" style="margin-bottom:2vh">[ ВИДЕОПРОДАКШН ПОЛНОГО ЦИКЛА ]</p>
     <h1 class="hero-title h-mega" aria-label="ПРОПЕЛЛЕР">
@@ -532,7 +525,6 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
       <a class="btn" href="#works" data-navlink data-cursor="SCROLL ↓">СМОТРЕТЬ РАБОТЫ ↓</a>
     </div>
   </div>
-
   <div class="hero-badge" aria-hidden="true">
     <svg class="vhs-ghost" viewBox="0 0 200 200">
       <defs><path id="circ" d="M100,100 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0"/></defs>
@@ -542,45 +534,35 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   </div>
 </section>
 
-<!-- MARQUEE -->
 <div class="marquee" aria-hidden="true">
   <div class="mq-track">
-    <span>РЕКЛАМА</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>REELS</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>КЛИПЫ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>YOUTUBE</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>МЕРОПРИЯТИЯ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>ИНТЕРВЬЮ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>ПОДКАСТЫ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>КОНТЕНТ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>МОНТАЖ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>ЦВЕТ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>ИДЕИ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>BACKSTAGE</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>РЕКЛАМА</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>REELS</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>КЛИПЫ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>YOUTUBE</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>МЕРОПРИЯТИЯ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>ИНТЕРВЬЮ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>ПОДКАСТЫ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>КОНТЕНТ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>МОНТАЖ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>ЦВЕТ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>ИДЕИ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
-    <span>BACKSTAGE</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>КОНЦЕРТЫ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>РЕКЛАМА</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>КЛИПЫ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>REELS</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>YOUTUBE</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>МЕРОПРИЯТИЯ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>ПОДКАСТЫ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>МОНТАЖ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>BACKSTAGE</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>КОНЦЕРТЫ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>РЕКЛАМА</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>КЛИПЫ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>REELS</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>YOUTUBE</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>МЕРОПРИЯТИЯ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>ПОДКАСТЫ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>МОНТАЖ</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
+    <span>BACKSTAGE</span><svg class="mq-prop vhs-ghost" viewBox="-50 -50 100 100"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
   </div>
 </div>
 
-<!-- ============ 01 КТО МЫ ============ -->
 <section class="sec" id="about">
   <div class="wrap">
     <div class="sec-head"><span class="mono">01 / КТО МЫ</span><span class="mono">МОСКВА — ОРЁЛ</span></div>
     <h2 class="h-mega h-sec" data-clip>МЫ — ПРОПЕЛЛЕРА.</h2>
     <div class="about-grid">
-      <div class="about-lines" data-reveal>
-        ДВА ЧЕЛОВЕКА.<br><span class="outl">ДВЕ КАМЕРЫ.</span><br>ОДНА КОМАНДА.
-      </div>
+      <div class="about-lines" data-reveal>ДВА ЧЕЛОВЕКА.<br><span class="outl">ДВЕ КАМЕРЫ.</span><br>ОДНА КОМАНДА.</div>
       <div class="about-text" data-reveal>
         <p>Мы закрываем производство видео <b>от идеи до готового ролика</b>. Не ждём готового ТЗ — сами придумываем концепцию, сценарий и визуальный стиль. Потом снимаем. Потом доводим до результата.</p>
       </div>
@@ -592,7 +574,6 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   </div>
 </section>
 
-<!-- ============ 02 С КЕМ РАБОТАЛИ ============ -->
 <section class="sec" id="collabs">
   <div class="wrap">
     <div class="sec-head"><span class="mono">02 / С КЕМ РАБОТАЛИ</span><span class="mono">АРТИСТЫ / БРЕНДЫ / ЛЮДИ</span></div>
@@ -602,28 +583,28 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   </div>
 </section>
 
-<!-- ============ 03 РАБОТЫ ============ -->
+<!-- ============ 03 РАБОТЫ: ДИНАМИЧЕСКОЕ ПОРТФОЛИО ============ -->
 <section class="sec" id="works">
   <div class="wrap">
-    <div class="sec-head"><span class="mono">03 / РАБОТЫ</span><span class="mono">06 ПРОЕКТОВ / 2024—2026</span></div>
+    <div class="sec-head"><span class="mono">03 / РАБОТЫ</span><span class="mono" id="worksCount">… ПРОЕКТОВ</span></div>
     <h2 class="h-mega h-sec" data-clip>ПРОДАКШН<span class="acc">.</span></h2>
-    <p class="mono works-note" data-reveal>[ ССЫЛКИ НА РОЛИКИ ВСТАВЛЯЮТСЯ В МАССИВ PROJECTS → ПОЛЕ VIDEO (YOUTUBE / VK ВИДЕО) ]</p>
-    <div class="works-grid" id="worksGrid" style="margin-top:8vh"></div>
+    <div class="cat-bar" id="catBar" data-reveal></div>
+    <div class="works-grid" id="worksGrid" style="margin-top:8vh">
+      <div class="w-empty mono">[ ЗАГРУЗКА ПРОЕКТОВ… ]</div>
+    </div>
   </div>
 </section>
 
-<!-- ============ 04 УСЛУГИ ============ -->
 <section class="sec" id="services">
   <div class="wrap">
     <div class="sec-head"><span class="mono">04 / УСЛУГИ</span><span class="mono">FULL CYCLE</span></div>
     <h2 class="h-mega h-mid" data-clip style="margin-bottom:8vh">НЕ ПРОСТО СНИМАЕМ.<br>ПРИДУМЫВАЕМ, СНИМАЕМ И <span class="acc">ДОВОДИМ ДО РЕЗУЛЬТАТА</span>.</h2>
-    <ul id="svcList"></ul>
+    <ul class="svcList" id="svcList"></ul>
     <p class="svc-sub mono" data-reveal>НАВЕДИ НА ПУНКТ — УВИДИШЬ ПРЕВЬЮ. НУЖНО ДРУГОЕ? <b>ОБСУДИМ.</b></p>
   </div>
   <img id="svcPrev" alt="" aria-hidden="true">
 </section>
 
-<!-- ============ 05 КРЕАТИВ ============ -->
 <section class="sec" id="creative">
   <div class="wrap">
     <div class="sec-head"><span class="mono">05 / КРЕАТИВ</span><span class="mono">IDEA DEPT.</span></div>
@@ -639,7 +620,6 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   </div>
 </section>
 
-<!-- ============ 06 2 ОПЕРАТОРА / 1 ЦЕНА ============ -->
 <section class="sec" id="twoone">
   <div class="wrap two-grid">
     <div class="two-sticky">
@@ -648,13 +628,12 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
       <p class="two-cap" data-reveal>Работаем вдвоём на площадке: один снимает основной материал, второй одновременно работает со второй камерой, светом, деталями, backstage и дополнительными планами. <b style="color:var(--ink)">Больше материала. Больше ракурсов. Больше жизни.</b></p>
     </div>
     <div class="two-media">
-      <figure data-reveal><img src="https://i.yapx.ru/eIKIE.png" alt="Камера A — основной материал" loading="lazy" data-parallax><figcaption class="mono"><b>CAM A</b> / ОСНОВНОЙ МАТЕРИАЛ</figcaption></figure>
-      <figure data-reveal><img src="https://i.yapx.ru/eIIy5.png" alt="Камера B — детали и backstage" loading="lazy" data-parallax><figcaption class="mono"><b>CAM B</b> / ДЕТАЛИ / BACKSTAGE</figcaption></figure>
+      <figure data-reveal><img src="https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/18994c49e-541f-426e-8f0f-254b2eeb5e8e.png" alt="Камера A — основной материал" loading="lazy" data-parallax><figcaption class="mono"><b>CAM A</b> / ОСНОВНОЙ МАТЕРИАЛ</figcaption></figure>
+      <figure data-reveal><img src="https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1031a4ec7-9393-4930-b2aa-461d6c837e59.png" alt="Камера B — детали и backstage" loading="lazy" data-parallax><figcaption class="mono"><b>CAM B</b> / ДЕТАЛИ / BACKSTAGE</figcaption></figure>
     </div>
   </div>
 </section>
 
-<!-- ============ 07 СТОИМОСТЬ ============ -->
 <section class="sec" id="prices">
   <div class="wrap">
     <div class="sec-head"><span class="mono">07 / СТОИМОСТЬ</span><span class="mono">БЕЗ СКРЫТЫХ ПЛАТЕЖЕЙ</span></div>
@@ -664,23 +643,22 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   </div>
 </section>
 
-<!-- ============ 08 КОМАНДА ============ -->
 <section class="sec" id="team">
   <div class="wrap">
     <div class="sec-head"><span class="mono">08 / КОМАНДА</span><span class="mono">2 UNITS</span></div>
     <h2 class="h-mega h-sec" data-clip>КТО СНИМАЕТ</h2>
     <div class="team-grid" style="margin-top:8vh">
       <div class="tm-a" data-reveal>
-        <figure><img src="https://i.yapx.ru/eIIyU.png" alt="Оператор ПРОПЕЛЛЕР" loading="lazy" data-parallax></figure>
+        <figure><img src="https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1c9fe2b3e-ad36-4eac-bbd4-ad8131ef5025.png" alt="Оператор ПРОПЕЛЛЕР" loading="lazy" data-parallax></figure>
         <div class="tm-cap">
-          <div><div class="tm-name">[Данила Динеич — 01]</div><div class="mono tm-roles">ОПЕРАТОР / РЕЖИССЁР / МОНТАЖЁР / КРЕАТИВ</div></div>
+          <div><div class="tm-name">[ИМЯ — 01]</div><div class="mono tm-roles">ОПЕРАТОР / РЕЖИССЁР / МОНТАЖЁР / КРЕАТИВ</div></div>
           <span class="mono">UNIT A</span>
         </div>
       </div>
       <div class="tm-b" data-reveal>
-        <figure><img src="https://i.yapx.ru/eIIy5.png" alt="Монтажер ПРОПЕЛЛЕР" loading="lazy" data-parallax></figure>
+        <figure><img src="https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/11b9fccb4-9642-4bbf-9a99-d88ded0f3f50.png" alt="Режиссёр ПРОПЕЛЛЕР" loading="lazy" data-parallax></figure>
         <div class="tm-cap">
-          <div><div class="tm-name">[Влад Исаев — 02]</div><div class="mono tm-roles">РЕЖИССЁР / ОПЕРАТОР / ПРОДЮСЕР / МОНТАЖ</div></div>
+          <div><div class="tm-name">[ИМЯ — 02]</div><div class="mono tm-roles">РЕЖИССЁР / ОПЕРАТОР / ПРОДЮСЕР / МОНТАЖ</div></div>
           <span class="mono">UNIT B</span>
         </div>
       </div>
@@ -692,7 +670,6 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   </div>
 </section>
 
-<!-- ============ 09 ОТЗЫВЫ ============ -->
 <section class="sec" id="reviews">
   <div class="wrap">
     <div class="sec-head"><span class="mono">09 / КЛИЕНТЫ</span><span class="mono">[ БЛОК НАПОЛНЯЕТСЯ ]</span></div>
@@ -709,40 +686,37 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   </div>
 </section>
 
-<!-- ============ 10 КОНТАКТЫ ============ -->
 <section class="sec" id="contact">
   <div class="wrap">
     <div class="sec-head"><span class="mono">10 / КОНТАКТ</span><span class="mono">МОСКВА / ОРЁЛ / РОССИЯ</span></div>
     <h2 class="h-mega c-title" data-clip>ЕСТЬ ИДЕЯ?<br>ДАВАЙТЕ СНИМЕМ<span class="acc">.</span></h2>
     <p class="c-sub" data-reveal>Напишите нам — ответим в течение дня. <b>Без менеджеров: пишете напрямую тем, кто будет снимать.</b></p>
-
     <div class="soc-grid">
-      <a class="soc" href="#" data-ph data-contact="telegram" data-cursor="LET'S SHOOT →" data-reveal title="Заполнить ссылку в CONFIG.contacts">
+      <a class="soc" href="#" data-ph data-contact="telegram" data-cursor="LET'S SHOOT →" data-reveal>
         <span class="mono soc-idx">01 / САМЫЙ БЫСТРЫЙ</span>
         <span class="soc-name">TELEGRAM</span>
         <span class="mono soc-handle">@[USERNAME] — ОТВЕЧАЕМ ПЕРВЫМ</span>
         <span class="soc-arr" aria-hidden="true">↗</span>
       </a>
-      <a class="soc" href="#" data-ph data-contact="whatsapp" data-cursor="LET'S SHOOT →" data-reveal title="Заполнить ссылку в CONFIG.contacts">
+      <a class="soc" href="#" data-ph data-contact="whatsapp" data-cursor="LET'S SHOOT →" data-reveal>
         <span class="mono soc-idx">02 / ЕСЛИ ПРИВЫЧНЕЕ</span>
         <span class="soc-name">WHATSAPP</span>
         <span class="mono soc-handle">[НОМЕР] — ПИШИТЕ ИЛИ ЗВОНИТЕ</span>
         <span class="soc-arr" aria-hidden="true">↗</span>
       </a>
-      <a class="soc" href="#" data-ph data-contact="vk" data-cursor="LET'S SHOOT →" data-reveal title="Заполнить ссылку в CONFIG.contacts">
+      <a class="soc" href="#" data-ph data-contact="vk" data-cursor="LET'S SHOOT →" data-reveal>
         <span class="mono soc-idx">03 / ДЛЯ БИЗНЕСА</span>
         <span class="soc-name">VK</span>
         <span class="mono soc-handle">[ССЫЛКА НА СООБЩЕСТВО]</span>
         <span class="soc-arr" aria-hidden="true">↗</span>
       </a>
-      <a class="soc" href="#" data-ph data-contact="instagram" data-cursor="LET'S SHOOT →" data-reveal title="Заполнить ссылку в CONFIG.contacts">
+      <a class="soc" href="#" data-ph data-contact="instagram" data-cursor="LET'S SHOOT →" data-reveal>
         <span class="mono soc-idx">04 / СМОТРЕТЬ ВИЗУАЛ</span>
         <span class="soc-name">INSTAGRAM</span>
         <span class="mono soc-handle">@[USERNAME] — НАШ ВИЗУАЛ ТАМ</span>
         <span class="soc-arr" aria-hidden="true">↗</span>
       </a>
     </div>
-
     <div class="c-row" data-reveal>
       <a class="c-big" href="#" data-ph data-contact="phone" data-cursor="LET'S SHOOT →">[ТЕЛЕФОН] ↗</a>
       <a class="c-big" href="#" data-ph data-contact="email" data-cursor="LET'S SHOOT →">[EMAIL] ↗</a>
@@ -752,7 +726,6 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 </section>
 </main>
 
-<!-- ============ FOOTER ============ -->
 <footer>
   <div class="wrap">
     <div class="f-word" aria-hidden="true">ПРОПЕЛЛЕР</div>
@@ -772,458 +745,13 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 
 <a id="fixedCta" class="btn btn-acc" href="#contact" data-navlink data-cursor="LET'S SHOOT →">ОБСУДИТЬ ПРОЕКТ <span class="arr">→</span></a>
 
-<!-- ============ МОДАЛКА КЕЙСА ============ -->
-<div id="caseModal" role="dialog" aria-modal="true" aria-label="Кейс" data-lenis-prevent>
+<div id="caseModal" role="dialog" aria-modal="true" aria-label="Проект" data-lenis-prevent>
   <div class="case-in" id="caseBody"></div>
 </div>
+
+<div id="photoView" aria-hidden="true"><img alt="Фото проекта"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
 <script>
-/* =================================================================
-   ПРОПЕЛЛЕР — single page / v8 (YouTube + VK Видео в портфолио)
-   РЕДАКТИРУЕМОЕ: CONFIG / COLLABS / PROJECTS / SERVICES / PRICES
-================================================================== */
-const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const FINE = matchMedia('(pointer: fine)').matches;
-const TOUCH = matchMedia('(hover: none), (pointer: coarse)').matches;
-const WIDE = matchMedia('(min-width: 861px)').matches;
-const DESKTOP = FINE && !TOUCH && WIDE && !RM;
-const $ = s => document.querySelector(s);
-
-/* ---------- РЕДАКТИРУЕМЫЕ ДАННЫЕ ---------- */
-const CONFIG = { contacts: { telegram:'', whatsapp:'', vk:'', instagram:'', phone:'', email:'' } };
-
-const COLLABS = [
-  {name:'RAREMOD', img:'https://yt3.googleusercontent.com/IJt7kANLa52RoR3U7mQ77YB66SyvDAmaXYQj3WMryyehaSvo2fVPSAUMELn0lQq3aWpJ7sSsCg=s900-c-k-c0x00ffffff-no-rj'},
-  {name:'LILDRUGHILL', img:'https://avatars.yandex.net/get-music-content/20712233/2ed6f6c3.p.5608970/m1000x1000'},
-  {name:'LIL KRYSTALLL', img:'https://avatars.yandex.net/get-music-content/14304155/1f3cb53f.p.5766526/m1000x1000'},
-  {name:'SLAVA MARLOW', img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIPEyrrorcwtlTWJk4jb5HRNEIoxhaNP2QqjaJaKlAEY286999VEFFvxc&s=10'},
-  {name:'Olegha77', img:'https://i.yapx.ru/eII16.jpg5QQ%3D%3D?uid=585208373&filename=photo_2026-05-02_18-34-04.jpg&disposition=inline&hash=&limit=0&content_type=image%2Fjpeg&owner_uid=585208373&tknv=v3&is_direct_zip_experiment=1&size=1905x953'},
-  {name:'TATWOLE', img:'https://images.news.ru/photo/4c03cbf0-58b9-11ef-bab9-02420a0000c9_780.jpg'},
-  {name:'СК «КРЕПОСТЬ»', img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnY_SclJBaZ96LNOrATYwtOoWT9WkCYBEUmgV2fo10DA&s'},
-  {name:'RUTEX', img:'https://sun9-76.vkuserphoto.ru/s/v1/ig2/ScXDekulA91xv82DeGxUz5Cfd00NzkTsjSgzEiCOjQIx8VYxDazLKC1QXRbZQH98ExS5qBU_4lVJK3Qu7ikcIVZ5.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1024x1024&from=bu&u=17_jmtEfCfzmMS46iCKf9Co94NwzUWI8J7HZTKa5RQg&cs=1024x0'},
-  {name:'ROD DANCE', img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYjVs6dd7BDkmi07dn7Do_MYJjJtx_qN6xypQpqSeCHw&s'},
-  {name:'MARK KUKLIN', img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpjuOmni2CAebxpljuTRJSTvcMV0aQhkIC-V5ZI__79DFGcUgxyxm5e0Hk&s=10'}
-];
-
-const PRICES = [
-  {name:'ПОЧАСОВАЯ', val:'5 000 ₽/ЧАС', forOne:'почасовая съёмка — платите только за время', inc:['2 оператора','набор оборудования','выезд на локацию','подготовка к съёмке','съёмка на локации','передача материала через облачное хранилище','хранение материала в течение месяца'], hot:false},
-  {name:'СМЕНА', val:'ОТ 20 000 ₽', forOne:'для съёмок на целый день / большого объёма контента', inc:['2 оператора','1 съёмочный день','идеи и сценарии','подготовка к съёмке','передача материала через облачное хранилище','хранение материала в течение месяца'], hot:false},
-  {name:'ПРОДАКШН', val:'ОТ 35 000 ₽', forOne:'полноценный рекламный / коммерческий проект', inc:['концепция и сценарий','полный цикл производства','2 оператора на площадке','монтаж, цвет, звук','версии под все площадки'], hot:true},
-  {name:'МОНТАЖ', val:'ОТ 1 500 ₽', forOne:'монтаж видео из вашего или нашего материала', inc:['монтаж видео','цветокоррекция','обработка звука','графика','ретушь','любой формат видео'], hot:false},
-  {name:'CUSTOM', val:'ПО ЗАПРОСУ', forOne:'если проект нестандартный', inc:['клип / мероприятие / YouTube','любой формат и хронометраж','смета от 24 часов'], hot:false}
-];
-
-const IMG = {
-  hero:'https://i.yapx.ru/eIIy5.png',
-  car:'https://i.ytimg.com/vi/La9zX2E-9dk/sddefault.jpg',
-  music:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/10b2ec472-fb7d-40b6-8faf-7e8746d1079d.png',
-  fashion:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1207e6f50-8178-4023-a4da-555b4af7a6c4.png',
-  interview:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/12c296023-039e-4002-9c9c-fdba6b324853.png',
-  concert:'https://i.ytimg.com/vi/8eG4FC0MrxI/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDmwId7TXD0KuX42uzAyQHbYIiWRA',
-  reels:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/14fe1f442-caaf-41f0-b920-7479cea0f12d.png',
-  backstage:'https://i.yapx.ru/eIIyU.png'
-};
-
-/* ================================================================
-   ПОРТФОЛИО — СЮДА ВСТАВЛЯТЬ ССЫЛКИ НА РОЛИКИ.
-   Поле video принимает обычную ссылку из:
-     • YouTube:  https://youtu.be/XXXXXXXXXXX
-                 https://www.youtube.com/watch?v=XXXXXXXXXXX
-                 https://www.youtube.com/shorts/XXXXXXXXXXX
-     • VK Видео: https://vk.com/video-123456_789
-                 https://vkvideo.ru/video-123456_789
-   Ролик автоматически подгрузится плеером внутри кейса.
-   Если ролика пока нет — оставляйте video:''
-================================================================== */
-const PROJECTS = [
-  {type:'COMMERCIAL', title:'', client:'ШИЛО + Olegha77', year:'2026', format:'ИНТЕРВЬЮ', img:IMG.car, cls:'w-full', video:'https://www.youtube.com/watch?v=La9zX2E-9dk&t=1s',
-   task:'Сделать интересное видео и не допустить никаких ошибок', idea:'Интервью 2 крупных медиек', process:'От концепции до монтажа'},
-  {type:'MUSIC VIDEO', title:'STATIC', client:'[АРТИСТ]', year:'2025', format:'КЛИП • 3 MIN', img:IMG.music, cls:'w-tall', video:'',
-   task:'Клип с характером при ограниченном бюджете.', idea:'Одна локация, дым, лазеры и силуэт. Свет работает вместо декораций.', process:'Раскадровка → съёмочная ночь → монтаж в ритм трека → мастер под все площадки.'},
-  {type:'FASHION', title:'BETON', client:'[БРЕНД]', year:'2025', format:'LOOKBOOK • 90 SEC', img:IMG.fashion, cls:'w-side', video:'',
-   task:'Имиджевое видео коллекции для соцсетей и показов.', idea:'Бетон, жёсткий свет, длинные тени. Одежда говорит — камера молчит.', process:'Мудборд → студия → съёмка + бэкстейдж → вертикальные и горизонтальные версии.'},
-  {type:'INTERVIEW', title:'ПОДКАСТЫ', client:'[КЛИЕНТ]', year:'2025', format:'ПОДКАСТ • 12 MIN', img:IMG.interview, cls:'w-editorial', video:'',
-   task:'Разговорное видео, которое досматривают.', idea:'Тёмная студия, один источник света, крупные планы и паузы.', process:'Сценарий вопросов → студийный свет → 2 камеры → монтаж с ритмом дыхания.'},
-  {type:'EVENT', title:'КОНЦЕРТЫ', client:'LIL KRYSTALLL', year:'2026', format:'LIVE', img:IMG.concert, cls:'w-wide', video:'https://www.youtube.com/watch?v=8eG4FC0MrxI',
-   task:'Получить динамичное и дорогое видео', idea:'Передать атмосферу зала', process:'Сьемка одного из самых узнаваемых голосов русского рэпа — LIL KRYSTALLL на сцене RUTEX.'},
-  {type:'CONTENT', title:'REELS', client:'[БЛОГЕР]', year:'2024', format:'REELS • СЕРИЯ', img:IMG.reels, cls:'w-offset', video:'',
-   task:'Постоянный контент без выгорания автора.', idea:'Формат-конструктор: рубрики, свет, монтаж — автор просто приходит и говорит.', process:'Упаковка формата → съёмочный день на 8 роликов → монтаж пачками → публикация по плану.'}
-];
-
-const SERVICES = [
-  {n:'01', name:'РЕКЛАМА', tags:'РОЛИКИ / ПРОМО / ИМИДЖ', img:IMG.car},
-  {n:'02', name:'REELS', tags:'SHORTS / TIKTOK / ВЕРТИКАЛЬ', img:IMG.reels},
-  {n:'03', name:'YOUTUBE', tags:'ИНТЕРВЬЮ / ПОДКАСТЫ / LONG', img:IMG.interview},
-  {n:'04', name:'КЛИПЫ', tags:'МУЗЫКА / PERFOMANCE / VISUAL', img:IMG.music},
-  {n:'05', name:'МЕРОПРИЯТИЯ', tags:'КОНЦЕРТЫ / ИВЕНТЫ / BACKSTAGE', img:IMG.concert},
-  {n:'06', name:'КОНТЕНТ', tags:'ДЛЯ БИЗНЕСА / SMM / СЕРИИ', img:IMG.fashion},
-  {n:'07', name:'МОНТАЖ', tags:'МОНТАЖ / ЦВЕТ / ЗВУК', img:IMG.backstage},
-  {n:'08', name:'ИДЕИ', tags:'КОНЦЕПТ / СЦЕНАРИЙ / РЕЖИССУРА', img:IMG.hero}
-];
-
-/* ---------- КОНВЕРТЕР ССЫЛОК → ЭМБЕД-ПЛЕЕР ---------- */
-function toEmbed(url){
-  if(!url) return '';
-  url = String(url).trim();
-  // уже готовый эмбед
-  if(/youtube\.com\/embed\//i.test(url) || /video_ext\.php/i.test(url)) return url;
-  // YouTube: watch / youtu.be / shorts / live
-  let m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
-  if(m) return 'https://www.youtube.com/embed/'+m[1]+'?rel=0&modestbranding=1';
-  // VK Видео: vk.com/video-XXXX_YYYY или vkvideo.ru/video-XXXX_YYYY
-  m = url.match(/(?:vk\.com|vkvideo\.ru)\/(?:video|clip)(-?\d+)_(\d+)/i);
-  if(m) return 'https://vk.com/video_ext.php?oid='+m[1]+'&id='+m[2]+'&hd=2';
-  // параметры в ссылке (например ?z=video-123_456)
-  m = url.match(/[?&]z=(?:video|clip)(-?\d+)_(\d+)/i);
-  if(m) return 'https://vk.com/video_ext.php?oid='+m[1]+'&id='+m[2]+'&hd=2';
-  return '';
-}
-PROJECTS.forEach(p=>{ p.embed = toEmbed(p.video); });
-
-/* ---------- КОНТАКТЫ ИЗ CONFIG ---------- */
-document.querySelectorAll('[data-contact]').forEach(a=>{
-  const v = CONFIG.contacts[a.dataset.contact];
-  if(v){ a.setAttribute('href', v); a.removeAttribute('data-ph'); }
-});
-document.querySelectorAll('a[data-ph]').forEach(a=>{
-  a.addEventListener('click', e=>{
-    const href = a.getAttribute('href');
-    if(!href || href === '#') e.preventDefault();
-  });
-});
-
-/* ---------- РЕНДЕР: С КЕМ РАБОТАЛИ ---------- */
-$('#collabGrid').innerHTML = COLLABS.map(c=>`
-  <div class="collab" data-reveal>
-    <div class="collab-ph">${c.img ? `<img src="${c.img}" alt="${c.name}" loading="lazy">` : '<span class="mono">[ФОТО]</span>'}</div>
-    <div class="collab-name">${c.name}</div>
-  </div>`).join('');
-
-/* ---------- РЕНДЕР: РАБОТЫ ---------- */
-$('#worksGrid').innerHTML = PROJECTS.map((p,i)=>{
-  const idx = String(i+1).padStart(2,'0');
-  const hasVideo = p.embed ? '<span class="w-has">▶ WATCH</span>' : '';
-  if(p.cls==='w-editorial') return `
-  <article class="work w-editorial" data-i="${i}">
-    <div class="we-left">
-      <div class="work-top mono"><span>${idx} / ${p.type}</span><span>${p.year}</span>${hasVideo}</div>
-      <h3 class="we-title outl">${p.title}</h3>
-      <div class="mono">${p.client} • ${p.format}</div>
-      <button class="btn work-open" data-cursor="OPEN PROJECT →">${p.embed ? 'СМОТРЕТЬ ▶' : 'OPEN PROJECT →'}</button>
-    </div>
-    <div class="work-media" data-cursor="OPEN PROJECT →">
-      <img src="${p.img}" alt="${p.title} — ${p.type}" loading="lazy">
-      <div class="work-veil"></div><div class="work-play mono">▶ PLAY</div>
-    </div>
-  </article>`;
-  return `
-  <article class="work ${p.cls}" data-i="${i}">
-    <div class="work-media" data-cursor="OPEN PROJECT →">
-      <img src="${p.img}" alt="${p.title} — ${p.type}" loading="lazy">
-      <div class="work-veil"></div><div class="work-play mono">▶ PLAY</div>
-      <div class="work-top mono"><span>${idx} / ${p.type}</span><span>${p.year}</span>${hasVideo}</div>
-      <div class="work-bottom"><h3>${p.title}</h3><span class="mono">${p.client} • ${p.format}</span></div>
-    </div>
-  </article>`;
-}).join('');
-
-/* ---------- РЕНДЕР: УСЛУГИ / СТОИМОСТЬ ---------- */
-$('#svcList').innerHTML = SERVICES.map(s=>`
-  <li class="svc" data-img="${s.img}" data-cursor="LET'S SHOOT →">
-    <span class="svc-num">${s.n}</span>
-    <span class="svc-name">${s.name}</span>
-    <span class="svc-tags">${s.tags}</span>
-  </li>`).join('');
-
-$('#priceGrid').innerHTML = PRICES.map(p=>`
-  <div class="price ${p.hot?'hot':''}" data-reveal>
-    ${p.hot?'<span class="p-tag">ЧАЩЕ ВСЕГО</span>':''}
-    <h3>${p.name}</h3>
-    <p class="p-for">${p.forOne}</p>
-    <div class="p-val">${p.val}</div>
-    <div class="mono">ЧТО ВХОДИТ</div>
-    <ul>${p.inc.map(x=>`<li>${x}</li>`).join('')}</ul>
-    <a class="btn ${p.hot?'btn-acc':''}" href="#contact" data-navlink data-cursor="LET'S SHOOT →">ОБСУДИТЬ <span class="arr">→</span></a>
-  </div>`).join('');
-
-$('#year').textContent = new Date().getFullYear();
-
-/* ---------- LOADER ---------- */
-let _minT = false, _ready = false;
-function hideLoader(){
-  const l = $('#loader');
-  if(!l || l.dataset.done) return; l.dataset.done = 1;
-  document.body.classList.remove('loading');
-  if(window.gsap && !RM){
-    const tl = gsap.timeline({onComplete:heroIntro});
-    tl.to('#loaderBar i',{scaleX:1,duration:.45,ease:'power2.inOut'},0)
-      .fromTo('#loader .l-word',{yPercent:60,autoAlpha:0},{yPercent:0,autoAlpha:1,duration:.35},0)
-      .to('#loader',{clipPath:'inset(0 0 100% 0)',duration:.55,ease:'power4.inOut',delay:.15})
-      .set('#loader',{display:'none'});
-    const c = {v:0};
-    gsap.to(c,{v:100,duration:.6,ease:'none',onUpdate:()=>{$('#loaderCount').textContent = String(Math.round(c.v)).padStart(3,'0');}});
-  } else { l.style.display='none'; heroIntro(); }
-}
-function tryHide(){ if(_minT && _ready) hideLoader(); }
-setTimeout(()=>{ _minT = true; tryHide(); }, RM ? 0 : 600);
-addEventListener('load', ()=>{ _ready = true; tryHide(); });
-setTimeout(hideLoader, 1600);
-if(document.readyState === 'complete') _ready = true;
-
-/* ---------- LENIS ---------- */
-let lenis = null;
-const hasGSAP = !!window.gsap;
-const hasST = !!(window.gsap && window.ScrollTrigger);
-if(hasST){ gsap.registerPlugin(ScrollTrigger); ScrollTrigger.config({ignoreMobileChanges:true}); }
-
-if(window.Lenis && DESKTOP){
-  try{
-    lenis = new Lenis({ lerp:.14, wheelMultiplier:1, smoothWheel:true, syncTouch:false });
-    document.documentElement.classList.add('lenis','lenis-smooth');
-    (function lenisLoop(time){ lenis.raf(time); requestAnimationFrame(lenisLoop); })(performance.now());
-    if(hasST) lenis.on('scroll', ScrollTrigger.update);
-  }catch(e){ lenis = null; }
-}
-function goTo(hash){
-  const el = document.querySelector(hash);
-  if(!el) return;
-  if(lenis) lenis.scrollTo(el,{offset:-64,duration:1});
-  else el.scrollIntoView({behavior: RM ? 'auto' : 'smooth'});
-}
-document.addEventListener('click', e=>{
-  const a = e.target.closest('[data-navlink]');
-  if(!a) return;
-  const hash = a.getAttribute('href');
-  if(hash && hash.startsWith('#')){ e.preventDefault(); closeMenu(); goTo(hash); }
-});
-
-/* ---------- HERO INTRO ---------- */
-function heroIntro(){
-  document.body.classList.add('loaded');
-  if(!hasGSAP || RM) return;
-  gsap.from('.hero-title .ch',{yPercent:120,duration:1,ease:'power4.out',stagger:.05});
-  gsap.from('.hero-phrase',{clipPath:'inset(0 0 100% 0)',duration:.9,ease:'power3.out',delay:.45});
-  gsap.from('.hero-meta, .hero-cta',{y:24,autoAlpha:0,duration:.8,stagger:.12,delay:.7,ease:'power3.out'});
-}
-
-/* ---------- REVEAL / PARALLAX ---------- */
-if(hasST && !RM){
-  gsap.utils.toArray('[data-reveal]').forEach(el=>{
-    gsap.fromTo(el,{y:44,autoAlpha:0},{y:0,autoAlpha:1,duration:.9,ease:'power3.out',
-      scrollTrigger:{trigger:el,start:'top 88%',once:true}});
-  });
-  gsap.utils.toArray('[data-clip]').forEach(el=>{
-    gsap.fromTo(el,{clipPath:'inset(0 0 100% 0)',y:26},{clipPath:'inset(0 0 -10% 0)',y:0,duration:1,ease:'power4.out',
-      scrollTrigger:{trigger:el,start:'top 86%',once:true}});
-  });
-  gsap.utils.toArray('.work').forEach(w=>{
-    const m = w.querySelector('.work-media');
-    if(!m) return;
-    gsap.fromTo(m,{clipPath:'inset(10% 5% 10% 5%)'},{clipPath:'inset(0% 0% 0% 0%)',duration:1.1,ease:'power4.out',
-      scrollTrigger:{trigger:w,start:'top 84%',once:true}});
-  });
-  if(DESKTOP){
-    gsap.utils.toArray('[data-parallax]').forEach(img=>{
-      gsap.fromTo(img,{yPercent:-6},{yPercent:6,ease:'none',
-        scrollTrigger:{trigger:img.parentElement,start:'top bottom',end:'bottom top',scrub:1}});
-    });
-  }
-}
-if(hasST) addEventListener('load', ()=>ScrollTrigger.refresh());
-
-/* ---------- SCROLL: NAV / PROGRESS / FIXED CTA ---------- */
-const nav = $('#nav'), prog = $('#progress'), fixedCta = $('#fixedCta');
-let contactVisible = false, sTick = false;
-new IntersectionObserver(en=>{contactVisible = en[0].isIntersecting;},{threshold:.1}).observe($('#contact'));
-addEventListener('scroll', ()=>{
-  if(sTick) return; sTick = true;
-  requestAnimationFrame(()=>{
-    const y = scrollY;
-    nav.classList.toggle('scrolled', y>40);
-    const h = document.documentElement.scrollHeight - innerHeight;
-    prog.style.transform = 'scaleX('+(h>0 ? y/h : 0)+')';
-    fixedCta.classList.toggle('show', y > innerHeight*.8 && !contactVisible);
-    sTick = false;
-  });
-},{passive:true});
-
-/* ---------- МЕНЮ ---------- */
-const burger = $('#burger');
-function closeMenu(){ document.body.classList.remove('menu-open'); lenis && lenis.start(); }
-burger.addEventListener('click', ()=>{
-  const open = document.body.classList.toggle('menu-open');
-  open ? (lenis&&lenis.stop()) : (lenis&&lenis.start());
-});
-
-/* ---------- TIMECODE / MSK ---------- */
-let lastTC = 0;
-const t0 = performance.now();
-(function tick(t){
-  requestAnimationFrame(tick);
-  if(t - lastTC < 42) return; lastTC = t;
-  const el = (performance.now()-t0)/1000;
-  const f = Math.floor(el*24)%24, s = Math.floor(el)%60, m = Math.floor(el/60)%60, h = Math.floor(el/3600)%24;
-  const p = n=>String(n).padStart(2,'0');
-  const tc = $('#tc'); if(tc) tc.textContent = p(h)+':'+p(m)+':'+p(s)+':'+p(f);
-  const fr = $('#frame'); if(fr) fr.textContent = String(Math.floor(el*24)).padStart(6,'0');
-})();
-function msk(){ const el = $('#mskTime'); if(el) el.textContent = 'MSK ' + new Date().toLocaleTimeString('ru-RU',{timeZone:'Europe/Moscow',hour:'2-digit',minute:'2-digit'}); }
-msk(); setInterval(msk, 10000);
-
-/* ---------- ЗЕРНО: только десктоп ---------- */
-(function grain(){
-  if(!DESKTOP) return;
-  const cv = $('#grain'), ctx = cv.getContext('2d');
-  const size = ()=>{ cv.width = Math.max(2, innerWidth*.5); cv.height = Math.max(2, innerHeight*.5); };
-  size(); addEventListener('resize', size);
-  const tiles = [];
-  for(let n=0;n<4;n++){
-    const t = document.createElement('canvas'); t.width = t.height = 160;
-    const tc2 = t.getContext('2d');
-    const d = tc2.createImageData(160,160);
-    for(let i=0;i<d.data.length;i+=4){ const v = Math.random()*255|0; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=24; }
-    tc2.putImageData(d,0,0); tiles.push(t);
-  }
-  let last = 0;
-  (function loop(t){
-    requestAnimationFrame(loop);
-    if(document.hidden || t-last<130) return; last = t;
-    ctx.clearRect(0,0,cv.width,cv.height);
-    ctx.fillStyle = ctx.createPattern(tiles[Math.random()*4|0],'repeat');
-    ctx.save(); ctx.translate(-Math.random()*160, -Math.random()*160);
-    ctx.fillRect(0,0,cv.width+160,cv.height+160); ctx.restore();
-  })(0);
-})();
-
-/* ---------- КУРСОР: только десктоп ---------- */
-(function cursor(){
-  if(!DESKTOP) return;
-  document.documentElement.classList.add('has-cursor');
-  const c = $('#cursor'), dot = c.querySelector('.c-dot'), lab = c.querySelector('.c-label');
-  let x=innerWidth/2, y=innerHeight/2, tx=x, ty=y;
-  addEventListener('mousemove', e=>{ tx=e.clientX; ty=e.clientY; },{passive:true});
-  (function loop(){
-    requestAnimationFrame(loop);
-    if(document.hidden) return;
-    x += (tx-x)*.2; y += (ty-y)*.2;
-    dot.style.transform = 'translate3d('+x+'px,'+y+'px,0) translate(-50%,-50%)';
-    lab.style.transform = 'translate3d('+Math.min(x+24, innerWidth-120)+'px,'+Math.min(y+24, innerHeight-40)+'px,0)';
-  })();
-  document.addEventListener('mouseover', e=>{
-    const t = e.target.closest('[data-cursor]');
-    if(t){ lab.textContent = t.dataset.cursor; c.classList.add('on'); }
-    else c.classList.remove('on');
-    c.classList.toggle('link', !!e.target.closest('a,button') && !t);
-  });
-})();
-
-/* ---------- HOVER PLAY НА РАБОТАХ ---------- */
-document.addEventListener('mouseover', e=>{
-  const w = e.target.closest('.work');
-  if(w && !w.contains(e.relatedTarget)) w.classList.add('playing');
-});
-document.addEventListener('mouseout', e=>{
-  const w = e.target.closest('.work');
-  if(w && !w.contains(e.relatedTarget)) w.classList.remove('playing');
-});
-
-/* ---------- ПРЕВЬЮ УСЛУГ (десктоп) ---------- */
-(function svcPrev(){
-  if(!DESKTOP) return;
-  const prev = $('#svcPrev');
-  let x=0,y=0,tx=0,ty=0;
-  addEventListener('mousemove', e=>{
-    tx = Math.min(e.clientX+30, innerWidth-320);
-    ty = Math.min(Math.max(e.clientY-100, 10), innerHeight-220);
-  },{passive:true});
-  (function loop(){
-    requestAnimationFrame(loop);
-    if(document.hidden) return;
-    x+=(tx-x)*.12; y+=(ty-y)*.12;
-    prev.style.transform = 'translate3d('+x+'px,'+y+'px,0) '+(prev.classList.contains('show')?'scale(1) rotate(-2deg)':'scale(.8) rotate(-4deg)');
-  })();
-  document.querySelectorAll('.svc').forEach(li=>{
-    li.addEventListener('mouseenter', ()=>{ prev.src = li.dataset.img; prev.classList.add('show'); });
-    li.addEventListener('mouseleave', ()=>prev.classList.remove('show'));
-    li.addEventListener('click', ()=>goTo('#contact'));
-  });
-})();
-
-/* ---------- МОДАЛКА КЕЙСА (с YouTube / VK плеером) ---------- */
-const modal = $('#caseModal'), caseBody = $('#caseBody');
-function lockScroll(on){ document.documentElement.style.overflow = on ? 'hidden' : ''; }
-function openCase(i){
-  const p = PROJECTS[i], idx = String(i+1).padStart(2,'0');
-  const strip = [IMG.backstage, PROJECTS[(i+1)%PROJECTS.length].img, PROJECTS[(i+2)%PROJECTS.length].img];
-
-  /* медиа: эмбед-плеер (если вставлена ссылка) → иначе постер-заглушка */
-  let media;
-  if(p.embed){
-    media = `<div class="case-frame">
-      <iframe src="${p.embed}" title="${p.title} — ${p.type}" loading="lazy"
-        allow="autoplay; fullscreen; encrypted-media; picture-in-picture; accelerometer; gyroscope"
-        allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
-    </div>`;
-  } else {
-    media = `<img src="${p.img}" alt="${p.title}">
-      <button class="work-play mono" id="casePlay" data-cursor="PLAY ▶">▶ [ДОБАВИТЬ ВИДЕО]</button>`;
-  }
-
-  caseBody.innerHTML = `
-    <div class="case-head">
-      <span class="mono"><b>${idx} / ${p.type}</b> • ${p.year}${p.embed ? ' • <span class="acc">▶ WATCH</span>' : ''}</span>
-      <button id="caseClose" data-cursor="CLOSE ×">ЗАКРЫТЬ ×</button>
-    </div>
-    <h3 class="case-title">${p.title}</h3>
-    <div class="case-media">${media}</div>
-    <div class="case-meta">
-      <div><h5>КЛИЕНТ</h5><p>${p.client}</p></div>
-      <div><h5>ТИП</h5><p>${p.type}</p></div>
-      <div><h5>ГОД</h5><p>${p.year}</p></div>
-      <div><h5>ФОРМАТ</h5><p>${p.format}</p></div>
-      <div><h5>ГОРОД</h5><p>МОСКВА — ОРЁЛ</p></div>
-    </div>
-    <div class="case-txt">
-      <div><h5>ЗАДАЧА</h5><p>${p.task}</p></div>
-      <div><h5>ИДЕЯ</h5><p>${p.idea}</p></div>
-      <div><h5>ПРОЦЕСС</h5><p>${p.process}</p></div>
-    </div>
-    <h5 class="mono" style="margin-bottom:16px;color:var(--acc)">BACKSTAGE / DRAG →</h5>
-    <div class="case-strip">${strip.map(s=>`<img src="${s}" alt="Backstage" loading="lazy">`).join('')}</div>
-    <div class="case-nav">
-      <button class="btn" id="casePrev" data-cursor="← НАЗАД">← ПРЕД.</button>
-      <a class="btn btn-acc" href="#contact" data-navlink id="caseCta" data-cursor="LET'S SHOOT →">ХОЧУ ТАКОЙ ЖЕ <span class="arr">→</span></a>
-      <button class="btn" id="caseNext" data-cursor="ДАЛЬШЕ →">СЛЕД. →</button>
-      <button id="caseClose2" data-cursor="CLOSE ×" style="flex:1 1 100%">ЗАКРЫТЬ ×</button>
-    </div>`;
-  modal.classList.add('open');
-  modal.scrollTop = 0;
-  lockScroll(true);
-  lenis && lenis.stop();
-  $('#caseClose').onclick = closeCase;
-  $('#caseClose2').onclick = closeCase;
-  $('#casePrev').onclick = ()=>openCase((i-1+PROJECTS.length)%PROJECTS.length);
-  $('#caseNext').onclick = ()=>openCase((i+1)%PROJECTS.length);
-  $('#caseCta').onclick = closeCase;
-  const pl = $('#casePlay');
-  if(pl) pl.onclick = ()=>{ pl.outerHTML = '<div class="case-note mono">[ ЗДЕСЬ БУДЕТ РОЛИК. ВСТАВЬТЕ ССЫЛКУ ИЗ YOUTUBE / VK В PROJECTS['+i+'].video ]</div>'; };
-}
-function closeCase(){
-  modal.classList.remove('open');
-  lockScroll(false);
-  lenis && lenis.start();
-  /* останавливаем плеер: очищаем iframe после закрытия */
-  setTimeout(()=>{ if(!modal.classList.contains('open')) caseBody.innerHTML = ''; }, 450);
-}
-modal.addEventListener('click', e=>{ if(e.target === modal) closeCase(); });
-$('#worksGrid').addEventListener('click', e=>{
-  const w = e.target.closest('.work');
-  if(w) openCase(+w.dataset.i);
-});
-addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeCase(); closeMenu(); } });
-</script>
-</body>
-</html>
