@@ -1,3 +1,10 @@
+<!-- ================================================================
+  ПРОПЕЛЛЕР / АДМИНКА — admin/index.html (исправленная версия)
+  • Понятные ошибки, если data/projects.json повреждён (не чистый JSON)
+  • Токен хранится только в вашем браузере (localStorage), в коде его нет
+  • Добавление / редактирование / удаление / порядок — коммитятся в
+    data/projects.json через GitHub API. Сайт подхватывает автоматически.
+================================================================= -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -34,7 +41,7 @@ input,select,textarea{font:inherit}
 .a-logo{font-family:var(--fd);font-weight:900;font-size:16px;letter-spacing:.04em;display:flex;gap:10px;align-items:center}
 .a-logo svg{width:22px;height:22px;fill:var(--acc);animation:spin 5s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.a-actions{display:flex;gap:10px;flex-wrap:wrap}
+.a-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:13px 22px;border:1px solid var(--line);font:600 11px/1 var(--fb);letter-spacing:.16em;text-transform:uppercase;color:var(--ink);transition:.3s;white-space:nowrap}
 .btn:hover{border-color:var(--ink)}
 .btn-acc{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
@@ -111,7 +118,7 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
 <body>
 <div class="wrapA">
   <header class="a-head">
-    <a class="a-logo" href="./index.html">
+    <a class="a-logo" href="../index.html">
       <svg viewBox="-50 -50 100 100" aria-hidden="true"><g><ellipse cx="0" cy="-25" rx="14" ry="23"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(120)"/><ellipse cx="0" cy="-25" rx="14" ry="23" transform="rotate(240)"/><circle r="8"/></g></svg>
       ПРОПЕЛЛЕР / АДМИН
     </a>
@@ -243,16 +250,31 @@ function b64(str){
   let bin = ''; bytes.forEach(b => bin += String.fromCharCode(b));
   return btoa(bin);
 }
+
+/* ---------- ЗАГРУЗКА ДАННЫХ (с понятной диагностикой) ---------- */
 async function fetchFile(){
+  let d;
   try{
-    const d = await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${FILE}?ref=${cfg.branch}`);
-    DATA = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
-    if(!Array.isArray(DATA.projects)) DATA = {projects:[]};
-    return d.sha;
+    d = await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${FILE}?ref=${cfg.branch}`);
   }catch(e){
+    /* файла ещё нет — начинаем с пустого списка */
     if(/404|Not Found|was not found/i.test(e.message)){ DATA = {projects:[]}; return null; }
     throw e;
   }
+  let text;
+  try{
+    text = decodeURIComponent(escape(atob(d.content.replace(/\n/g,''))));
+  }catch(e){
+    throw new Error('Файл '+FILE+' не читается (повреждена кодировка)');
+  }
+  try{
+    DATA = JSON.parse(text);
+  }catch(e){
+    const preview = text.slice(0,40).replace(/\s+/g,' ');
+    throw new Error('data/projects.json содержит НЕ-JSON («'+preview+'…»). Откройте файл в GitHub → карандаш (Edit) → удалите всё → вставьте чистый JSON без слова const, без комментариев и без лишнего текста.');
+  }
+  if(!Array.isArray(DATA.projects)) DATA = {projects:[]};
+  return d.sha;
 }
 async function publish(msg){
   let sha = null;
@@ -283,14 +305,15 @@ function toast(msg, isErr){
   t.classList.toggle('e', !!isErr);
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3800);
 }
 function askConfirm(text, cb){
   $('#cfText').textContent = text; cfCb = cb;
   $('#confirm').classList.add('open');
 }
-$('#cfYes').onclick = ()=>{ $('#confirm').classList.remove('open'); cfCb && cfCb(); cfCb = null; };
+$('#cfYes').onclick = ()=>{ $('#confirm').classList.remove('open'); cb0(); };
 $('#cfNo').onclick = ()=>{ $('#confirm').classList.remove('open'); cfCb = null; };
+function cb0(){ const f = cfCb; cfCb = null; f && f(); }
 
 /* ---------- LOGIN ---------- */
 $('#inRepo').value = cfg.owner + '/' + cfg.repo;
@@ -312,6 +335,7 @@ $('#btnLogin').onclick = async ()=>{
     localStorage.setItem('pp_cfg', JSON.stringify(cfg));
     $('#btnLogout').hidden = false;
     renderDash(); show('scrDash');
+    toast('ПОДКЛЮЧЕНО ✓');
   }catch(e){
     token = '';
     err.textContent = '// ОШИБКА: ' + e.message;
@@ -357,7 +381,7 @@ function renderList(){
   rows.innerHTML = list.map((p,i)=>`
     <div class="row" draggable="true" data-id="${esc(p.id)}">
       <div class="grip" title="Перетащить">⠿</div>
-      ${p.cover ? `<img class="thumb" src="${esc(p.cover)}" alt="" loading="lazy" onerror="this.outerHTML='<div class=&quot;noimg&quot;>НЕТ ФОТО</div>'">` : '<div class="noimg">НЕТ ФОТО</div>'}
+      ${p.cover ? `<img class="thumb" src="${esc(p.cover)}" alt="" loading="lazy">` : '<div class="noimg">НЕТ ФОТО</div>'}
       <div class="bd">
         <div class="t">${esc(p.title)}</div>
         <div class="m">${String(i+1).padStart(2,'0')} • ${CATEGORIES[p.category]} • ${esc((p.added||'').slice(0,10))}${p.video?' • ▶':''}${(p.images||[]).length?' • ФОТО '+(p.images||[]).length:''}</div>
@@ -369,9 +393,17 @@ function renderList(){
         <button class="mini del" data-op="del">УДАЛИТЬ</button>
       </div>
     </div>`).join('');
+  /* обработка битых обложек */
+  rows.querySelectorAll('img.thumb').forEach(im=>{
+    im.addEventListener('error', ()=>{
+      const d = document.createElement('div');
+      d.className = 'noimg'; d.textContent = 'НЕТ ФОТО';
+      im.replaceWith(d);
+    });
+  });
 }
 
-/* drag & drop (десктоп) + кнопки (мобайл) */
+/* drag & drop (десктоп) + кнопки ↑↓ (мобайл) */
 const rowsBox = $('#rows');
 rowsBox.addEventListener('dragstart', e=>{
   const r = e.target.closest('.row'); if(!r) return;
@@ -401,10 +433,10 @@ rowsBox.addEventListener('click', async e=>{
   const btn = e.target.closest('.mini'); if(!btn) return;
   const row = btn.closest('.row');
   const id = row.dataset.id;
-  const globalIdx = DATA.projects.findIndex(p=>String(p.id)===id);
   const op = btn.dataset.op;
   if(op==='edit'){ openEditor(id); return; }
   if(op==='del'){
+    const globalIdx = DATA.projects.findIndex(p=>String(p.id)===id);
     askConfirm('Удалить этот проект?', async ()=>{
       DATA.projects.splice(globalIdx,1);
       try{ await publish('portfolio: delete project'); renderList(); toast('ПРОЕКТ УДАЛЁН ✓'); }
@@ -444,10 +476,9 @@ function openEditor(id, defCat){
   $('#fFormat').value = p ? (p.format||'') : '';
   $('#saveStatus').textContent = '';
   $('#photos').innerHTML = '';
-  (p && p.images ? p.images : ['']).forEach(u=>addPhotoRow(u));
+  (p && (p.images||[]).length ? p.images : ['']).forEach(u=>addPhotoRow(u));
   $('#links').innerHTML = '';
-  (p && p.links ? p.links : []).forEach(u=>addLinkRow(u));
-  if(!p || !(p.links||[]).length){ /* пустой список ссылок — ок */ }
+  (p && (p.links||[]).length ? p.links : ['']).forEach(u=>addLinkRow(u));
   checkCover(); checkYT();
   show('scrEdit');
 }
@@ -459,27 +490,36 @@ $('#addLink').onclick = ()=>addLinkRow('');
 function addPhotoRow(url){
   const div = document.createElement('div');
   div.className = 'img-row';
-  div.innerHTML = `<input placeholder="https://…/photo.jpg" inputmode="url" value="${esc(url||'')}"><div class="pv"></div><button class="mini del" title="Удалить">✕</button>`;
-  const inp = div.querySelector('input'), pv = div.querySelector('.pv');
+  const inp = document.createElement('input');
+  inp.placeholder = 'https://…/photo.jpg'; inp.inputMode = 'url'; inp.value = url || '';
+  const pv = document.createElement('img');
+  pv.className = 'pv'; pv.alt = '';
+  const del = document.createElement('button');
+  del.className = 'mini del'; del.textContent = '✕'; del.title = 'Удалить';
+  div.append(inp, pv, del);
   function check(){
     const u = inp.value.trim();
-    pv.className = 'pv'; pv.innerHTML = ''; pv.style.backgroundImage = '';
-    if(!u) return;
-    const im = new Image();
-    im.onload = ()=>{ pv.style.backgroundImage = 'url("'+u.replace(/"/g,'')+'")'; pv.style.backgroundSize='cover'; pv.style.backgroundPosition='center'; };
-    im.onerror = ()=>{ pv.classList.add('bad'); pv.textContent = 'НЕ ЗАГРУЗИЛОСЬ'; };
-    im.src = u;
+    pv.className = 'pv'; pv.removeAttribute('src');
+    if(!u){ pv.style.display='none'; return; }
+    pv.style.display = '';
+    pv.onload = ()=>pv.classList.remove('bad');
+    pv.onerror = ()=>{ pv.classList.add('bad'); pv.alt = 'НЕ ЗАГРУЗИЛОСЬ'; };
+    pv.src = u;
   }
   inp.addEventListener('input', check);
-  div.querySelector('button').onclick = ()=>div.remove();
+  del.onclick = ()=>div.remove();
   $('#photos').appendChild(div);
   check();
 }
 function addLinkRow(url){
   const div = document.createElement('div');
   div.className = 'link-row';
-  div.innerHTML = `<input placeholder="https://…" inputmode="url" value="${esc(url||'')}"><button class="mini del" title="Удалить">✕</button>`;
-  div.querySelector('button').onclick = ()=>div.remove();
+  const inp = document.createElement('input');
+  inp.placeholder = 'https://…'; inp.inputMode = 'url'; inp.value = url || '';
+  const del = document.createElement('button');
+  del.className = 'mini del'; del.textContent = '✕'; del.title = 'Удалить';
+  del.onclick = ()=>div.remove();
+  div.append(inp, del);
   $('#links').appendChild(div);
 }
 
@@ -490,8 +530,19 @@ function checkCover(){
   st.textContent = ''; box.hidden = true; box.classList.remove('bad'); box.innerHTML = '';
   if(!u) return;
   const im = new Image();
-  im.onload = ()=>{ box.hidden = false; box.innerHTML = `<img src="${esc(u)}" alt="Превью обложки">`; st.innerHTML = '<span class="ok">✓ ИЗОБРАЖЕНИЕ ЗАГРУЗИЛОСЬ</span>'; };
-  im.onerror = ()=>{ box.hidden = false; box.classList.add('bad'); box.textContent = '[ ОШИБКА: ИЗОБРАЖЕНИЕ ПО ЭТОЙ ССЫЛКЕ НЕ ЗАГРУЗИЛОСЬ ]'; st.innerHTML = '<span class="err">// ПРОВЕРЬТЕ URL</span>'; };
+  im.onload = ()=>{
+    box.hidden = false;
+    box.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = u; img.alt = 'Превью обложки';
+    box.appendChild(img);
+    st.innerHTML = '<span class="ok">✓ ИЗОБРАЖЕНИЕ ЗАГРУЗИЛОСЬ</span>';
+  };
+  im.onerror = ()=>{
+    box.hidden = false; box.classList.add('bad');
+    box.textContent = '[ ОШИБКА: ИЗОБРАЖЕНИЕ ПО ЭТОЙ ССЫЛКЕ НЕ ЗАГРУЗИЛОСЬ ]';
+    st.innerHTML = '<span class="err">// ПРОВЕРЬТЕ URL</span>';
+  };
   im.src = u;
 }
 $('#fCover').addEventListener('input', checkCover);
@@ -506,7 +557,13 @@ function checkYT(){
   if(!id){ st.innerHTML = '<span class="err">// НЕКОРРЕКТНАЯ ССЫЛКА YOUTUBE. ПРИМЕР: https://youtu.be/XXXXXXXXXXX</span>'; return; }
   st.innerHTML = '<span class="ok">✓ ВИДЕО НАЙДЕНО: '+id+'</span>';
   pv.hidden = false;
-  pv.innerHTML = `<img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" alt="Превью видео" onerror="this.style.display='none'"><span class="mono">YOUTUBE / ${id}</span>`;
+  const img = document.createElement('img');
+  img.src = 'https://img.youtube.com/vi/'+id+'/mqdefault.jpg';
+  img.alt = 'Превью видео';
+  img.onerror = ()=>img.style.display = 'none';
+  const span = document.createElement('span');
+  span.className = 'mono'; span.textContent = 'YOUTUBE / '+id;
+  pv.append(img, span);
 }
 $('#fVideo').addEventListener('input', checkYT);
 
@@ -563,7 +620,12 @@ $('#btnSave').onclick = async ()=>{
       $('#btnLogout').hidden = false;
       renderDash(); show('scrDash');
       return;
-    }catch(e){ token=''; localStorage.removeItem('pp_token'); }
+    }catch(e){
+      token = ''; localStorage.removeItem('pp_token');
+      show('scrLogin');
+      $('#loginErr').textContent = '// ОШИБКА ДАННЫХ: ' + e.message;
+      return;
+    }
   }
   show('scrLogin');
 })();
