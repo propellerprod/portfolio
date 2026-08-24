@@ -1,0 +1,423 @@
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FINE = matchMedia('(pointer: fine)').matches;
+const TOUCH = matchMedia('(hover: none), (pointer: coarse)').matches;
+const WIDE = matchMedia('(min-width: 861px)').matches;
+const DESKTOP = FINE && !TOUCH && WIDE && !RM;
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const CONFIG = { contacts: { telegram:'', whatsapp:'', vk:'', instagram:'', phone:'', email:'' } };
+
+const COLLABS = [
+  {name:'RAREMOD', img:''},{name:'LILDRUGHILL', img:''},{name:'LIL KRYSTALLL', img:''},
+  {name:'SLAVA MARLOW', img:''},{name:'Olegha77', img:''},{name:'TATWOLE', img:''},
+  {name:'СК «КРЕПОСТЬ»', img:''},{name:'RUTEX', img:''},{name:'ROD DANCE', img:''},{name:'MARK KUKLIN', img:''}
+];
+
+const PRICES = [
+  {name:'ПОЧАСОВАЯ', val:'5 000 ₽/ЧАС', forOne:'почасовая съёмка — платите только за время', inc:['2 оператора','набор оборудования','выезд на локацию','подготовка к съёмке','съёмка на локации','передача материала через облачное хранилище','хранение материала в течение месяца'], hot:false},
+  {name:'SMENA', val:'ОТ 20 000 ₽', forOne:'для съёмок на целый день / большого объёма контента', inc:['2 оператора','1 съёмочный день','идеи и сценарии','подготовка к съёмке','передача материала через облачное хранилище','хранение материала в течение месяца'], hot:false},
+  {name:'PRODUCTION', val:'ОТ 35 000 ₽', forOne:'полноценный рекламный / коммерческий проект', inc:['концепция и сценарий','полный цикл производства','2 оператора на площадке','монтаж, цвет, звук','версии под все площадки'], hot:true},
+  {name:'MONTAЖ', val:'ОТ 1 500 ₽', forOne:'монтаж видео из вашего или нашего материала', inc:['монтаж видео','цветокоррекция','обработка звука','графика','ретушь','любой формат видео'], hot:false},
+  {name:'CUSTOM', val:'ПО ЗАПРОСУ', forOne:'если проект нестандартный', inc:['клип / мероприятие / YouTube','любой формат и хронометраж','смета от 24 часов'], hot:false}
+];
+
+const IMG = {
+  hero:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1031a4ec7-9393-4930-b2aa-461d6c837e59.png',
+  car:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1ce9569b0-88ba-4849-8d27-aafe6a3b2723.png',
+  music:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/10b2ec472-fb7d-40b6-8faf-7e8746d1079d.png',
+  fashion:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1207e6f50-8178-4023-a4da-555b4af7a6c4.png',
+  interview:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/12c296023-039e-4002-9c9c-fdba6b324853.png',
+  concert:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1d6cf2a57-22dc-49d3-934a-ebc1a07c1fce.png',
+  reels:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/14fe1f442-caaf-41f0-b920-7479cea0f12d.png',
+  backstage:'https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/18994c49e-541f-426e-8f0f-254b2eeb5e8e.png'
+};
+
+/* ---------- ПОРТФОЛИО: ДАННЫЕ ---------- */
+const CATEGORIES = { concerts:'КОНЦЕРТЫ', commercials:'РЕКЛАМА', clips:'КЛИПЫ', reels:'REELS', other:'ДРУГОЕ' };
+const RAW_URL = 'https://raw.githubusercontent.com/propellerprod/portfolio/main/data/projects.json';
+
+/* fallback, если JSON недоступен */
+const DEFAULT_PROJECTS = [
+  {id:'d1', title:'NIGHT DRIVE', category:'commercials', cover:IMG.car, video:'', images:[], links:[], format:'РЕКЛАМА • 45 SEC', client:'[БРЕНД]', task:'Показать продукт за 30–45 секунд так, чтобы зритель не свайпнул.', idea:'Ночной город, мокрый асфальт, световые линии. Продукт — как главный герой фильма.', process:'Концепция → локация → съёмка вдвоём (2 камеры) → монтаж и цвет в плёночном грейде.', added:'2026-01-05'},
+  {id:'d2', title:'STATIC', category:'clips', cover:IMG.music, video:'', images:[], links:[], format:'КЛИП • 3 MIN', client:'[АРТИСТ]', task:'Клип с характером при ограниченном бюджете.', idea:'Одна локация, дым, лазеры и силуэт. Свет работает вместо декораций.', process:'Раскадровка → съёмочная ночь → монтаж в ритм трека.', added:'2025-11-20'},
+  {id:'d3', title:'BETON', category:'other', cover:IMG.fashion, video:'', images:[], links:[], format:'LOOKBOOK • 90 SEC', client:'[БРЕНД]', task:'Имиджевое видео коллекции для соцсетей и показов.', idea:'Бетон, жёсткий свет, длинные тени.', process:'Мудборд → студия → съёмка + бэкстейдж.', added:'2025-10-02'},
+  {id:'d4', title:'ПОДКАСТЫ', category:'other', cover:IMG.interview, video:'', images:[], links:[], format:'ПОДКАСТ • 12 MIN', client:'[КЛИЕНТ]', task:'Разговорное видео, которое досматривают.', idea:'Тёмная студия, один источник света, крупные планы и паузы.', process:'Сценарий вопросов → студийный свет → 2 камеры.', added:'2025-08-14'},
+  {id:'d5', title:'LIVE', category:'concerts', cover:IMG.concert, video:'', images:[], links:[], format:'АФТЕРМУВИ • 2 MIN', client:'[ПЛОЩАДКА]', task:'Передать энергию события тем, кого там не было.', idea:'Снимать не сцену, а то, что между: руки, дым, свет, крик.', process:'Двое на площадке → основная камера + детали → афтермуви за 72 часа.', added:'2024-12-11'},
+  {id:'d6', title:'REELS', category:'reels', cover:IMG.reels, video:'', images:[], links:[], format:'REELS • СЕРИЯ', client:'[БЛОГЕР]', task:'Постоянный контент без выгорания автора.', idea:'Формат-конструктор: рубрики, свет, монтаж.', process:'Упаковка формата → съёмочный день на 8 роликов.', added:'2024-09-30'}
+];
+
+let ALL_PROJECTS = [], curList = [], curFilter = 'all', curIdx = 0;
+
+async function loadPortfolio(){
+  try{ const r = await fetch(RAW_URL,{cache:'no-store'}); if(r.ok){ const d = await r.json(); if(d && Array.isArray(d.projects)) return d.projects; } }catch(e){}
+  try{ const r = await fetch('data/projects.json',{cache:'no-store'}); if(r.ok){ const d = await r.json(); if(d && Array.isArray(d.projects)) return d.projects; } }catch(e){}
+  return DEFAULT_PROJECTS;
+}
+
+function toEmbed(url){
+  if(!url) return '';
+  url = String(url).trim();
+  if(/youtube\.com\/embed\//i.test(url) || /video_ext\.php/i.test(url)) return url;
+  let m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+  if(m) return 'https://www.youtube.com/embed/'+m[1]+'?rel=0';
+  m = url.match(/(?:vk\.com|vkvideo\.ru)\/(?:video|clip)(-?\d+)_(\d+)/i);
+  if(m) return 'https://vk.com/video_ext.php?oid='+m[1]+'&id='+m[2]+'&hd=2';
+  m = url.match(/[?&]z=(?:video|clip)(-?\d+)_(\d+)/i);
+  if(m) return 'https://vk.com/video_ext.php?oid='+m[1]+'&id='+m[2]+'&hd=2';
+  return '';
+}
+
+/* ---------- ФИЛЬТР КАТЕГОРИЙ ---------- */
+function renderCatBar(){
+  const bar = $('#catBar');
+  const keys = ['all', ...Object.keys(CATEGORIES)];
+  bar.innerHTML = keys.map(k=>`<button class="cat-btn ${k===curFilter?'on':''}" data-cat="${k}">${k==='all'?'ВСЕ':CATEGORIES[k]}</button>`).join('');
+}
+$('#catBar').addEventListener('click', e=>{
+  const b = e.target.closest('.cat-btn'); if(!b) return;
+  curFilter = b.dataset.cat;
+  renderCatBar(); renderWorks();
+});
+
+/* ---------- РЕНДЕР КАРТОЧЕК (асимметричный паттерн сохраняется) ---------- */
+const PATTERN = ['w-full','w-tall','w-side','w-editorial','w-wide','w-offset'];
+function renderWorks(){
+  curList = curFilter==='all' ? ALL_PROJECTS.slice() : ALL_PROJECTS.filter(p=>p.category===curFilter);
+  const n = curList.length;
+  $('#worksCount').textContent = String(n).padStart(2,'0') + ' ПРОЕКТОВ';
+  const grid = $('#worksGrid');
+  if(!n){ grid.innerHTML = '<div class="w-empty mono">[ В ЭТОЙ КАТЕГОРИИ ПОКА ПУСТО ]</div>'; return; }
+  grid.innerHTML = curList.map((p,i)=>{
+    const idx = String(i+1).padStart(2,'0');
+    const cls = PATTERN[i % PATTERN.length];
+    const cat = CATEGORIES[p.category] || 'ДРУГОЕ';
+    const year = (p.added||'').slice(0,4) || '';
+    const watch = toEmbed(p.video) ? '<span class="w-has">▶ WATCH</span>' : '';
+    const cover = p.cover || IMG.backstage;
+    if(cls==='w-editorial') return `
+    <article class="work w-editorial" data-i="${i}">
+      <div class="we-left">
+        <div class="work-top mono"><span>${idx} / ${esc(cat)}</span><span>${esc(year)}</span>${watch}</div>
+        <h3 class="we-title outl">${esc(p.title)}</h3>
+        <div class="mono">${esc(p.client||'ПРОПЕЛЛЕР')} • ${esc(p.format||cat)}</div>
+        <button class="btn work-open" data-cursor="OPEN PROJECT →">${toEmbed(p.video)?'СМОТРЕТЬ ▶':'ОТКРЫТЬ →'}</button>
+      </div>
+      <div class="work-media" data-cursor="OPEN PROJECT →">
+        <img src="${esc(cover)}" alt="${esc(p.title)}" loading="lazy">
+        <div class="work-veil"></div><div class="work-play mono">▶ PLAY</div>
+      </div>
+    </article>`;
+    return `
+    <article class="work ${cls}" data-i="${i}">
+      <div class="work-media" data-cursor="OPEN PROJECT →">
+        <img src="${esc(cover)}" alt="${esc(p.title)}" loading="lazy">
+        <div class="work-veil"></div><div class="work-play mono">▶ PLAY</div>
+        <div class="work-top mono"><span>${idx} / ${esc(cat)}</span><span>${esc(year)}</span>${watch}</div>
+        <div class="work-bottom"><h3>${esc(p.title)}</h3><span class="mono">${esc(p.client||'ПРОПЕЛЛЕР')} • ${esc(p.format||cat)}</span></div>
+      </div>
+    </article>`;
+  }).join('');
+  initWorkAnims();
+}
+function initWorkAnims(){
+  if(!(hasST && !RM)) return;
+  gsap.utils.toArray('.work').forEach(w=>{
+    const m = w.querySelector('.work-media');
+    if(!m || m.dataset.anim) return; m.dataset.anim = 1;
+    gsap.fromTo(m,{clipPath:'inset(10% 5% 10% 5%)'},{clipPath:'inset(0% 0% 0% 0%)',duration:1.1,ease:'power4.out',
+      scrollTrigger:{trigger:w,start:'top 84%',once:true}});
+  });
+  ScrollTrigger.refresh();
+}
+
+/* ---------- СТРАНИЦА ПРОЕКТА (модалка) ---------- */
+const modal = $('#caseModal'), caseBody = $('#caseBody');
+function lockScroll(on){ document.documentElement.style.overflow = on ? 'hidden' : ''; }
+function openCase(i){
+  curIdx = i;
+  const p = curList[i]; if(!p) return;
+  const embed = toEmbed(p.video);
+  const cat = CATEGORIES[p.category] || 'ДРУГОЕ';
+  const year = (p.added||'').slice(0,4) || '—';
+  const media = embed
+    ? `<div class="case-frame"><iframe src="${embed}" title="${esc(p.title)}" loading="lazy" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`
+    : `<img src="${esc(p.cover||IMG.backstage)}" alt="${esc(p.title)}">`;
+  const photos = (p.images||[]).filter(Boolean);
+  const links = (p.links||[]).filter(Boolean);
+  const txt = (p.task||p.idea||p.process) ? `
+    <div class="case-txt">
+      ${p.task?`<div><h5>ЗАДАЧА</h5><p>${esc(p.task)}</p></div>`:''}
+      ${p.idea?`<div><h5>ИДЕЯ</h5><p>${esc(p.idea)}</p></div>`:''}
+      ${p.process?`<div><h5>ПРОЦЕСС</h5><p>${esc(p.process)}</p></div>`:''}
+    </div>` : '';
+  caseBody.innerHTML = `
+    <div class="case-head">
+      <span class="mono"><b>${String(i+1).padStart(2,'0')} / ${esc(cat)}</b> • ${esc(year)}${embed?' • <span class="acc">▶ WATCH</span>':''}</span>
+      <button class="case-close" id="caseClose">ЗАКРЫТЬ ×</button>
+    </div>
+    <h3 class="case-title">${esc(p.title)}</h3>
+    <div class="case-media">${media}</div>
+    <div class="case-meta">
+      <div><h5>КАТЕГОРИЯ</h5><p>${esc(cat)}</p></div>
+      <div><h5>КЛИЕНТ</h5><p>${esc(p.client||'ПРОПЕЛЛЕР')}</p></div>
+      <div><h5>ФОРМАТ</h5><p>${esc(p.format||cat)}</p></div>
+      <div><h5>ГОРОД</h5><p>МОСКВА — ОРЁЛ</p></div>
+    </div>
+    ${txt}
+    ${photos.length?`<h5 class="case-h">ФОТО / ${photos.length} — НАЖМИ, ЧТОБЫ УВЕЛИЧИТЬ</h5>
+    <div class="case-photos">${photos.map(u=>`<img src="${esc(u)}" alt="Фото — ${esc(p.title)}" loading="lazy">`).join('')}</div>`:''}
+    ${links.length?`<h5 class="case-h">МАТЕРИАЛЫ</h5>
+    <div class="case-links">${links.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}<span aria-hidden="true">↗</span></a>`).join('')}</div>`:''}
+    <div class="case-nav">
+      <button class="btn" id="casePrev">← ПРЕД.</button>
+      <a class="btn btn-acc" href="#contact" data-navlink id="caseCta">ХОЧУ ТАКОЙ ЖЕ <span class="arr">→</span></a>
+      <button class="btn" id="caseNext">СЛЕД. →</button>
+      <button class="case-close" id="caseClose2" style="flex:1 1 100%">ЗАКРЫТЬ ×</button>
+    </div>`;
+  modal.classList.add('open'); modal.scrollTop = 0;
+  lockScroll(true); lenis && lenis.stop();
+  $('#caseClose').onclick = closeCase;
+  $('#caseClose2').onclick = closeCase;
+  $('#casePrev').onclick = ()=>openCase((i-1+curList.length)%curList.length);
+  $('#caseNext').onclick = ()=>openCase((i+1)%curList.length);
+  $('#caseCta').onclick = closeCase;
+}
+function closeCase(){
+  modal.classList.remove('open');
+  lockScroll(false); lenis && lenis.start();
+  setTimeout(()=>{ if(!modal.classList.contains('open')) caseBody.innerHTML=''; }, 450);
+}
+modal.addEventListener('click', e=>{ if(e.target===modal) closeCase(); });
+$('#worksGrid').addEventListener('click', e=>{
+  const w = e.target.closest('.work'); if(w) openCase(+w.dataset.i);
+});
+addEventListener('keydown', e=>{ if(e.key==='Escape'){ closePhoto(); closeCase(); closeMenu(); } });
+
+/* ---------- ЛАЙТБОКС ФОТО ---------- */
+const photoView = $('#photoView'), photoImg = photoView.querySelector('img');
+caseBody.addEventListener('click', e=>{
+  const im = e.target.closest('.case-photos img'); if(!im) return;
+  photoImg.src = im.src; photoView.classList.add('open');
+});
+function closePhoto(){ photoView.classList.remove('open'); photoImg.src=''; }
+photoView.addEventListener('click', closePhoto);
+
+/* ---------- СТАТИКА (как было) ---------- */
+document.querySelectorAll('[data-contact]').forEach(a=>{
+  const v = CONFIG.contacts[a.dataset.contact];
+  if(v){ a.setAttribute('href', v); a.removeAttribute('data-ph'); }
+});
+document.querySelectorAll('a[data-ph]').forEach(a=>{
+  a.addEventListener('click', e=>{ const h=a.getAttribute('href'); if(!h||h==='#') e.preventDefault(); });
+});
+$('#collabGrid').innerHTML = COLLABS.map(c=>`
+  <div class="collab" data-reveal>
+    <div class="collab-ph">${c.img?`<img src="${c.img}" alt="${c.name}" loading="lazy">`:'<span class="mono">[ФОТО]</span>'}</div>
+    <div class="collab-name">${c.name}</div>
+  </div>`).join('');
+const SERVICES = [
+  {n:'01', name:'РЕКЛАМА', tags:'РОЛИКИ / ПРОМО / ИМИДЖ', img:IMG.car},
+  {n:'02', name:'REELS', tags:'SHORTS / TIKTOK / ВЕРТИКАЛЬ', img:IMG.reels},
+  {n:'03', name:'YOUTUBE', tags:'ИНТЕРВЬЮ / ПОДКАСТЫ / LONG', img:IMG.interview},
+  {n:'04', name:'КЛИПЫ', tags:'МУЗЫКА / PERFOMANCE / VISUAL', img:IMG.music},
+  {n:'05', name:'КОНЦЕРТЫ', tags:'МЕРОПРИЯТИЯ / АФТЕРМУВИ / BACKSTAGE', img:IMG.concert},
+  {n:'06', name:'КОНТЕНТ', tags:'ДЛЯ БИЗНЕСА / SMM / СЕРИИ', img:IMG.fashion},
+  {n:'07', name:'МОНТАЖ', tags:'МОНТАЖ / ЦВЕТ / ЗВУК', img:IMG.backstage},
+  {n:'08', name:'ИДЕИ', tags:'КОНЦЕПТ / СЦЕНАРИЙ / РЕЖИССУРА', img:IMG.hero}
+];
+$('#svcList').innerHTML = SERVICES.map(s=>`
+  <li class="svc" data-img="${s.img}" data-cursor="LET'S SHOOT →">
+    <span class="svc-num">${s.n}</span><span class="svc-name">${s.name}</span><span class="svc-tags">${s.tags}</span>
+  </li>`).join('');
+$('#priceGrid').innerHTML = PRICES.map(p=>`
+  <div class="price ${p.hot?'hot':''}" data-reveal>
+    ${p.hot?'<span class="p-tag">ЧАЩЕ ВСЕГО</span>':''}
+    <h3>${p.name}</h3><p class="p-for">${p.forOne}</p><div class="p-val">${p.val}</div>
+    <div class="mono">ЧТО ВХОДИТ</div>
+    <ul>${p.inc.map(x=>`<li>${x}</li>`).join('')}</ul>
+    <a class="btn ${p.hot?'btn-acc':''}" href="#contact" data-navlink>ОБСУДИТЬ <span class="arr">→</span></a>
+  </div>`).join('');
+$('#year').textContent = new Date().getFullYear();
+
+/* ---------- ЗАГРУЗКА ПОРТФОЛИО ---------- */
+loadPortfolio().then(list=>{ ALL_PROJECTS = list; renderCatBar(); renderWorks(); });
+
+/* ---------- LOADER ---------- */
+let _minT=false,_ready=false;
+function hideLoader(){
+  const l=$('#loader'); if(!l||l.dataset.done) return; l.dataset.done=1;
+  document.body.classList.remove('loading');
+  if(window.gsap && !RM){
+    const tl=gsap.timeline({onComplete:heroIntro});
+    tl.to('#loaderBar i',{scaleX:1,duration:.45,ease:'power2.inOut'},0)
+      .fromTo('#loader .l-word',{yPercent:60,autoAlpha:0},{yPercent:0,autoAlpha:1,duration:.35},0)
+      .to('#loader',{clipPath:'inset(0 0 100% 0)',duration:.55,ease:'power4.inOut',delay:.15})
+      .set('#loader',{display:'none'});
+    const c={v:0}; gsap.to(c,{v:100,duration:.6,ease:'none',onUpdate:()=>{$('#loaderCount').textContent=String(Math.round(c.v)).padStart(3,'0');}});
+  } else { l.style.display='none'; heroIntro(); }
+}
+function tryHide(){ if(_minT&&_ready) hideLoader(); }
+setTimeout(()=>{_minT=true;tryHide();}, RM?0:600);
+addEventListener('load',()=>{_ready=true;tryHide();});
+setTimeout(hideLoader,1600);
+if(document.readyState==='complete') _ready=true;
+
+/* ---------- LENIS ---------- */
+let lenis=null;
+const hasGSAP=!!window.gsap;
+const hasST=!!(window.gsap&&window.ScrollTrigger);
+if(hasST){ gsap.registerPlugin(ScrollTrigger); ScrollTrigger.config({ignoreMobileChanges:true}); }
+if(window.Lenis && DESKTOP){
+  try{
+    lenis=new Lenis({lerp:.14,wheelMultiplier:1,smoothWheel:true,syncTouch:false});
+    document.documentElement.classList.add('lenis','lenis-smooth');
+    (function lenisLoop(time){ lenis.raf(time); requestAnimationFrame(lenisLoop); })(performance.now());
+    if(hasST) lenis.on('scroll', ScrollTrigger.update);
+  }catch(e){ lenis=null; }
+}
+function goTo(hash){
+  const el=document.querySelector(hash); if(!el) return;
+  if(lenis) lenis.scrollTo(el,{offset:-64,duration:1});
+  else el.scrollIntoView({behavior:RM?'auto':'smooth'});
+}
+document.addEventListener('click', e=>{
+  const a=e.target.closest('[data-navlink]'); if(!a) return;
+  const hash=a.getAttribute('href');
+  if(hash&&hash.startsWith('#')){ e.preventDefault(); closeMenu(); goTo(hash); }
+});
+
+function heroIntro(){
+  document.body.classList.add('loaded');
+  if(!hasGSAP||RM) return;
+  gsap.from('.hero-title .ch',{yPercent:120,duration:1,ease:'power4.out',stagger:.05});
+  gsap.from('.hero-phrase',{clipPath:'inset(0 0 100% 0)',duration:.9,ease:'power3.out',delay:.45});
+  gsap.from('.hero-meta, .hero-cta',{y:24,autoAlpha:0,duration:.8,stagger:.12,delay:.7,ease:'power3.out'});
+}
+if(hasST && !RM){
+  gsap.utils.toArray('[data-reveal]').forEach(el=>{
+    gsap.fromTo(el,{y:44,autoAlpha:0},{y:0,autoAlpha:1,duration:.9,ease:'power3.out',
+      scrollTrigger:{trigger:el,start:'top 88%',once:true}});
+  });
+  gsap.utils.toArray('[data-clip]').forEach(el=>{
+    gsap.fromTo(el,{clipPath:'inset(0 0 100% 0)',y:26},{clipPath:'inset(0 0 -10% 0)',y:0,duration:1,ease:'power4.out',
+      scrollTrigger:{trigger:el,start:'top 86%',once:true}});
+  });
+  if(DESKTOP){
+    gsap.utils.toArray('[data-parallax]').forEach(img=>{
+      gsap.fromTo(img,{yPercent:-6},{yPercent:6,ease:'none',
+        scrollTrigger:{trigger:img.parentElement,start:'top bottom',end:'bottom top',scrub:1}});
+    });
+  }
+}
+if(hasST) addEventListener('load', ()=>ScrollTrigger.refresh());
+
+const nav=$('#nav'), prog=$('#progress'), fixedCta=$('#fixedCta');
+let contactVisible=false, sTick=false;
+new IntersectionObserver(en=>{contactVisible=en[0].isIntersecting;},{threshold:.1}).observe($('#contact'));
+addEventListener('scroll',()=>{
+  if(sTick) return; sTick=true;
+  requestAnimationFrame(()=>{
+    const y=scrollY;
+    nav.classList.toggle('scrolled',y>40);
+    const h=document.documentElement.scrollHeight-innerHeight;
+    prog.style.transform='scaleX('+(h>0?y/h:0)+')';
+    fixedCta.classList.toggle('show', y>innerHeight*.8 && !contactVisible);
+    sTick=false;
+  });
+},{passive:true});
+
+const burger=$('#burger');
+function closeMenu(){ document.body.classList.remove('menu-open'); lenis&&lenis.start(); }
+burger.addEventListener('click',()=>{
+  const open=document.body.classList.toggle('menu-open');
+  open?(lenis&&lenis.stop()):(lenis&&lenis.start());
+});
+
+let lastTC=0; const t0=performance.now();
+(function tick(t){
+  requestAnimationFrame(tick);
+  if(t-lastTC<42) return; lastTC=t;
+  const el=(performance.now()-t0)/1000;
+  const f=Math.floor(el*24)%24,s=Math.floor(el)%60,m=Math.floor(el/60)%60,h=Math.floor(el/3600)%24;
+  const p=n=>String(n).padStart(2,'0');
+  const tc=$('#tc'); if(tc) tc.textContent=p(h)+':'+p(m)+':'+p(s)+':'+p(f);
+  const fr=$('#frame'); if(fr) fr.textContent=String(Math.floor(el*24)).padStart(6,'0');
+})();
+function msk(){ const el=$('#mskTime'); if(el) el.textContent='MSK '+new Date().toLocaleTimeString('ru-RU',{timeZone:'Europe/Moscow',hour:'2-digit',minute:'2-digit'}); }
+msk(); setInterval(msk,10000);
+
+(function grain(){
+  if(!DESKTOP) return;
+  const cv=$('#grain'),ctx=cv.getContext('2d');
+  const size=()=>{cv.width=Math.max(2,innerWidth*.5);cv.height=Math.max(2,innerHeight*.5);};
+  size(); addEventListener('resize',size);
+  const tiles=[];
+  for(let n=0;n<4;n++){
+    const t=document.createElement('canvas'); t.width=t.height=160;
+    const tc2=t.getContext('2d');
+    const d=tc2.createImageData(160,160);
+    for(let i=0;i<d.data.length;i+=4){const v=Math.random()*255|0;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=24;}
+    tc2.putImageData(d,0,0); tiles.push(t);
+  }
+  let last=0;
+  (function loop(t){
+    requestAnimationFrame(loop);
+    if(document.hidden||t-last<130) return; last=t;
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.fillStyle=ctx.createPattern(tiles[Math.random()*4|0],'repeat');
+    ctx.save(); ctx.translate(-Math.random()*160,-Math.random()*160);
+    ctx.fillRect(0,0,cv.width+160,cv.height+160); ctx.restore();
+  })(0);
+})();
+
+(function cursor(){
+  if(!DESKTOP) return;
+  document.documentElement.classList.add('has-cursor');
+  const c=$('#cursor'),dot=c.querySelector('.c-dot'),lab=c.querySelector('.c-label');
+  let x=innerWidth/2,y=innerHeight/2,tx=x,ty=y;
+  addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY;},{passive:true});
+  (function loop(){
+    requestAnimationFrame(loop);
+    if(document.hidden) return;
+    x+=(tx-x)*.2; y+=(ty-y)*.2;
+    dot.style.transform='translate3d('+x+'px,'+y+'px,0) translate(-50%,-50%)';
+    lab.style.transform='translate3d('+Math.min(x+24,innerWidth-120)+'px,'+Math.min(y+24,innerHeight-40)+'px,0)';
+  })();
+  document.addEventListener('mouseover',e=>{
+    const t=e.target.closest('[data-cursor]');
+    if(t){lab.textContent=t.dataset.cursor;c.classList.add('on');}else c.classList.remove('on');
+    c.classList.toggle('link',!!e.target.closest('a,button')&&!t);
+  });
+})();
+document.addEventListener('mouseover',e=>{
+  const w=e.target.closest('.work');
+  if(w&&!w.contains(e.relatedTarget)) w.classList.add('playing');
+});
+document.addEventListener('mouseout',e=>{
+  const w=e.target.closest('.work');
+  if(w&&!w.contains(e.relatedTarget)) w.classList.remove('playing');
+});
+(function svcPrev(){
+  if(!DESKTOP) return;
+  const prev=$('#svcPrev');
+  let x=0,y=0,tx=0,ty=0;
+  addEventListener('mousemove',e=>{
+    tx=Math.min(e.clientX+30,innerWidth-320);
+    ty=Math.min(Math.max(e.clientY-100,10),innerHeight-220);
+  },{passive:true});
+  (function loop(){
+    requestAnimationFrame(loop);
+    if(document.hidden) return;
+    x+=(tx-x)*.12; y+=(ty-y)*.12;
+    prev.style.transform='translate3d('+x+'px,'+y+'px,0) '+(prev.classList.contains('show')?'scale(1) rotate(-2deg)':'scale(.8) rotate(-4deg)');
+  })();
+  document.querySelectorAll('.svc').forEach(li=>{
+    li.addEventListener('mouseenter',()=>{prev.src=li.dataset.img;prev.classList.add('show');});
+    li.addEventListener('mouseleave',()=>prev.classList.remove('show'));
+    li.addEventListener('click',()=>goTo('#contact'));
+  });
+})();
+</script>
+</body>
+</html>
