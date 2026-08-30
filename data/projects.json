@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-24T11:08:28.527Z",
+  "updated": "2026-08-30T07:19:16.522Z",
   "projects": [
     {
       "id": "d1",
@@ -63,14 +63,14 @@
     },
     {
       "id": "d5",
-      "title": "Маркарян",
+      "title": "LIL CRYSTALLL",
       "category": "concerts",
-      "cover": "https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1d6cf2a57-22dc-49d3-934a-ebc1a07c1fce.png",
-      "video": "",
+      "cover": "https://i.yapx.ru/eJ1ET.png",
+      "video": "https://www.youtube.com/watch?v=8eG4FC0MrxI&t=20s",
       "images": [],
       "links": [],
-      "format": "АФТЕРМУВИ • 2 MIN",
-      "client": "[ПЛОЩАДКА]",
+      "format": "КОНЦЕРТ",
+      "client": "RUTEX",
       "task": "Передать энергию события тем, кого там не было.",
       "idea": "Снимать не сцену, а то, что между: руки, дым, свет, крик.",
       "process": "Двое на площадке → основная камера + детали → афтермуви за 72 часа.",
