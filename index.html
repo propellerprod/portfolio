@@ -586,7 +586,7 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 <section class="sec" id="works">
   <div class="wrap">
     <div class="sec-head"><span class="mono">03 / РАБОТЫ</span><span class="mono" id="worksCount">… ПРОЕКТОВ</span></div>
-    <h2 class="h-mega h-sec" data-clip>ПРОДАКШН<span class="acc">.</span></h2>
+    <h2 class="h-mega h-sec" data-clip>РАБОТЫ<span class="acc">.</span></h2>
     <div class="cat-bar" id="catBar" data-reveal></div>
     <div class="works-grid" id="worksGrid" style="margin-top:8vh">
       <div class="w-empty mono">[ ЗАГРУЗКА ПРОЕКТОВ… ]</div>
@@ -798,12 +798,12 @@ const RAW_URL = 'https://raw.githubusercontent.com/propellerprod/portfolio/main/
 
 /* fallback, если JSON недоступен */
 const DEFAULT_PROJECTS = [
-  {id:'d1', title:'NIGHT DRIVE', category:'commercials', cover:IMG.car, video:'', images:[], links:[], format:'РЕКЛАМА • 45 SEC', client:'[БРЕНД]', task:'Показать продукт за 30–45 секунд так, чтобы зритель не свайпнул.', idea:'Ночной город, мокрый асфальт, световые линии. Продукт — как главный герой фильма.', process:'Концепция → локация → съёмка вдвоём (2 камеры) → монтаж и цвет в плёночном грейде.', added:'2026-01-05'},
-  {id:'d2', title:'STATIC', category:'clips', cover:IMG.music, video:'', images:[], links:[], format:'КЛИП • 3 MIN', client:'[АРТИСТ]', task:'Клип с характером при ограниченном бюджете.', idea:'Одна локация, дым, лазеры и силуэт. Свет работает вместо декораций.', process:'Раскадровка → съёмочная ночь → монтаж в ритм трека.', added:'2025-11-20'},
-  {id:'d3', title:'BETON', category:'other', cover:IMG.fashion, video:'', images:[], links:[], format:'LOOKBOOK • 90 SEC', client:'[БРЕНД]', task:'Имиджевое видео коллекции для соцсетей и показов.', idea:'Бетон, жёсткий свет, длинные тени.', process:'Мудборд → студия → съёмка + бэкстейдж.', added:'2025-10-02'},
-  {id:'d4', title:'ПОДКАСТЫ', category:'other', cover:IMG.interview, video:'', images:[], links:[], format:'ПОДКАСТ • 12 MIN', client:'[КЛИЕНТ]', task:'Разговорное видео, которое досматривают.', idea:'Тёмная студия, один источник света, крупные планы и паузы.', process:'Сценарий вопросов → студийный свет → 2 камеры.', added:'2025-08-14'},
-  {id:'d5', title:'LIVE', category:'concerts', cover:IMG.concert, video:'', images:[], links:[], format:'АФТЕРМУВИ • 2 MIN', client:'[ПЛОЩАДКА]', task:'Передать энергию события тем, кого там не было.', idea:'Снимать не сцену, а то, что между: руки, дым, свет, крик.', process:'Двое на площадке → основная камера + детали → афтермуви за 72 часа.', added:'2024-12-11'},
-  {id:'d6', title:'REELS', category:'reels', cover:IMG.reels, video:'', images:[], links:[], format:'REELS • СЕРИЯ', client:'[БЛОГЕР]', task:'Постоянный контент без выгорания автора.', idea:'Формат-конструктор: рубрики, свет, монтаж.', process:'Упаковка формата → съёмочный день на 8 роликов.', added:'2024-09-30'}
+  {id:'d1', title:'NIGHT DRIVE', category:'commercials', cover:IMG.car, video:'', images:[], links:[], format:'РЕКЛАМА • 45 SEC', client:'[БРЕНД]', added:'2026-01-05'},
+  {id:'d2', title:'STATIC', category:'clips', cover:IMG.music, video:'', images:[], links:[], format:'КЛИП • 3 MIN', client:'[АРТИСТ]', added:'2025-11-20'},
+  {id:'d3', title:'BETON', category:'other', cover:IMG.fashion, video:'', images:[], links:[], format:'LOOKBOOK • 90 SEC', client:'[БРЕНД]', added:'2025-10-02'},
+  {id:'d4', title:'ПОДКАСТЫ', category:'other', cover:IMG.interview, video:'', images:[], links:[], format:'ПОДКАСТ • 12 MIN', client:'[КЛИЕНТ]', added:'2025-08-14'},
+  {id:'d5', title:'Маркарян', category:'concerts', cover:IMG.concert, video:'', images:[], links:[], format:'АФТЕРМУВИ • 2 MIN', client:'[ПЛОЩАДКА]', added:'2024-12-11'},
+  {id:'d6', title:'REELS', category:'reels', cover:IMG.reels, video:'', images:[], links:[], format:'REELS • СЕРИЯ', client:'[БЛОГЕР]', added:'2024-09-30'}
 ];
 
 let ALL_PROJECTS = [], curList = [], curFilter = 'all', curIdx = 0;
@@ -828,27 +828,60 @@ function toEmbed(url){
 }
 
 /* ---------- ФИЛЬТР КАТЕГОРИЙ ---------- */
+let lastScrollPos = 0;
+let showAllProjects = false;
 function renderCatBar(){
   const bar = $('#catBar');
-  const keys = ['all', ...Object.keys(CATEGORIES)];
+  // Порядок: concerts, commercials, clips, reels, other, затем all в конце
+  const keys = ['concerts', 'commercials', 'clips', 'reels', 'other', 'all'];
   bar.innerHTML = keys.map(k=>`<button type="button" class="cat-btn ${k===curFilter?'on':''}" data-cat="${k}">${k==='all'?'ВСЕ':CATEGORIES[k]}</button>`).join('');
 }
 $('#catBar').addEventListener('click', e=>{
   const b = e.target.closest('.cat-btn'); if(!b) return;
   e.preventDefault();
+  e.stopPropagation();
+  lastScrollPos = window.scrollY || window.pageYOffset;
   curFilter = b.dataset.cat;
+  showAllProjects = false;
   renderCatBar(); renderWorks();
+  setTimeout(()=>{
+    window.scrollTo({top: lastScrollPos, behavior: 'auto'});
+  }, 50);
 });
 
 /* ---------- РЕНДЕР КАРТОЧЕК (асимметричный паттерн сохраняется) ---------- */
 const PATTERN = ['w-full','w-tall','w-side','w-editorial','w-wide','w-offset'];
+const PREVIEW_LIMIT = 6; // Показываем только 6 проектов в категории "ВСЕ" по умолчанию
 function renderWorks(){
-  curList = curFilter==='all' ? ALL_PROJECTS.slice() : ALL_PROJECTS.filter(p=>p.category===curFilter);
+  let rawList = curFilter==='all' ? ALL_PROJECTS.slice() : ALL_PROJECTS.filter(p=>p.category===curFilter);
+  
+  // Для категории "all" показываем сначала несколько разных проектов, потом кнопка "показать все"
+  if(curFilter === 'all' && !showAllProjects && rawList.length > PREVIEW_LIMIT){
+    // Берём по одному проекту из каждой категории для разнообразия
+    const cats = Object.keys(CATEGORIES);
+    let preview = [];
+    for(let cat of cats){
+      const fromCat = rawList.filter(p=>p.category===cat);
+      if(fromCat.length > 0) preview.push(fromCat[0]);
+    }
+    // Если всё равно меньше лимита, дополняем остальными
+    while(preview.length < PREVIEW_LIMIT && preview.length < rawList.length){
+      for(let p of rawList){
+        if(!preview.includes(p)) { preview.push(p); break; }
+      }
+    }
+    curList = preview.slice(0, PREVIEW_LIMIT);
+  } else {
+    curList = rawList;
+  }
+  
   const n = curList.length;
-  $('#worksCount').textContent = String(n).padStart(2,'0') + ' ПРОЕКТОВ';
+  const totalN = curFilter==='all' ? ALL_PROJECTS.length : rawList.length;
+  $('#worksCount').textContent = String(totalN).padStart(2,'0') + ' ПРОЕКТОВ';
   const grid = $('#worksGrid');
   if(!n){ grid.innerHTML = '<div class="w-empty mono">[ В ЭТОЙ КАТЕГОРИИ ПОКА ПУСТО ]</div>'; return; }
-  grid.innerHTML = curList.map((p,i)=>{
+  
+  let html = curList.map((p,i)=>{
     const idx = String(i+1).padStart(2,'0');
     const cls = PATTERN[i % PATTERN.length];
     const cat = CATEGORIES[p.category] || 'ДРУГОЕ';
@@ -878,6 +911,32 @@ function renderWorks(){
       </div>
     </article>`;
   }).join('');
+  
+  // Если категория "all" и есть ещё проекты, добавляем кнопку "Показать все"
+  if(curFilter === 'all' && !showAllProjects && ALL_PROJECTS.length > PREVIEW_LIMIT){
+    html += `
+    <div style="grid-column:1/-1;display:flex;justify-content:center;margin-top:4vh">
+      <button class="btn btn-acc" id="showAllBtn">ПОКАЗАТЬ ВСЕ (${ALL_PROJECTS.length}) <span class="arr">↓</span></button>
+    </div>`;
+  }
+  
+  grid.innerHTML = html;
+  
+  // Обработчик кнопки "Показать все"
+  const showAllBtn = document.getElementById('showAllBtn');
+  if(showAllBtn){
+    showAllBtn.addEventListener('click', ()=>{
+      showAllProjects = true;
+      renderWorks();
+      // Плавно скроллим к началу сетки
+      const worksSection = document.getElementById('works');
+      if(worksSection){
+        const rect = worksSection.getBoundingClientRect();
+        window.scrollBy({top: rect.top - 100, behavior: 'smooth'});
+      }
+    });
+  }
+  
   initWorkAnims();
 }
 function initWorkAnims(){
@@ -905,12 +964,7 @@ function openCase(i){
     : `<img src="${esc(p.cover||IMG.backstage)}" alt="${esc(p.title)}">`;
   const photos = (p.images||[]).filter(Boolean);
   const links = (p.links||[]).filter(Boolean);
-  const txt = (p.task||p.idea||p.process) ? `
-    <div class="case-txt">
-      ${p.task?`<div><h5>ЗАДАЧА</h5><p>${esc(p.task)}</p></div>`:''}
-      ${p.idea?`<div><h5>ИДЕЯ</h5><p>${esc(p.idea)}</p></div>`:''}
-      ${p.process?`<div><h5>ПРОЦЕСС</h5><p>${esc(p.process)}</p></div>`:''}
-    </div>` : '';
+  // Убраны блоки ЗАДАЧА, ИДЕЯ, ПРОЦЕСС - теперь показываем только медиа, мета и фото/ссылки
   caseBody.innerHTML = `
     <div class="case-head">
       <span class="mono"><b>${String(i+1).padStart(2,'0')} / ${esc(cat)}</b> • ${esc(year)}${embed?' • <span class="acc">▶ WATCH</span>':''}</span>
@@ -924,7 +978,6 @@ function openCase(i){
       <div><h5>ФОРМАТ</h5><p>${esc(p.format||cat)}</p></div>
       <div><h5>ГОРОД</h5><p>МОСКВА — ОРЁЛ</p></div>
     </div>
-    ${txt}
     ${photos.length?`<h5 class="case-h">ФОТО / ${photos.length} — НАЖМИ, ЧТОБЫ УВЕЛИЧИТЬ</h5>
     <div class="case-photos">${photos.map(u=>`<img src="${esc(u)}" alt="Фото — ${esc(p.title)}" loading="lazy">`).join('')}</div>`:''}
     ${links.length?`<h5 class="case-h">МАТЕРИАЛЫ</h5>
