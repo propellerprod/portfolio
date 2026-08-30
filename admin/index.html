@@ -378,25 +378,39 @@ function askConfirm(text, cb){
   $('#cfText').textContent = text; cfCb = cb;
   $('#confirm').classList.add('open');
 }
-$('#cfYes').onclick = ()=>{ $('#confirm').classList.remove('open'); cb0(); };
-$('#cfNo').onclick = ()=>{ $('#confirm').classList.remove('open'); cfCb = null; };
-function cb0(){ const f = cfCb; cfCb = null; f && f(); }
+$('#cfYes').onclick = ()=>{ 
+  const cb = cfCb; 
+  cfCb = null; 
+  $('#confirm').classList.remove('open'); 
+  if(cb) cb(); 
+};
+$('#cfNo').onclick = ()=>{ 
+  cfCb = null; 
+  $('#confirm').classList.remove('open'); 
+};
 
 /* ---------- LOGIN ---------- */
-(function setupLogin(){
+function setupLogin(){
   const btn = $('#btnLogin');
   const inpRepo = $('#inRepo');
   const inpBranch = $('#inBranch');
-  if(!btn){ console.error('[ADMIN] Кнопка #btnLogin не найдена!'); return; }
+  const err = $('#loginErr');
+  
+  if(!btn){ 
+    console.error('[ADMIN] Кнопка #btnLogin не найдена!'); 
+    return; 
+  }
+  
   inpRepo.value = cfg.owner + '/' + cfg.repo;
   inpBranch.value = cfg.branch;
   
-  btn.onclick = async ()=>{
+  btn.addEventListener('click', async (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
     console.log('[ADMIN] Клик по кнопке ВОЙТИ');
     const t = $('#inToken').value.trim();
     const repo = $('#inRepo').value.trim();
     const br = $('#inBranch').value.trim() || 'main';
-    const err = $('#loginErr');
     err.textContent = '';
     
     if(!t){ 
@@ -429,8 +443,9 @@ function cb0(){ const f = cfCb; cfCb = null; f && f(); }
       token = '';
       err.textContent = '// ОШИБКА: ' + e.message;
     }
-  };
-})();
+  }, {once:false});
+}
+
 $('#btnLogout').onclick = ()=>{
   localStorage.removeItem('pp_token'); token = '';
   $('#btnLogout').hidden = true; show('scrLogin');
@@ -820,6 +835,9 @@ $('#btnSaveCollab').onclick = async ()=>{
 
 /* ---------- АВТОВХОД ---------- */
 (async function init(){
+  // Сначала вызываем setupLogin для регистрации обработчика кнопки
+  setupLogin();
+  
   if(token){
     try{
       await fetchFile();
