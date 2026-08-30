@@ -168,7 +168,7 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
     <div id="rows"></div>
   </section>
 
-  <!-- РЕДАКТОР -->
+  <!-- РЕДАКТОР ПРОЕКТОВ -->
   <section id="scrEdit" hidden>
     <div class="mono a-crumb"><a href="#" id="backList">[ ← НАЗАД К СПИСКУ ]</a></div>
     <h1 class="a-title" id="editTitle">НОВЫЙ ПРОЕКТ</h1>
@@ -208,6 +208,34 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
         <button class="btn" id="btnCancel">ОТМЕНА</button>
       </div>
       <div class="status-line" id="saveStatus"></div>
+    </div>
+  </section>
+
+  <!-- РЕДАКТОР КОЛЛАБОРАЦИЙ -->
+  <section id="scrCollabEdit" hidden>
+    <div class="mono a-crumb"><a href="#" id="backDashCollab">[ ← КАТЕГОРИИ ]</a></div>
+    <h1 class="a-title" id="collabEditTitle">НОВАЯ КОЛЛАБОРАЦИЯ</h1>
+    <div class="edit-grid">
+      <div class="f">
+        <label>ИМЯ / НАЗВАНИЕ *</label>
+        <input id="fCollabName" placeholder="ИВАН МАРКАРЯН">
+      </div>
+      <div class="f">
+        <label>ФОТО — URL ИЗОБРАЖЕНИЯ</label>
+        <input id="fCollabImg" placeholder="https://…/photo.jpg" inputmode="url">
+        <div class="cover-prev" id="collabImgPrev" hidden></div>
+        <div class="status-line" id="collabImgStatus"></div>
+      </div>
+      <div class="f">
+        <label>ССЫЛКИ (SOCIAL / YOUTUBE / VK) — ПО ОДНОЙ</label>
+        <div id="collabLinks"></div>
+        <button class="add-dash" id="addCollabLink">+ ДОБАВИТЬ ССЫЛКУ</button>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-acc" id="btnSaveCollab" style="flex:1 1 auto">СОХРАНИТЬ И ОПУБЛИКОВАТЬ →</button>
+        <button class="btn" id="btnCancelCollab">ОТМЕНА</button>
+      </div>
+      <div class="status-line" id="collabSaveStatus"></div>
     </div>
   </section>
 </div>
@@ -278,9 +306,32 @@ async function fetchFile(){
     DATA = JSON.parse(text);
   }catch(e){
     const preview = text.slice(0,40).replace(/\s+/g,' ');
-    throw new Error('data/projects.json содержит НЕ-JSON («'+preview+'…»). Откройте файл в GitHub → карандаш (Edit) → удалите всё → вставьте чистый JSON без слова const, без комментариев и без лишнего текста.');
+    throw new Error('data/projects.json содержит НЕ-JSON («'+preview+'…'). Откройте файл в GitHub → карандаш (Edit) → удалите всё → вставьте чистый JSON без слова const, без комментариев и без лишнего текста.');
   }
   if(!Array.isArray(DATA.projects)) DATA = {projects:[]};
+  return d.sha;
+}
+async function fetchCollabsFile(){
+  let d;
+  try{
+    d = await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${COLLABS_FILE}?ref=${cfg.branch}`);
+  }catch(e){
+    if(/404|Not Found|was not found/i.test(e.message)){ COLLABS_DATA = {collabs:[]}; return null; }
+    throw e;
+  }
+  let text;
+  try{
+    text = decodeURIComponent(escape(atob(d.content.replace(/\n/g,''))));
+  }catch(e){
+    throw new Error('Файл '+COLLABS_FILE+' не читается (повреждена кодировка)');
+  }
+  try{
+    COLLABS_DATA = JSON.parse(text);
+  }catch(e){
+    const preview = text.slice(0,40).replace(/\s+/g,' ');
+    throw new Error('data/collabs.json содержит НЕ-JSON («'+preview+'…'). Исправьте JSON файл.');
+  }
+  if(!Array.isArray(COLLABS_DATA.collabs)) COLLABS_DATA = {collabs:[]};
   return d.sha;
 }
 async function publish(msg){
@@ -290,6 +341,15 @@ async function publish(msg){
   const body = {message: msg || 'portfolio: update projects', content: b64(JSON.stringify(DATA,null,2)), branch: cfg.branch};
   if(sha) body.sha = sha;
   await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${FILE}`, 'PUT', body);
+  $('#pubStatus').textContent = 'ОПУБЛИКОВАНО: ' + new Date().toLocaleTimeString('ru-RU');
+}
+async function publishCollabs(msg){
+  let sha = null;
+  try{ const d = await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${COLLABS_FILE}?ref=${cfg.branch}`); sha = d.sha; }catch(e){}
+  COLLABS_DATA.updated = new Date().toISOString();
+  const body = {message: msg || 'portfolio: update collabs', content: b64(JSON.stringify(COLLABS_DATA,null,2)), branch: cfg.branch};
+  if(sha) body.sha = sha;
+  await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${COLLABS_FILE}`, 'PUT', body);
   $('#pubStatus').textContent = 'ОПУБЛИКОВАНО: ' + new Date().toLocaleTimeString('ru-RU');
 }
 
@@ -302,7 +362,7 @@ function parseYT(u){
 
 /* ---------- UI helpers ---------- */
 function show(id){
-  ['scrLogin','scrDash','scrList','scrEdit'].forEach(s => $('#'+s).hidden = s!==id);
+  ['scrLogin','scrDash','scrList','scrEdit','scrCollabEdit'].forEach(s => $('#'+s).hidden = s!==id);
   window.scrollTo(0,0);
 }
 let toastTimer;
@@ -362,12 +422,48 @@ function renderDash(){
       <span class="n">${CATEGORIES[k]}</span>
     </button>`;
   }).join('');
+  renderCollabDash();
 }
 $('#catGrid').addEventListener('click', e=>{
   const c = e.target.closest('.cat-card'); if(!c) return;
   openList(c.dataset.cat);
 });
 $('#btnAddTop').onclick = ()=>openEditor(null, 'concerts');
+
+/* ---------- КОЛЛАБОРАЦИИ DASHBOARD ---------- */
+function renderCollabDash(){
+  const grid = $('#collabGrid');
+  if(!COLLABS_DATA.collabs.length){
+    grid.innerHTML = '<p class="mono">[ ПОКА НЕТ КОЛЛАБОРАЦИЙ ]</p><p class="hint" style="margin-top:10px">НАЖМИТЕ + ЧТОБЫ ДОБАВИТЬ</p>';
+    return;
+  }
+  grid.innerHTML = COLLABS_DATA.collabs.map((c,i)=>`
+    <button class="cat-card" data-collab-idx="${i}" title="Редактировать • Удалить: Shift+Click">
+      ${c.img ? `<img src="${esc(c.img)}" alt="" style="width:60px;height:60px;object-fit:cover;border:1px solid var(--line);margin-bottom:8px" onerror="this.style.display=\'none\'">` : '<div style="width:60px;height:60px;border:1px dashed var(--line);margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:9px">НЕТ ФОТО</div>'}
+      <span class="n" style="font-size:14px">${esc(c.name||'БЕЗ ИМЕНИ')}</span>
+      <span class="mono">${(c.links&&c.links.length)?c.links.length+' ССЫЛОК':'НЕТ ССЫЛОК'}</span>
+    </button>
+  `).join('');
+}
+$('#collabGrid').addEventListener('click', e=>{
+  const card = e.target.closest('.cat-card');
+  if(!card || !card.dataset.collabIdx) return;
+  /* если зажат Shift/Ctrl/Meta — удаление, иначе редактирование */
+  if(e.shiftKey || e.ctrlKey || e.metaKey){
+    const idx = parseInt(card.dataset.collabIdx);
+    const c = COLLABS_DATA.collabs[idx];
+    askConfirm('Удалить коллаборацию "'+(c.name||'БЕЗ ИМЕНИ')+'"?', async ()=>{
+      COLLABS_DATA.collabs.splice(idx,1);
+      try{ await publishCollabs('portfolio: delete collab'); renderDash(); toast('КОЛЛАБОРАЦИЯ УДАЛЕНА ✓'); }
+      catch(err){ toast('ОШИБКА: '+err.message, true); await fetchCollabsFile().catch(()=>{}); renderDash(); }
+    });
+    e.preventDefault();
+    e.stopPropagation();
+  }else{
+    openCollabEditor(parseInt(card.dataset.collabIdx));
+  }
+});
+$('#btnAddCollabTop').onclick = ()=>openCollabEditor(null);
 
 /* ---------- СПИСОК ---------- */
 function openList(cat){
@@ -619,11 +715,92 @@ $('#btnSave').onclick = async ()=>{
   btn.disabled = false; btn.textContent = 'СОХРАНИТЬ И ОПУБЛИКОВАТЬ →';
 };
 
+/* ---------- КОЛЛАБОРАЦИИ EDITOR ---------- */
+function openCollabEditor(idx){
+  editingCollabId = idx;
+  const c = idx !== null ? COLLABS_DATA.collabs[idx] : null;
+  $('#collabEditTitle').textContent = c ? 'РЕДАКТИРОВАТЬ: '+c.name : 'НОВАЯ КОЛЛАБОРАЦИЯ';
+  $('#fCollabName').value = c ? (c.name||'') : '';
+  $('#fCollabImg').value = c ? (c.img||'') : '';
+  $('#collabSaveStatus').textContent = '';
+  $('#collabLinks').innerHTML = '';
+  (c && (c.links||[]).length ? c.links : ['']).forEach(u=>addCollabLinkRow(u));
+  checkCollabImg();
+  show('scrCollabEdit');
+}
+$('#backDashCollab').onclick = e=>{ e.preventDefault(); renderDash(); show('scrDash'); };
+$('#btnCancelCollab').onclick = ()=>{ renderDash(); show('scrDash'); };
+$('#addCollabLink').onclick = ()=>addCollabLinkRow('');
+
+function addCollabLinkRow(url){
+  const div = document.createElement('div');
+  div.className = 'link-row';
+  const inp = document.createElement('input');
+  inp.placeholder = 'https://…'; inp.inputMode = 'url'; inp.value = url || '';
+  const del = document.createElement('button');
+  del.className = 'mini del'; del.textContent = '✕'; del.title = 'Удалить';
+  del.onclick = ()=>div.remove();
+  div.append(inp, del);
+  $('#collabLinks').appendChild(div);
+}
+
+function checkCollabImg(){
+  const u = $('#fCollabImg').value.trim();
+  const box = $('#collabImgPrev'), st = $('#collabImgStatus');
+  st.textContent = ''; box.hidden = true; box.classList.remove('bad'); box.innerHTML = '';
+  if(!u) return;
+  const im = new Image();
+  im.onload = ()=>{
+    box.hidden = false;
+    box.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = u; img.alt = 'Превью фото';
+    box.appendChild(img);
+    st.innerHTML = '<span class="ok">✓ ИЗОБРАЖЕНИЕ ЗАГРУЗИЛОСЬ</span>';
+  };
+  im.onerror = ()=>{
+    box.hidden = false; box.classList.add('bad');
+    box.textContent = '[ ОШИБКА: ИЗОБРАЖЕНИЕ ПО ЭТОЙ ССЫЛКЕ НЕ ЗАГРУЗИЛОСЬ ]';
+    st.innerHTML = '<span class="err">// ПРОВЕРЬТЕ URL</span>';
+  };
+  im.src = u;
+}
+$('#fCollabImg').addEventListener('input', checkCollabImg);
+
+$('#btnSaveCollab').onclick = async ()=>{
+  const st = $('#collabSaveStatus');
+  st.textContent = '';
+  const name = $('#fCollabName').value.trim();
+  if(!name){ st.innerHTML = '<span class="err">// ИМЯ ОБЯЗАТЕЛЬНО</span>'; return; }
+  const img = $('#fCollabImg').value.trim();
+  const links = [...$('#collabLinks').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
+  const data = { name, img, links };
+  const btn = $('#btnSaveCollab');
+  btn.disabled = true; btn.textContent = 'ПУБЛИКАЦИЯ…';
+  try{
+    if(editingCollabId !== null){
+      COLLABS_DATA.collabs[editingCollabId] = data;
+      await publishCollabs('portfolio: edit collab '+name);
+    }else{
+      COLLABS_DATA.collabs.push(data);
+      await publishCollabs('portfolio: add collab '+name);
+    }
+    toast('ОПУБЛИКОВАНО ✓ САЙТ ОБНОВИТСЯ ЗА 1–2 МИН');
+    renderDash(); show('scrDash');
+  }catch(err){
+    st.innerHTML = '<span class="err">// ОШИБКА ПУБЛИКАЦИИ: '+esc(err.message)+'</span>';
+    toast('ОШИБКА: '+err.message, true);
+  }
+  btn.disabled = false; btn.textContent = 'СОХРАНИТЬ И ОПУБЛИКОВАТЬ →';
+};
+
+
 /* ---------- АВТОВХОД ---------- */
 (async function init(){
   if(token){
     try{
       await fetchFile();
+      await fetchCollabsFile();
       $('#btnLogout').hidden = false;
       renderDash(); show('scrDash');
       return;
