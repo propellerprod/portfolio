@@ -767,12 +767,6 @@ const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<'
 
 const CONFIG = { contacts: { telegram:'', whatsapp:'', vk:'', instagram:'', phone:'', email:'' } };
 
-const COLLABS = [
-  {name:'RAREMOD', img:''},{name:'LILDRUGHILL', img:''},{name:'LIL KRYSTALLL', img:''},
-  {name:'SLAVA MARLOW', img:''},{name:'Olegha77', img:''},{name:'TATWOLE', img:''},
-  {name:'СК «КРЕПОСТЬ»', img:''},{name:'RUTEX', img:''},{name:'ROD DANCE', img:''},{name:'MARK KUKLIN', img:''}
-];
-
 const PRICES = [
   {name:'ПОЧАСОВАЯ', val:'5 000 ₽/ЧАС', forOne:'почасовая съёмка — платите только за время', inc:['2 оператора','набор оборудования','выезд на локацию','подготовка к съёмке','съёмка на локации','передача материала через облачное хранилище','хранение материала в течение месяца'], hot:false},
   {name:'SMENA', val:'ОТ 20 000 ₽', forOne:'для съёмок на целый день / большого объёма контента', inc:['2 оператора','1 съёмочный день','идеи и сценарии','подготовка к съёмке','передача материала через облачное хранилище','хранение материала в течение месяца'], hot:false},
@@ -806,7 +800,7 @@ const DEFAULT_PROJECTS = [
   {id:'d6', title:'REELS', category:'reels', cover:IMG.reels, video:'', images:[], links:[], format:'REELS • СЕРИЯ', client:'[БЛОГЕР]', added:'2024-09-30'}
 ];
 
-let ALL_PROJECTS = [], curList = [], curFilter = 'all', curIdx = 0;
+let ALL_PROJECTS = [], curList = [], curFilter = 'concerts', curIdx = 0;
 
 async function loadPortfolio(){
   try{ const r = await fetch(RAW_URL,{cache:'no-store'}); if(r.ok){ const d = await r.json(); if(d && Array.isArray(d.projects)) return d.projects; } }catch(e){}
@@ -832,7 +826,7 @@ let lastScrollPos = 0;
 let showAllProjects = false;
 function renderCatBar(){
   const bar = $('#catBar');
-  // Порядок: concerts, commercials, clips, reels, other, затем all в конце
+  // Порядок: concerts первый, затем commercials, clips, reels, other, и all в самом конце
   const keys = ['concerts', 'commercials', 'clips', 'reels', 'other', 'all'];
   bar.innerHTML = keys.map(k=>`<button type="button" class="cat-btn ${k===curFilter?'on':''}" data-cat="${k}">${k==='all'?'ВСЕ':CATEGORIES[k]}</button>`).join('');
 }
@@ -1024,11 +1018,6 @@ document.querySelectorAll('[data-contact]').forEach(a=>{
 document.querySelectorAll('a[data-ph]').forEach(a=>{
   a.addEventListener('click', e=>{ const h=a.getAttribute('href'); if(!h||h==='#') e.preventDefault(); });
 });
-$('#collabGrid').innerHTML = COLLABS.map(c=>`
-  <div class="collab" data-reveal>
-    <div class="collab-ph">${c.img?`<img src="${c.img}" alt="${c.name}" loading="lazy">`:'<span class="mono">[ФОТО]</span>'}</div>
-    <div class="collab-name">${c.name}</div>
-  </div>`).join('');
 const SERVICES = [
   {n:'01', name:'РЕКЛАМА', tags:'РОЛИКИ / ПРОМО / ИМИДЖ', img:IMG.car},
   {n:'02', name:'REELS', tags:'SHORTS / TIKTOK / ВЕРТИКАЛЬ', img:IMG.reels},
@@ -1053,8 +1042,25 @@ $('#priceGrid').innerHTML = PRICES.map(p=>`
   </div>`).join('');
 $('#year').textContent = new Date().getFullYear();
 
-/* ---------- ЗАГРУЗКА ПОРТФОЛИО ---------- */
-loadPortfolio().then(list=>{ ALL_PROJECTS = list; renderCatBar(); renderWorks(); });
+/* ---------- ЗАГРУЗКА ПОРТФОЛИО И КОЛЛАБОРАЦИЙ ---------- */
+const COLLABS_RAW_URL = 'https://raw.githubusercontent.com/propellerprod/portfolio/main/data/collabs.json';
+async function loadCollabs(){
+  try{ const r = await fetch(COLLABS_RAW_URL,{cache:'no-store'}); if(r.ok){ const d = await r.json(); if(d && Array.isArray(d.collabs)) return d.collabs; } }catch(e){}
+  try{ const r = await fetch('data/collabs.json',{cache:'no-store'}); if(r.ok){ const d = await r.json(); if(d && Array.isArray(d.collabs)) return d.collabs; } }catch(e){}
+  return [];
+}
+Promise.all([loadPortfolio(), loadCollabs()]).then(([projList, collabList])=>{ 
+  ALL_PROJECTS = projList; 
+  renderCatBar(); 
+  renderWorks();
+  if(collabList.length > 0){
+    $('#collabGrid').innerHTML = collabList.map(c=>`
+      <div class="collab" data-reveal>
+        <div class="collab-ph">${c.img?`<img src="${c.img}" alt="${c.name}" loading="lazy">`:'<span class="mono">[ФОТО]</span>'}</div>
+        <div class="collab-name">${c.name}</div>
+      </div>`).join('');
+  }
+});
 
 /* ---------- LOADER ---------- */
 let _minT=false,_ready=false;

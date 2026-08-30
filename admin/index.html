@@ -150,6 +150,11 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
     <h1 class="a-title">КАТЕГОРИИ</h1>
     <button class="btn btn-acc" id="btnAddTop">+ ДОБАВИТЬ ПРОЕКТ</button>
     <div class="cat-grid" id="catGrid"></div>
+    <div style="margin-top:30px;border-top:1px solid var(--line);padding-top:20px">
+      <h1 class="a-title" style="font-size:clamp(20px,4vw,36px)">КОЛЛАБОРАЦИИ</h1>
+      <button class="btn btn-acc" id="btnAddCollabTop">+ ДОБАВИТЬ КОЛЛАБОРАЦИЮ</button>
+      <div class="cat-grid" id="collabGrid" style="margin-top:14px"></div>
+    </div>
   </section>
 
   <!-- СПИСОК ПРОЕКТОВ -->
@@ -224,11 +229,13 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CATEGORIES = { concerts:'КОНЦЕРТЫ', commercials:'РЕКЛАМА', clips:'КЛИПЫ', reels:'REELS', other:'ДРУГОЕ' };
 const FILE = 'data/projects.json';
+const COLLABS_FILE = 'data/collabs.json';
 
 let cfg = JSON.parse(localStorage.getItem('pp_cfg')||'null') || {owner:'propellerprod', repo:'portfolio', branch:'main'};
 let token = localStorage.getItem('pp_token') || '';
 let DATA = {projects:[]};
-let curCat = null, editId = null, dragFrom = null, cfCb = null;
+let COLLABS_DATA = {collabs:[]};
+let curCat = null, editId = null, dragFrom = null, cfCb = null, editingCollabId = null;
 
 /* ---------- GitHub API ---------- */
 async function gh(path, method='GET', body){
