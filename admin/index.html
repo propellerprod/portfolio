@@ -68,6 +68,8 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
 .row{display:grid;grid-template-columns:44px 90px 1fr auto;gap:14px;align-items:center;border:1px solid var(--line);background:var(--panel);padding:12px;margin-bottom:10px;transition:border-color .3s,opacity .3s}
 .row.over{border-color:var(--acc)}
 .row.dragging{opacity:.4}
+.collab-card.dragging{opacity:.4;border-style:dashed}
+.collab-card.over{border-color:var(--acc);transform:scale(1.02)}
 .row .grip{cursor:grab;color:var(--dim);font-size:18px;user-select:none;text-align:center}
 .row img.thumb{width:90px;height:60px;object-fit:cover;background:var(--bg2)}
 .row .noimg{width:90px;height:60px;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--dim);font-family:var(--fm);font-size:9px}
@@ -476,12 +478,48 @@ function renderCollabDash(){
     return;
   }
   grid.innerHTML = COLLABS_DATA.collabs.map((c,i)=>`
-    <button class="cat-card" data-collab-idx="${i}" title="Редактировать • Удалить: Shift+Click">
-      ${c.img ? `<img src="${esc(c.img)}" alt="" style="width:60px;height:60px;object-fit:cover;border:1px solid var(--line);margin-bottom:8px" onerror="this.style.display=\'none\'">` : '<div style="width:60px;height:60px;border:1px dashed var(--line);margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:9px">НЕТ ФОТО</div>'}
+    <div class="cat-card collab-card" data-collab-idx="${i}" title="Редактировать • Удалить: Shift+Click • Перетащить для изменения порядка">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        ${c.img ? `<img src="${esc(c.img)}" alt="" style="width:60px;height:60px;object-fit:cover;border:1px solid var(--line)" onerror="this.style.display=\'none\'">` : '<div style="width:60px;height:60px;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:9px">НЕТ ФОТО</div>'}
+        <span class="grip" style="cursor:grab;color:var(--dim);font-size:18px;user-select:none" title="Перетащить">⠿</span>
+      </div>
       <span class="n" style="font-size:14px">${esc(c.name||'БЕЗ ИМЕНИ')}</span>
       <span class="mono">${(c.links&&c.links.length)?c.links.length+' ССЫЛОК':'НЕТ ССЫЛОК'}</span>
-    </button>
+    </div>
   `).join('');
+  
+  /* drag & drop для коллабораций */
+  const cards = grid.querySelectorAll('.collab-card');
+  let dragCollabFrom = null;
+  cards.forEach(card=>{
+    card.setAttribute('draggable', 'true');
+    card.addEventListener('dragstart', e=>{
+      dragCollabFrom = parseInt(card.dataset.collabIdx);
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragover', e=>{
+      e.preventDefault();
+      card.classList.add('over');
+    });
+    card.addEventListener('dragleave', ()=>{
+      card.classList.remove('over');
+    });
+    card.addEventListener('drop', async e=>{
+      e.preventDefault();
+      card.classList.remove('over');
+      if(dragCollabFrom === null) return;
+      const to = parseInt(card.dataset.collabIdx);
+      if(to === dragCollabFrom) return;
+      await moveCollab(dragCollabFrom, to);
+      dragCollabFrom = null;
+    });
+    card.addEventListener('dragend', ()=>{
+      card.classList.remove('dragging');
+      cards.forEach(c=>c.classList.remove('over'));
+      dragCollabFrom = null;
+    });
+  });
 }
 $('#collabGrid').addEventListener('click', e=>{
   const card = e.target.closest('.cat-card');
@@ -498,6 +536,8 @@ $('#collabGrid').addEventListener('click', e=>{
     e.preventDefault();
     e.stopPropagation();
   }else{
+    /* не реагировать на клик, если это был grip для перетаскивания */
+    if(e.target.classList.contains('grip')) return;
     openCollabEditor(parseInt(card.dataset.collabIdx));
   }
 });
@@ -601,6 +641,13 @@ async function moveProject(from, to){
   arr.splice(to,0,m);
   try{ await publish('portfolio: reorder'); renderList(); toast('ПОРЯДОК СОХРАНЁН ✓'); }
   catch(err){ toast('ОШИБКА: '+err.message, true); await fetchFile().catch(()=>{}); renderList(); }
+}
+async function moveCollab(from, to){
+  const arr = COLLABS_DATA.collabs;
+  const [m] = arr.splice(from,1);
+  arr.splice(to,0,m);
+  try{ await publishCollabs('portfolio: reorder collabs'); renderDash(); toast('ПОРЯДОК КОЛЛАБОРАЦИЙ СОХРАНЁН ✓'); }
+  catch(err){ toast('ОШИБКА: '+err.message, true); await fetchCollabsFile().catch(()=>{}); renderDash(); }
 }
 
 /* ---------- РЕДАКТОР ---------- */
