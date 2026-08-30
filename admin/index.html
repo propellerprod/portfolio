@@ -383,31 +383,54 @@ $('#cfNo').onclick = ()=>{ $('#confirm').classList.remove('open'); cfCb = null; 
 function cb0(){ const f = cfCb; cfCb = null; f && f(); }
 
 /* ---------- LOGIN ---------- */
-$('#inRepo').value = cfg.owner + '/' + cfg.repo;
-$('#inBranch').value = cfg.branch;
-$('#btnLogin').onclick = async ()=>{
-  const t = $('#inToken').value.trim();
-  const repo = $('#inRepo').value.trim();
-  const br = $('#inBranch').value.trim() || 'main';
-  const err = $('#loginErr');
-  err.textContent = '';
-  if(!t){ err.textContent = '// ВСТАВЬТЕ ТОКЕН'; return; }
-  if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){ err.textContent = '// РЕПОЗИТОРИЙ В ФОРМАТЕ: ВЛАДЕЛЕЦ/ИМЯ'; return; }
-  token = t;
-  const parts = repo.split('/');
-  cfg = {owner:parts[0], repo:parts[1], branch:br};
-  try{
-    await fetchFile();
-    localStorage.setItem('pp_token', token);
-    localStorage.setItem('pp_cfg', JSON.stringify(cfg));
-    $('#btnLogout').hidden = false;
-    renderDash(); show('scrDash');
-    toast('ПОДКЛЮЧЕНО ✓');
-  }catch(e){
-    token = '';
-    err.textContent = '// ОШИБКА: ' + e.message;
-  }
-};
+(function setupLogin(){
+  const btn = $('#btnLogin');
+  const inpRepo = $('#inRepo');
+  const inpBranch = $('#inBranch');
+  if(!btn){ console.error('[ADMIN] Кнопка #btnLogin не найдена!'); return; }
+  inpRepo.value = cfg.owner + '/' + cfg.repo;
+  inpBranch.value = cfg.branch;
+  
+  btn.onclick = async ()=>{
+    console.log('[ADMIN] Клик по кнопке ВОЙТИ');
+    const t = $('#inToken').value.trim();
+    const repo = $('#inRepo').value.trim();
+    const br = $('#inBranch').value.trim() || 'main';
+    const err = $('#loginErr');
+    err.textContent = '';
+    
+    if(!t){ 
+      console.error('[ADMIN] Токен не введён');
+      err.textContent = '// ВСТАВЬТЕ ТОКЕН'; 
+      return; 
+    }
+    if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){ 
+      console.error('[ADMIN] Неверный формат репозитория');
+      err.textContent = '// РЕПОЗИТОРИЙ В ФОРМАТЕ: ВЛАДЕЛЕЦ/ИМЯ'; 
+      return; 
+    }
+    
+    console.log('[ADMIN] Попытка входа с токеном:', t.substring(0,10)+'...');
+    token = t;
+    const parts = repo.split('/');
+    cfg = {owner:parts[0], repo:parts[1], branch:br};
+    
+    try{
+      await fetchFile();
+      localStorage.setItem('pp_token', token);
+      localStorage.setItem('pp_cfg', JSON.stringify(cfg));
+      $('#btnLogout').hidden = false;
+      renderDash(); 
+      show('scrDash');
+      toast('ПОДКЛЮЧЕНО ✓');
+      console.log('[ADMIN] Вход успешен');
+    }catch(e){
+      console.error('[ADMIN] Ошибка входа:', e);
+      token = '';
+      err.textContent = '// ОШИБКА: ' + e.message;
+    }
+  };
+})();
 $('#btnLogout').onclick = ()=>{
   localStorage.removeItem('pp_token'); token = '';
   $('#btnLogout').hidden = true; show('scrLogin');
