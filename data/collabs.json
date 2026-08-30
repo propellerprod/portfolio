@@ -1,15 +1,14 @@
 {
-  "updated": "2026-01-15T00:00:00.000Z",
   "collabs": [
     {
-      "id": "c1",
       "name": "ИВАН МАРКАРЯН",
-      "img": "https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1d6cf2a57-22dc-49d3-934a-ebc1a07c1fce.png"
+      "img": "https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1d6cf2a57-22dc-49d3-934a-ebc1a07c1fce.png",
+      "links": []
     },
     {
-      "id": "c2",
       "name": "BLOODY DOG",
-      "img": "https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/10b2ec472-fb7d-40b6-8faf-7e8746d1079d.png"
+      "img": "https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/10b2ec472-fb7d-40b6-8faf-7e8746d1079d.png",
+      "links": []
     }
   ]
 }
