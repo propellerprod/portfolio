@@ -1,6 +1,18 @@
 {
-  "updated": "2026-09-05T17:30:40.827Z",
+  "updated": "2026-09-05T17:54:46.281Z",
   "projects": [
+    {
+      "id": "pmtoonbt096ll",
+      "added": "2026-09-05",
+      "title": "ROD DANCE",
+      "category": "concerts",
+      "cover": "https://i.yapx.ru/eLFY0.png",
+      "video": "https://youtu.be/PoIZvteCbNs",
+      "images": [],
+      "links": [],
+      "client": "ROD",
+      "format": "ПРЕМИЯ/АФТЕРМУВИ"
+    },
     {
       "id": "pmtonscgmp804",
       "added": "2026-09-05",
