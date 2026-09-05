@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-05T16:55:10.939Z",
+  "updated": "2026-09-05T17:04:19.648Z",
   "projects": [
     {
       "id": "d1",
@@ -78,14 +78,14 @@
     },
     {
       "id": "d6",
-      "title": "REELS",
+      "title": "MARK KUKLIN",
       "category": "reels",
-      "cover": "https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/14fe1f442-caaf-41f0-b920-7479cea0f12d.png",
-      "video": "",
+      "cover": "https://i.yapx.ru/eLErn.jpg",
+      "video": "https://youtube.com/shorts/enWdHgOwopc?feature=share",
       "images": [],
       "links": [],
-      "format": "REELS • СЕРИЯ",
-      "client": "[БЛОГЕР]",
+      "format": "REELS",
+      "client": "MARK KUKLIN",
       "task": "Постоянный контент без выгорания автора.",
       "idea": "Формат-конструктор: рубрики, свет, монтаж.",
       "process": "Упаковка формата → съёмочный день на 8 роликов.",
