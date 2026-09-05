@@ -1,6 +1,18 @@
 {
-  "updated": "2026-09-05T17:54:46.281Z",
+  "updated": "2026-09-05T18:06:02.440Z",
   "projects": [
+    {
+      "id": "pmtop1tks5bb4",
+      "added": "2026-09-05",
+      "title": "ROD AWARDS 2025",
+      "category": "concerts",
+      "cover": "https://i.yapx.ru/eLFiu.png",
+      "video": "https://youtu.be/9PjdYXxxL1E",
+      "images": [],
+      "links": [],
+      "client": "ROD",
+      "format": "КОНЦЕРТ/АФТЕРМУВИ"
+    },
     {
       "id": "pmtoonbt096ll",
       "added": "2026-09-05",
