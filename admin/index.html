@@ -255,7 +255,7 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
 'use strict';
 const $ = s => document.querySelector(s);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const CATEGORIES = { concerts:'КОНЦЕРТЫ', commercials:'РЕКЛАМА', clips:'КЛИПЫ', reels:'REELS', other:'ДРУГОЕ' };
+const CATEGORIES = { concerts:'КОНЦЕРТЫ', commercials:'БЛОГЕРЫ', clips:'КЛИПЫ', reels:'REELS', other:'ДРУГОЕ' };
 const FILE = 'data/projects.json';
 const COLLABS_FILE = 'data/collabs.json';
 
