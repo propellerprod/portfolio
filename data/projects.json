@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-05T19:17:58.739Z",
+  "updated": "2026-09-05T19:22:16.162Z",
   "projects": [
     {
       "id": "pmtopjig0vy2c",
@@ -102,14 +102,14 @@
     },
     {
       "id": "d1",
-      "title": "NIGHT DRIVE",
+      "title": "Neekich",
       "category": "commercials",
-      "cover": "https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1ce9569b0-88ba-4849-8d27-aafe6a3b2723.png",
-      "video": "",
+      "cover": "https://i.ytimg.com/vi/Ue8b1kN8pM8/maxresdefault.jpg",
+      "video": "https://www.youtube.com/watch?v=Ue8b1kN8pM8",
       "images": [],
       "links": [],
-      "format": "РЕКЛАМА • 45 SEC",
-      "client": "[БРЕНД]",
+      "format": "МОНТАЖ",
+      "client": "Neekich",
       "task": "Показать продукт за 30–45 секунд так, чтобы зритель не свайпнул.",
       "idea": "Ночной город, мокрый асфальт, световые линии. Продукт — как главный герой фильма.",
       "process": "Концепция → локация → съёмка вдвоём (2 камеры) → монтаж и цвет в плёночном грейде.",
