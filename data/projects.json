@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-05T19:16:03.384Z",
+  "updated": "2026-09-05T19:17:58.739Z",
   "projects": [
     {
       "id": "pmtopjig0vy2c",
@@ -86,6 +86,21 @@
       "format": "ТАНЦЫ"
     },
     {
+      "id": "d4",
+      "title": "ШИЛО и Olegha77",
+      "category": "commercials",
+      "cover": "https://i.ytimg.com/vi/La9zX2E-9dk/sddefault.jpg",
+      "video": "https://youtu.be/La9zX2E-9dk?si=WyuvPZ9c3KClgKKw",
+      "images": [],
+      "links": [],
+      "format": "ПОДКАСТ",
+      "client": "ШИЛО и Olegha77",
+      "task": "Разговорное видео, которое досматривают.",
+      "idea": "Тёмная студия, один источник света, крупные планы и паузы.",
+      "process": "Сценарий вопросов → студийный свет → 2 камеры.",
+      "added": "2025-08-14"
+    },
+    {
       "id": "d1",
       "title": "NIGHT DRIVE",
       "category": "commercials",
@@ -129,21 +144,6 @@
       "idea": "Бетон, жёсткий свет, длинные тени.",
       "process": "Мудборд → студия → съёмка + бэкстейдж.",
       "added": "2025-10-02"
-    },
-    {
-      "id": "d4",
-      "title": "ШИЛО и Olegha77",
-      "category": "commercials",
-      "cover": "https://i.ytimg.com/vi/La9zX2E-9dk/sddefault.jpg",
-      "video": "https://youtu.be/La9zX2E-9dk?si=WyuvPZ9c3KClgKKw",
-      "images": [],
-      "links": [],
-      "format": "ПОДКАСТ",
-      "client": "ШИЛО и Olegha77",
-      "task": "Разговорное видео, которое досматривают.",
-      "idea": "Тёмная студия, один источник света, крупные планы и паузы.",
-      "process": "Сценарий вопросов → студийный свет → 2 камеры.",
-      "added": "2025-08-14"
     },
     {
       "id": "d5",
