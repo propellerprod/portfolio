@@ -1,18 +1,3 @@
-<!-- ================================================================
-АРХИТЕКТУРА (ответы на вопросы перед реализацией):
-1. Стек: чистый статический HTML/CSS/JS (один файл), шрифты/анимации через CDN, хостинг — GitHub Pages.
-2. Проекты сейчас: захардкожены в массиве PROJECTS внутри index.html.
-3. Категорий как сущности нет — только тип проекта в метаданных карточки.
-4. Меняем: портфолио переезжает во внешний data/projects.json + фильтр по категориям; добавляется /admin/.
-5. Архитектура: публичный сайт читает JSON (raw.githubusercontent → fallback data/projects.json → встроенные дефолты). Админка редактирует данные и коммитит projects.json в репозиторий через GitHub REST API.
-6. Данные: файл data/projects.json в этом же репозитории (title, category, cover, video, images[], links[], added, id). Никаких СУБД.
-7. Backend/сервер НЕ нужен: запись идёт напрямую в GitHub токеном, который вводится в админке и хранится только в браузере админа.
-8. Сервисы: только GitHub (страницы + API).
-9. Всё бесплатно. Токен — бесплатный fine-grained PAT с правом Contents: Read&Write ТОЛЬКО на репозиторий portfolio.
-10. Изменения в GitHub: обновлённый index.html, новый файл data/projects.json, новая папка admin/index.html. Секретов в коде нет.
-Важно про безопасность: токен не лежит в коде сайта — он вводится вами на странице /admin/ и хранится в localStorage только вашего устройства.
-После публикации сайт обновляется за ~1–2 минуты (пересборка GitHub Pages); публичная страница дополнительно читает raw-версию JSON, поэтому изменения видны почти сразу.
-================================================================= -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -627,8 +612,8 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
       <p class="two-cap" data-reveal>Работаем вдвоём на площадке: один снимает основной материал, второй одновременно работает со второй камерой, светом, деталями, backstage и дополнительными планами. <b style="color:var(--ink)">Больше материала. Больше ракурсов. Больше жизни.</b></p>
     </div>
     <div class="two-media">
-      <figure data-reveal><img src="https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/18994c49e-541f-426e-8f0f-254b2eeb5e8e.png" alt="Камера A — основной материал" loading="lazy" data-parallax><figcaption class="mono"><b>CAM A</b> / ОСНОВНОЙ МАТЕРИАЛ</figcaption></figure>
-      <figure data-reveal><img src="https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/1031a4ec7-9393-4930-b2aa-461d6c837e59.png" alt="Камера B — детали и backstage" loading="lazy" data-parallax><figcaption class="mono"><b>CAM B</b> / ДЕТАЛИ / BACKSTAGE</figcaption></figure>
+      <figure data-reveal><img src="https://i.yapx.ru/eLIzy.jpg" alt="Камера A — основной материал" loading="lazy" data-parallax><figcaption class="mono"><b>CAM A</b> / ОСНОВНОЙ МАТЕРИАЛ</figcaption></figure>
+      <figure data-reveal><img src="https://i.yapx.ru/eLIvX.jpg" alt="Камера B — детали и backstage" loading="lazy" data-parallax><figcaption class="mono"><b>CAM B</b> / ДЕТАЛИ / BACKSTAGE</figcaption></figure>
     </div>
   </div>
 </section>
