@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-05T17:04:19.648Z",
+  "updated": "2026-09-05T17:14:28.888Z",
   "projects": [
     {
       "id": "d1",
@@ -18,14 +18,14 @@
     },
     {
       "id": "d2",
-      "title": "STATIC",
+      "title": "ARUSH",
       "category": "clips",
-      "cover": "https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/10b2ec472-fb7d-40b6-8faf-7e8746d1079d.png",
-      "video": "",
+      "cover": "https://avatars.yandex.net/get-music-content/16485602/61c42506.a.41514784-1/600x600",
+      "video": "https://youtu.be/gOd90jXk-ek",
       "images": [],
       "links": [],
-      "format": "КЛИП • 3 MIN",
-      "client": "[АРТИСТ]",
+      "format": "КЛИП",
+      "client": "ARUSH",
       "task": "Клип с характером при ограниченном бюджете.",
       "idea": "Одна локация, дым, лазеры и силуэт. Свет работает вместо декораций.",
       "process": "Раскадровка → съёмочная ночь → монтаж в ритм трека.",
