@@ -1,6 +1,18 @@
 {
-  "updated": "2026-09-05T17:14:28.888Z",
+  "updated": "2026-09-05T17:30:40.827Z",
   "projects": [
+    {
+      "id": "pmtonscgmp804",
+      "added": "2026-09-05",
+      "title": "МЕЛАНЖ",
+      "category": "clips",
+      "cover": "https://i.yapx.ru/eLFCD.png",
+      "video": "https://youtu.be/slvzvDgFoHo",
+      "images": [],
+      "links": [],
+      "client": "МЕЛАНЖ",
+      "format": "ТАНЦЫ"
+    },
     {
       "id": "d1",
       "title": "NIGHT DRIVE",
