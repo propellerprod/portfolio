@@ -734,7 +734,7 @@ const DESKTOP = FINE && !TOUCH && WIDE && !RM;
 const $ = s => document.querySelector(s);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-const CONFIG = { contacts: { telegram:'https://t.me/propunion', whatsapp:'', vk:'https://vk.ru/propeller.media', instagram:'nethouse.id/propeller-prod', phone:'+79102041086', email:'btdstream@gmail.com' } };
+const CONFIG = { contacts: { telegram:'https://t.me/propunion', whatsapp:'', vk:'https://vk.ru/propeller.media', instagram:'https://nethouse.id/propeller-prod', phone:'tel:+79102041086', email:'mailto:btdstream@gmail.com' } };
 
 const PRICES = [
   {name:'ПОЧАСОВАЯ', val:'5 000 ₽/ЧАС', forOne:'почасовая съёмка — платите только за время', inc:['2 оператора','набор оборудования','выезд на локацию','подготовка к съёмке','съёмка на локации','передача материала через облачное хранилище','хранение материала в течение месяца'], hot:false},
