@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-05T18:19:47.643Z",
+  "updated": "2026-09-05T18:21:58.856Z",
   "projects": [
     {
       "id": "pmtopjig0vy2c",
@@ -132,14 +132,14 @@
     },
     {
       "id": "d4",
-      "title": "ПОДКАСТЫ",
+      "title": "ШИЛО и Olegha77",
       "category": "other",
-      "cover": "https://image.qwenlm.ai/public_source/242ddf5f-4cf2-49d3-86cc-5748520c5b5a/12c296023-039e-4002-9c9c-fdba6b324853.png",
-      "video": "",
+      "cover": "https://i.ytimg.com/vi/La9zX2E-9dk/sddefault.jpg",
+      "video": "https://youtu.be/La9zX2E-9dk?si=WyuvPZ9c3KClgKKw",
       "images": [],
       "links": [],
-      "format": "ПОДКАСТ • 12 MIN",
-      "client": "[КЛИЕНТ]",
+      "format": "ПОДКАСТ",
+      "client": "ШИЛО и Olegha77",
       "task": "Разговорное видео, которое досматривают.",
       "idea": "Тёмная студия, один источник света, крупные планы и паузы.",
       "process": "Сценарий вопросов → студийный свет → 2 камеры.",
