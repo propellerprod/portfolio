@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-06T20:15:30.595Z",
+  "updated": "2026-09-06T20:17:01.887Z",
   "projects": [
     {
       "id": "pmtosc69ngr7r",
@@ -62,18 +62,6 @@
       "format": "REELS"
     },
     {
-      "id": "pmtop1tks5bb4",
-      "added": "2026-09-05",
-      "title": "ROD AWARDS 2025",
-      "category": "concerts",
-      "cover": "https://i.yapx.ru/eLFiu.png",
-      "video": "https://youtu.be/9PjdYXxxL1E",
-      "images": [],
-      "links": [],
-      "client": "ROD",
-      "format": "КОНЦЕРТ/АФТЕРМУВИ"
-    },
-    {
       "id": "d5",
       "title": "LIL CRYSTALLL",
       "category": "concerts",
@@ -87,6 +75,18 @@
       "idea": "Снимать не сцену, а то, что между: руки, дым, свет, крик.",
       "process": "Двое на площадке → основная камера + детали → афтермуви за 72 часа.",
       "added": "2024-12-11"
+    },
+    {
+      "id": "pmtop1tks5bb4",
+      "added": "2026-09-05",
+      "title": "ROD AWARDS 2025",
+      "category": "concerts",
+      "cover": "https://i.yapx.ru/eLFiu.png",
+      "video": "https://youtu.be/9PjdYXxxL1E",
+      "images": [],
+      "links": [],
+      "client": "ROD",
+      "format": "КОНЦЕРТ/АФТЕРМУВИ"
     },
     {
       "id": "pmtoonbt096ll",
