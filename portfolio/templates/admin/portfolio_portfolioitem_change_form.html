@@ -1,0 +1,105 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script type="text/javascript">
+(function($) {
+    $(document).ready(function() {
+        // Функция для получения превью видео
+        function fetchVideoThumbnail() {
+            var videoUrl = $('#id_video_url').val();
+            
+            if (!videoUrl) {
+                alert('Сначала введите ссылку на видео (Rutube или VK Видео)');
+                return;
+            }
+            
+            // Проверяем, что URL содержит rutube.ru или vk.com/video
+            if (videoUrl.indexOf('rutube.ru') === -1 && 
+                (videoUrl.indexOf('vk.com') === -1 || videoUrl.indexOf('/video') === -1)) {
+                alert('Пожалуйста, введите корректную ссылку на видео с Rutube или VK Видео');
+                return;
+            }
+            
+            var button = $('#get-thumbnail-btn');
+            button.prop('disabled', true).text('Загрузка...');
+            
+            $.ajax({
+                url: '{% url "admin:portfolio_get_video_thumbnail" %}',
+                data: {
+                    'video_url': videoUrl
+                },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success) {
+                        // Заполняем поле thumbnail_url
+                        $('#id_thumbnail_url').val(data.thumbnail_url);
+                        
+                        // Обновляем превью
+                        var previewContainer = $('.field-get_thumbnail_preview div');
+                        if (previewContainer.length) {
+                            previewContainer.html(
+                                '<img src="' + data.thumbnail_url + '" style="max-width: 300px; max-height: 200px; border-radius: 8px;" />' +
+                                '<p style="color: green; margin-top: 10px;">✓ Превью успешно получено!</p>'
+                            );
+                        } else {
+                            // Если контейнера нет, создаем сообщение
+                            $('#id_thumbnail_url').after(
+                                '<div style="margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 5px;">' +
+                                '<p style="color: green; margin: 0;">✓ Превью успешно получено! Нажмите "Сохранить", чтобы сохранить ссылку.</p>' +
+                                '<p style="margin: 5px 0 0 0;"><strong>URL превью:</strong> ' + data.thumbnail_url + '</p>' +
+                                '</div>'
+                            );
+                        }
+                        
+                        alert('Превью успешно получено! Не забудьте сохранить изменения.');
+                    } else {
+                        alert('Ошибка: ' + (data.error || 'Не удалось получить превью'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Ошибка при получении превью: ' + error);
+                },
+                complete: function() {
+                    button.prop('disabled', false).text('📷 Получить превью из видео');
+                }
+            });
+        }
+        
+        // Добавляем кнопку после поля video_url
+        var videoUrlField = $('.field-video_url');
+        if (videoUrlField.length) {
+            videoUrlField.after(
+                '<div class="form-row" style="margin-top: -20px; margin-bottom: 20px;">' +
+                '<div>&nbsp;</div>' +
+                '<div>' +
+                '<button type="button" id="get-thumbnail-btn" onclick="fetchVideoThumbnail()" ' +
+                'style="background: #417690; color: white; border: none; padding: 10px 20px; ' +
+                'border-radius: 4px; cursor: pointer; font-size: 14px;">' +
+                '📷 Получить превью из видео' +
+                '</button>' +
+                '<p style="color: #666; font-size: 12px; margin-top: 5px;">' +
+                'Нажмите кнопку, чтобы автоматически получить обложку из видео. ' +
+                'Ссылка на изображение будет вставлена в поле "Ссылка на обложку".' +
+                '</p>' +
+                '</div>' +
+                '</div>'
+            );
+        }
+        
+        // Автоматическое определение источника видео при изменении URL
+        $('#id_video_url').on('change blur', function() {
+            var url = $(this).val().toLowerCase();
+            var sourceSelect = $('#id_video_source');
+            
+            if (url.indexOf('rutube.ru') !== -1) {
+                sourceSelect.val('rutube');
+            } else if (url.indexOf('vk.com') !== -1 && url.indexOf('/video') !== -1) {
+                sourceSelect.val('vk');
+            }
+        });
+    });
+})(django.jQuery);
+</script>
+{% endblock %}
