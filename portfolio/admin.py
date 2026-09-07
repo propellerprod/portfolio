@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import path
+from django.forms import Media
 from .models import PortfolioItem
 
 
@@ -29,6 +30,15 @@ class PortfolioItemAdmin(admin.ModelAdmin):
     )
     
     readonly_fields = ('get_thumbnail_preview',)
+    
+    class Media:
+        """
+        Подключаем наш JavaScript файл для работы кнопки получения превью.
+        """
+        js = ('admin/js/portfolio_video.js',)
+        css = {
+            'all': ()
+        }
     
     def get_thumbnail_preview(self, obj):
         """
