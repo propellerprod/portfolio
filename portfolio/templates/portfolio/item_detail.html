@@ -5,12 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ item.title }} - Портфолио</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
@@ -18,7 +13,6 @@
             background-color: #f5f5f5;
             padding: 20px;
         }
-        
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -27,22 +21,17 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        
-        /* Контейнер для видео 16:9 (обычные видео) */
         .video-container {
             position: relative;
             width: 100%;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            padding-bottom: 56.25%;
             background: #000;
         }
-        
-        /* Контейнер для вертикальных видео 9:16 (Shorts/Клипы) */
         .video-container.shorts {
-            padding-bottom: 177.78%; /* 9:16 aspect ratio */
+            padding-bottom: 177.78%;
             max-width: 450px;
             margin: 0 auto;
         }
-        
         .video-container iframe {
             position: absolute;
             top: 0;
@@ -51,24 +40,9 @@
             height: 100%;
             border: none;
         }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .content h1 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 2em;
-        }
-        
-        .content .description {
-            color: #555;
-            font-size: 1.1em;
-            margin-bottom: 20px;
-            line-height: 1.8;
-        }
-        
+        .content { padding: 30px; }
+        .content h1 { color: #2c3e50; margin-bottom: 15px; font-size: 2em; }
+        .content .description { color: #555; font-size: 1.1em; margin-bottom: 20px; }
         .meta-info {
             display: flex;
             gap: 20px;
@@ -78,13 +52,6 @@
             color: #777;
             font-size: 0.9em;
         }
-        
-        .meta-info span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
         .back-link {
             display: inline-block;
             margin-top: 20px;
@@ -93,60 +60,8 @@
             color: white;
             text-decoration: none;
             border-radius: 5px;
-            transition: background 0.3s;
         }
-        
-        .back-link:hover {
-            background: #2980b9;
-        }
-        
-        .thumbnail-placeholder {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .play-button {
-            width: 80px;
-            height: 80px;
-            background: rgba(0,0,0,0.7);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.3s, background 0.3s;
-        }
-        
-        .play-button::before {
-            content: '';
-            width: 0;
-            height: 0;
-            border-left: 25px solid white;
-            border-top: 15px solid transparent;
-            border-bottom: 15px solid transparent;
-            margin-left: 5px;
-        }
-        
-        .thumbnail-placeholder:hover .play-button {
-            transform: scale(1.1);
-            background: rgba(0,0,0,0.9);
-        }
-        
-        .no-video {
-            padding: 100px 20px;
-            text-align: center;
-            color: #999;
-        }
-        
-        /* Бейдж для Shorts/Клипов */
+        .no-video { padding: 80px 20px; text-align: center; color: #999; }
         .shorts-badge {
             display: inline-block;
             padding: 4px 10px;
@@ -154,44 +69,28 @@
             color: white;
             border-radius: 20px;
             font-size: 0.8em;
-            font-weight: bold;
             margin-left: 10px;
         }
-        
-        @media (max-width: 768px) {
-            .content h1 {
-                font-size: 1.5em;
-            }
-            
-            .content {
-                padding: 20px;
-            }
-            
-            .video-container.shorts {
-                max-width: 100%;
-            }
-        }
+        .cover img { width: 100%; height: auto; display: block; }
     </style>
 </head>
 <body>
     <div class="container">
-        {% if item.get_embed_url %}
+        {% if item.video_url and item.get_embed_url %}
         <div class="video-container {% if item.is_shorts %}shorts{% endif %}">
-            <iframe 
-                src="{{ item.get_embed_url }}" 
+            <iframe
+                src="{{ item.get_embed_url }}"
                 allow="fullscreen; clipboard-write; encrypted-media"
                 allowfullscreen
                 title="{{ item.title }}">
             </iframe>
         </div>
         {% elif item.thumbnail_url or item.image %}
-        <div class="video-container {% if item.is_shorts %}shorts{% endif %}" style="padding-bottom: 0; background: #f0f0f0;">
+        <div class="cover">
             {% if item.thumbnail_url %}
-            <div class="thumbnail-placeholder" style="background-image: url('{{ item.thumbnail_url }}');">
-                <div class="play-button"></div>
-            </div>
+            <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}">
             {% elif item.image %}
-            <img src="{{ item.image.url }}" alt="{{ item.title }}" style="width: 100%; height: auto; display: block;">
+            <img src="{{ item.image.url }}" alt="{{ item.title }}">
             {% endif %}
         </div>
         {% else %}
@@ -199,7 +98,7 @@
             <p>Видео не доступно</p>
         </div>
         {% endif %}
-        
+
         <div class="content">
             <h1>
                 {{ item.title }}
@@ -207,20 +106,15 @@
                 <span class="shorts-badge">📱 Shorts/Клип</span>
                 {% endif %}
             </h1>
-            
             {% if item.description %}
-            <div class="description">
-                {{ item.description }}
-            </div>
+            <div class="description">{{ item.description }}</div>
             {% endif %}
-            
             <div class="meta-info">
-                {% if item.video_source != 'other' %}
+                {% if item.video_source and item.video_source != 'other' %}
                 <span>📹 Источник: {{ item.get_video_source_display }}</span>
                 {% endif %}
                 <span>📅 {{ item.created_at|date:"d.m.Y" }}</span>
             </div>
-            
             <a href="/" class="back-link">← Вернуться к портфолио</a>
         </div>
     </div>

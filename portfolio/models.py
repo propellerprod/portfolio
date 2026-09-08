@@ -3,136 +3,86 @@ from django.db import models
 
 class PortfolioItem(models.Model):
     """
-    Модель элемента портфолио с поддержкой видео из Rutube, VK Видео, YouTube (включая Shorts) и VK Клипов.
+    Элемент портфолио с видео Rutube / VK / YouTube / VK Clips.
     """
+
     VIDEO_SOURCE_CHOICES = [
-        ('rutube', 'Rutube'),
-        ('vk', 'VK Видео'),
-        ('youtube', 'YouTube'),
-        ('vk_clip', 'VK Клип'),
-        ('other', 'Другое'),
+        ("rutube", "Rutube"),
+        ("vk", "VK Видео"),
+        ("youtube", "YouTube"),
+        ("vk_clip", "VK Клип"),
+        ("other", "Другое"),
     ]
-    
-    title = models.CharField(
-        max_length=255,
-        verbose_name='Название проекта'
-    )
-    description = models.TextField(
+
+    title = models.CharField(max_length=255, verbose_name="Название проекта")
+    description = models.TextField(blank=True, verbose_name="Описание")
+    image = models.ImageField(
+        upload_to="portfolio/",
         blank=True,
-        verbose_name='Описание'
+        null=True,
+        verbose_name="Изображение проекта",
     )
-    
-    # Поле для ссылки на видео
-    video_url = models.URLField(
+    video_url = models.CharField(
         max_length=500,
+        null=True,
         blank=True,
-        verbose_name='Ссылка на видео (Rutube, VK Видео, YouTube, VK Клип)'
+        verbose_name="Ссылка на видео",
     )
-    
-    # Определяем источник видео
     video_source = models.CharField(
         max_length=20,
         choices=VIDEO_SOURCE_CHOICES,
-        default='other',
-        verbose_name='Источник видео'
+        default="other",
+        verbose_name="Источник видео",
     )
-    
-    # Поле для обложки (превью)
-    # Хранит только URL изображения, не скачивает файл
-    thumbnail_url = models.URLField(
+    thumbnail_url = models.CharField(
         max_length=500,
+        null=True,
         blank=True,
-        verbose_name='Ссылка на обложку (превью)'
+        verbose_name="Ссылка на обложку",
     )
-    
-    # Флаг: использовать ли автоматическое превью
-    use_auto_thumbnail = models.BooleanField(
-        default=False,
-        verbose_name='Автоматически получать превью из видео'
-    )
-    
-    # Флаг для вертикальных видео (Shorts/Клипы)
     is_shorts = models.BooleanField(
         default=False,
-        verbose_name='Вертикальное видео (Shorts/Клип)'
+        verbose_name="Вертикальное видео (Shorts/Клип)",
     )
-    
-    # Дополнительное изображение проекта (опционально)
-    image = models.ImageField(
-        upload_to='portfolio/',
-        blank=True,
-        null=True,
-        verbose_name='Изображение проекта'
+    use_auto_thumbnail = models.BooleanField(
+        default=False,
+        verbose_name="Автоматически получать превью из видео",
     )
-    
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания'
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name='Дата обновления'
-    )
-    
-    is_published = models.BooleanField(
-        default=True,
-        verbose_name='Опубликовано'
-    )
-    
-    order = models.PositiveIntegerField(
-        default=0,
-        verbose_name='Порядок отображения'
-    )
-    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    is_published = models.BooleanField(default=True, verbose_name="Опубликовано")
+    order = models.PositiveIntegerField(default=0, verbose_name="Порядок отображения")
+
     class Meta:
-        ordering = ['order', '-created_at']
-        verbose_name = 'Элемент портфолио'
-        verbose_name_plural = 'Портфолио'
-    
+        ordering = ["order", "-created_at"]
+        verbose_name = "Элемент портфолио"
+        verbose_name_plural = "Портфолио"
+
     def __str__(self):
         return self.title
-    
+
     def get_thumbnail_url(self):
-        """
-        Возвращает URL обложки: либо заданный вручную, либо из video_url.
-        """
         if self.thumbnail_url:
             return self.thumbnail_url
-        
         if self.use_auto_thumbnail and self.video_url:
-            from video_utils.api import get_video_thumbnail
-            thumbnail_info = get_video_thumbnail(self.video_url)
-            if thumbnail_info and thumbnail_info.get('thumbnail_url'):
-                return thumbnail_info['thumbnail_url']
-        
+            from video_utils.api import get_video_meta
+
+            meta = get_video_meta(self.video_url)
+            if meta and meta.get("thumbnail"):
+                return meta["thumbnail"]
         return None
-    
+
     def get_embed_url(self):
-        """
-        Возвращает URL для встраивания видео (iframe).
-        """
         if not self.video_url:
             return None
-        
         from video_utils.api import get_embed_url
+
         return get_embed_url(self.video_url)
-    
+
     def get_video_id(self):
-        """
-        Возвращает ID видео в сервисе.
-        """
         if not self.video_url:
             return None
-        
-        from video_utils.api import extract_video_id_rutube, extract_video_id_vk, extract_video_id_youtube
-        
-        if 'rutube.ru' in self.video_url.lower():
-            return extract_video_id_rutube(self.video_url)
-        elif 'vk.com' in self.video_url.lower() and '/clips' in self.video_url.lower():
-            return extract_video_id_vk(self.video_url, is_clip=True)
-        elif 'vk.com' in self.video_url.lower() and '/video' in self.video_url.lower():
-            return extract_video_id_vk(self.video_url, is_clip=False)
-        elif 'youtube.com' in self.video_url.lower() or 'youtu.be' in self.video_url.lower():
-            return extract_video_id_youtube(self.video_url)
-        
-        return None
+        from video_utils.api import get_video_meta
+
+        meta = get_video_meta(self.video_url)
+        return (meta or {}).get("video_id")
