@@ -781,13 +781,15 @@ async function loadPortfolio(){
 function toEmbed(url){
   if(!url) return '';
   url = String(url).trim();
-  if(/youtube\.com\/embed\//i.test(url) || /video_ext\.php/i.test(url)) return url;
+  if(/youtube\.com\/embed\//i.test(url) || /video_ext\.php/i.test(url) || /rutube\.ru\/play\/embed\//i.test(url)) return url;
   let m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
   if(m) return 'https://www.youtube.com/embed/'+m[1]+'?rel=0';
   m = url.match(/(?:vk\.com|vkvideo\.ru)\/(?:video|clip)(-?\d+)_(\d+)/i);
   if(m) return 'https://vk.com/video_ext.php?oid='+m[1]+'&id='+m[2]+'&hd=2';
   m = url.match(/[?&]z=(?:video|clip)(-?\d+)_(\d+)/i);
   if(m) return 'https://vk.com/video_ext.php?oid='+m[1]+'&id='+m[2]+'&hd=2';
+  m = url.match(/rutube\.ru\/video\/([A-Za-z0-9]+)\/?/i);
+  if(m) return 'https://rutube.ru/play/embed/'+m[1];
   return '';
 }
 

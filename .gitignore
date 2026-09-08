@@ -1,43 +1,7 @@
 ```
-# Django static files
-staticfiles/
+# Database
+db.sqlite3
 
-# Python compiled files
-*.pyc
-__pycache__/
-
-# Logs
-*.log
-
-# Environment files
-.env
-.env.local
-*.env.*
-
-# IDE files
-.vscode/
-.idea/
-
-# Temporary files
-*.tmp
-*.swp
-
-# Coverage reports
-coverage/
-htmlcov/
-*.coverage
-
-# Build artifacts
-build/
-dist/
-target/
-
-# Dependencies
-.venv/
-venv/
-node_modules/
-
-# OS generated files
-.DS_Store
-Thumbs.db
+# Static files
+portfolio/static/admin/js/portfolio_video.js
 ```
