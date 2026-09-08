@@ -21,9 +21,6 @@ wheels/
 .installed.cfg
 *.egg
 
-# Database
-db.sqlite3
-
 # Environment
 .env
 .env.local
@@ -44,7 +41,12 @@ ENV/
 
 # Coverage
 .coverage
+coverage/
 htmlcov/
-.coverage.*
-.coverage.xml
+
+# Pytest
+.pytest_cache/
+
+# Mypy
+.mypy_cache/
 ```
