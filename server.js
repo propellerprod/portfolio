@@ -44,9 +44,10 @@ async function extractVideoMeta(rawUrl) {
   }
 
   // 2. Rutube
-  const rutubeMatch = url.match(/rutube\.ru\/(?:video|play\/embed)\/([A-Za-z0-9]+)/i);
+  const rutubeMatch = url.match(/rutube\.ru\/(?:video\/private|video|play\/embed|shorts|pl|videos)\/([A-Za-z0-9]+)/i);
   if (rutubeMatch && rutubeMatch[1]) {
     const videoId = rutubeMatch[1];
+    const isRutubeShorts = url.toLowerCase().includes('/shorts/') || url.toLowerCase().includes('/clip');
     let thumb = `https://pic.rutubelist.ru/video/${videoId}.jpg`;
     try {
       const resp = await fetch(`https://rutube.ru/api/video/${videoId}/`, {
@@ -68,47 +69,61 @@ async function extractVideoMeta(rawUrl) {
       service: 'rutube',
       source: 'rutube',
       video_id: videoId,
-      is_shorts: false,
+      is_shorts: isRutubeShorts,
       thumbnail: thumb,
       thumbnail_url: thumb,
       embed_url: `https://rutube.ru/play/embed/${videoId}/`
     };
   }
 
-  // 3. VK Video and Clips
-  const vkClipMatch = url.match(/(?:vk\.com|vkvideo\.ru)\/(?:clip|clips\/clip)(-?\d+)_(\d+)/i);
-  const vkVideoMatch = url.match(/(?:vk\.com|vkvideo\.ru)\/(?:video|video_ext\.php\?(?:.*&)?oid=)(-?\d+)[_&](?:id=)?(\d+)/i);
+  // 3. VK Video and Clips (vkvideo.ru, vk.com, vk.ru)
+  const isVkHost = /(?:vk\.com|vkvideo\.ru|vk\.ru)/i.test(url);
+  const vkClipMatch = url.match(/(?:vk\.com|vkvideo\.ru|vk\.ru)\/(?:clip|clips\/clip)\/?(-?\d+)_(\d+)/i) ||
+                      url.match(/[?&]z=clip(-?\d+)_(\d+)/i);
+  const vkVideoMatch = url.match(/(?:vk\.com|vkvideo\.ru|vk\.ru)\/(?:video|video_ext\.php\?(?:.*&)?oid=)\/?(-?\d+)[_&](?:id=)?(\d+)/i) ||
+                       url.match(/[?&]z=video(-?\d+)_(\d+)/i) ||
+                       (isVkHost ? url.match(/(-?\d+)_(\d+)/) : null);
   
   if (vkClipMatch || vkVideoMatch) {
     const match = vkClipMatch || vkVideoMatch;
-    const isClip = Boolean(vkClipMatch) || url.toLowerCase().includes('/clip');
+    const isClip = Boolean(vkClipMatch) || url.toLowerCase().includes('/clip') || url.toLowerCase().includes('clip-');
     const oid = match[1];
     const id = match[2];
     const videoId = `${oid}_${id}`;
     let thumb = '';
 
-    // Try fetching page HTML for og:image
-    try {
-      const resp = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' },
-        signal: AbortSignal.timeout(4000)
-      });
-      if (resp.ok) {
-        const html = await resp.text();
-        const ogMatch = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i) ||
-                        html.match(/<meta\s+content=["']([^"']+)["']\s+property=["']og:image["']/i);
-        if (ogMatch && ogMatch[1]) {
-          thumb = ogMatch[1].replace(/&amp;/g, '&');
+    // Candidate URLs for og:image extraction (vkvideo.ru has rich metadata in SSR HTML)
+    const candidateUrls = isClip
+      ? [`https://vkvideo.ru/clip${oid}_${id}`, `https://vkvideo.ru/video${oid}_${id}`, url]
+      : [`https://vkvideo.ru/video${oid}_${id}`, `https://vkvideo.ru/clip${oid}_${id}`, url];
+
+    for (const candUrl of candidateUrls) {
+      if (thumb) break;
+      try {
+        const resp = await fetch(candUrl, {
+          headers: { 
+            'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+            'Accept-Language': 'ru,en;q=0.9'
+          },
+          signal: AbortSignal.timeout(4000)
+        });
+        if (resp.ok) {
+          const html = await resp.text();
+          const ogMatch = html.match(/<meta\s+(?:property|name)=["']og:image["']\s+content=["']([^"']+)["']/i) ||
+                          html.match(/<meta\s+content=["']([^"']+)["']\s+(?:property|name)=["']og:image["']/i);
+          if (ogMatch && ogMatch[1]) {
+            thumb = ogMatch[1].replace(/&amp;/g, '&');
+          }
         }
+      } catch {
+        // Continue
       }
-    } catch {
-      // Ignored
     }
 
     return {
       success: true,
       service: isClip ? 'vk_clip' : 'vk',
-      source: isClip ? 'vk_clip' : 'vk',
+      source: 'vk',
       video_id: videoId,
       is_shorts: isClip,
       thumbnail: thumb || null,

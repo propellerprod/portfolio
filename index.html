@@ -39,6 +39,9 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;overflow-x:hidden;overflow-x:clip}
+html.lenis, html.lenis body{height:auto}
+html.lenis.lenis-smooth, .lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
 body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--fb);-webkit-font-smoothing:antialiased;overflow-x:hidden;overflow-x:clip;overscroll-behavior-y:none}
 body.loading,body.menu-open{overflow:hidden}
 ::selection{background:var(--acc);color:var(--acc-ink)}
@@ -183,10 +186,10 @@ body.loaded .hero-badge{opacity:1}
 
 /* ============ РАБОТЫ (динамические) ============ */
 .cat-bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:5vh}
-.cat-btn{border:1px solid var(--line);padding:13px 20px;min-height:44px;font:600 11px/1 var(--fb);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);transition:.3s}
+.cat-btn{border:1px solid var(--line);padding:13px 20px;min-height:44px;font:600 11px/1 var(--fb);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);transition:color .25s,border-color .25s,background-color .25s}
 .cat-btn:hover{border-color:var(--ink);color:var(--ink)}
 .cat-btn.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
-.works-grid{display:grid;grid-template-columns:repeat(12,1fr);column-gap:2vw}
+.works-grid{display:grid;grid-template-columns:repeat(12,1fr);column-gap:2vw;min-height:520px}
 .work{margin-bottom:14vh;position:relative;min-width:0}
 .w-full{grid-column:1/-1}
 .w-tall{grid-column:1/6}
@@ -319,7 +322,8 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 .case-close:hover{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
 .case-media{position:relative;overflow:hidden;margin-bottom:5vh;background:#000}
 .case-media img{width:100%;aspect-ratio:21/9;object-fit:cover;filter:grayscale(.15) contrast(1.06)}
-.case-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+.case-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;border:1px solid var(--line);transition:max-width .3s ease}
+.case-frame.shorts{max-width:420px;margin-inline:auto;aspect-ratio:9/16}
 .case-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .case-title{font-family:var(--fd);font-weight:900;font-size:clamp(36px,6.4vw,110px);text-transform:uppercase;line-height:.95;margin-bottom:4vh;overflow-wrap:anywhere}
 .case-meta{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);margin-bottom:5vh}
@@ -340,9 +344,9 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
 .case-nav{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 .case-nav .btn{flex:1 1 auto}
 
-#photoView{position:fixed;inset:0;z-index:9500;background:rgba(5,5,6,.96);display:none;align-items:center;justify-content:center;padding:calc(20px + var(--sat)) calc(16px + var(--sar)) calc(20px + var(--sab)) calc(16px + var(--sal))}
+#photoView{position:fixed;inset:0;z-index:9500;background:rgba(5,5,6,.96);display:none;align-items:center;justify-content:center;cursor:zoom-out;padding:calc(20px + var(--sat)) calc(16px + var(--sar)) calc(20px + var(--sab)) calc(16px + var(--sal))}
 #photoView.open{display:flex}
-#photoView img{max-width:100%;max-height:88vh;object-fit:contain}
+#photoView img{max-width:100%;max-height:88vh;object-fit:contain;cursor:default}
 
 #fixedCta{position:fixed;left:calc(4vw + var(--sal));right:calc(4vw + var(--sar));bottom:calc(14px + var(--sab));z-index:750;display:none;transform:translateY(140%);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 #fixedCta.show{transform:none}
@@ -481,7 +485,7 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   </nav>
   <div class="m-foot mono">
     <span>МОСКВА × ОРЁЛ</span>
-    <span>[TELEGRAM] / [WHATSAPP] / [VK]</span>
+    <span><a href="https://t.me/propunion" target="_blank" rel="noopener noreferrer">[TELEGRAM]</a> / <a href="https://wa.me/79102041086" target="_blank" rel="noopener noreferrer">[WHATSAPP]</a> / <a href="https://vk.ru/propeller.media" target="_blank" rel="noopener noreferrer">[VK]</a></span>
   </div>
 </div>
 
@@ -573,7 +577,7 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   <div class="wrap">
     <div class="sec-head"><span class="mono">03 / РАБОТЫ</span><span class="mono" id="worksCount">… ПРОЕКТОВ</span></div>
     <h2 class="h-mega h-sec" data-clip>РАБОТЫ<span class="acc">.</span></h2>
-    <div class="cat-bar" id="catBar" data-reveal></div>
+    <div class="cat-bar" id="catBar"></div>
     <div class="works-grid" id="worksGrid" style="margin-top:8vh">
       <div class="w-empty mono">[ ЗАГРУЗКА ПРОЕКТОВ… ]</div>
     </div>
@@ -610,7 +614,7 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
     <div class="two-sticky">
       <div class="sec-head" style="margin-bottom:5vh"><span class="mono">06 / ФОРМАТ</span></div>
       <h2 class="two-title" data-clip>2 ОПЕРАТОРА <span class="outl">1 ЦЕНА</span></h2>
-      <p class="two-cap" data-reveal>Работаем вдвоём на площадке: один снимает основной материал, второй одновременно работает со второй камерой, светом, деталями, backstage и дополнительными планами. <b style="color:var(--ink)"></b></p>
+      <p class="two-cap" data-reveal>Работаем вдвоём на площадке: один снимает основной материал, второй одновременно работает со второй камерой, светом, деталями, backstage и дополнительными планами.</p>
     </div>
     <div class="two-media">
       <figure data-reveal><img src="https://i.yapx.ru/eLIzy.jpg" alt="Камера A — основной материал" loading="lazy" data-parallax><figcaption class="mono"><b>CAM A</b> / ОСНОВНОЙ МАТЕРИАЛ</figcaption></figure>
@@ -624,7 +628,6 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
     <div class="sec-head"><span class="mono">07 / СТОИМОСТЬ</span><span class="mono">БЕЗ СКРЫТЫХ ПЛАТЕЖЕЙ</span></div>
     <h2 class="h-mega h-sec" data-clip>СТОИМОСТЬ<span class="acc">?</span></h2>
     <div class="price-grid" id="priceGrid" style="margin-top:8vh"></div>
-    <p class="mono price-note" data-reveal></p>
   </div>
 </section>
 
@@ -650,36 +653,36 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
     </div>
     <div class="team-note" data-reveal>
       <span class="stamp">МЫ ОБА УМЕЕМ ВСЁ</span>
-      <p class="mono">НА ПОЩАДКЕ НАС ВСЕГДА ДВОЕ <b></p>
+      <p class="mono">НА ПЛОЩАДКЕ НАС ВСЕГДА ДВОЕ</p>
     </div>
   </div>
 </section>
 
 <section class="sec" id="contact">
   <div class="wrap">
-    <div class="sec-head"><span class="mono">9 / КОНТАКТ</span><span class="mono">МОСКВА / ОРЁЛ / РОССИЯ</span></div>
+    <div class="sec-head"><span class="mono">09 / КОНТАКТ</span><span class="mono">МОСКВА / ОРЁЛ / РОССИЯ</span></div>
     <h2 class="h-mega c-title" data-clip>ЕСТЬ ИДЕЯ?<br>ДАВАЙТЕ СНИМЕМ<span class="acc">.</span></h2>
     <p class="c-sub" data-reveal>Напишите нам — ответим в течение дня. <b>Без менеджеров: пишете напрямую тем, кто будет снимать.</b></p>
     <div class="soc-grid">
-      <a class="soc" href="#" data-ph data-contact="telegram" data-cursor="LET'S SHOOT →" data-reveal>
+      <a class="soc" href="https://t.me/propunion" target="_blank" rel="noopener noreferrer" data-contact="telegram" data-cursor="LET'S SHOOT →" data-reveal>
         <span class="mono soc-idx">01 / САМЫЙ БЫСТРЫЙ</span>
         <span class="soc-name">TELEGRAM</span>
         <span class="mono soc-handle">@propunion — ОТВЕЧАЕМ МОМЕНТАЛЬНО</span>
         <span class="soc-arr" aria-hidden="true">↗</span>
       </a>
-      <a class="soc" href="#" data-ph data-contact="whatsapp" data-cursor="LET'S SHOOT →" data-reveal>
+      <a class="soc" href="https://wa.me/79102041086" target="_blank" rel="noopener noreferrer" data-contact="whatsapp" data-cursor="LET'S SHOOT →" data-reveal>
         <span class="mono soc-idx">02 / ЕСЛИ ПРИВЫЧНЕЕ</span>
         <span class="soc-name">WHATSAPP</span>
         <span class="mono soc-handle">+7(910)204-10-86 — ПИШИТЕ ИЛИ ЗВОНИТЕ</span>
         <span class="soc-arr" aria-hidden="true">↗</span>
       </a>
-      <a class="soc" href="#" data-ph data-contact="vk" data-cursor="LET'S SHOOT →" data-reveal>
+      <a class="soc" href="https://vk.ru/propeller.media" target="_blank" rel="noopener noreferrer" data-contact="vk" data-cursor="LET'S SHOOT →" data-reveal>
         <span class="mono soc-idx">03 / ДЛЯ БИЗНЕСА</span>
         <span class="soc-name">VK</span>
         <span class="mono soc-handle">vk.ru/propeller.media</span>
         <span class="soc-arr" aria-hidden="true">↗</span>
       </a>
-      <a class="soc" href="#" data-ph data-contact="instagram" data-cursor="LET'S SHOOT →" data-reveal>
+      <a class="soc" href="https://nethouse.id/propeller-prod" target="_blank" rel="noopener noreferrer" data-contact="instagram" data-cursor="LET'S SHOOT →" data-reveal>
         <span class="mono soc-idx">04 / НАШ INST</span>
         <span class="soc-name">INSTAGRAM</span>
         <span class="mono soc-handle">НАШИ ИНСТАГРАМЫ</span>
@@ -687,8 +690,8 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
       </a>
     </div>
     <div class="c-row" data-reveal>
-      <a class="c-big" href="#" data-ph data-contact="phone" data-cursor="LET'S SHOOT →">[ТЕЛЕФОН] ↗</a>
-      <a class="c-big" href="#" data-ph data-contact="email" data-cursor="LET'S SHOOT →">[EMAIL] ↗</a>
+      <a class="c-big" href="tel:+79102041086" data-contact="phone" data-cursor="LET'S SHOOT →">+7 (910) 204-10-86 ↗</a>
+      <a class="c-big" href="mailto:btdstream@gmail.com" data-contact="email" data-cursor="LET'S SHOOT →">BTDSTREAM@GMAIL.COM ↗</a>
       <span class="mono c-geo">55.75° N — МОСКВА / 52.96° N — ОРЁЛ</span>
     </div>
   </div>
@@ -700,8 +703,8 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
     <div class="f-word" aria-hidden="true">ПРОПЕЛЛЕР</div>
     <div class="f-cols">
       <div><h4>НАВИГАЦИЯ</h4><a href="#collabs" data-navlink>С КЕМ РАБОТАЛИ</a><a href="#works" data-navlink>РАБОТЫ</a><a href="#services" data-navlink>УСЛУГИ</a><a href="#prices" data-navlink>СТОИМОСТЬ</a></div>
-      <div><h4>СОЦСЕТИ</h4><a href="#" data-ph data-contact="telegram">TELEGRAM ↗</a><a href="#" data-ph data-contact="whatsapp">WHATSAPP ↗</a><a href="#" data-ph data-contact="vk">VK ↗</a><a href="#" data-ph data-contact="instagram">INSTAGRAM ↗</a></div>
-      <div><h4>КОНТАКТЫ</h4><a href="#" data-ph data-contact="phone">+7(910)204-10-86</a><a href="#" data-ph data-contact="email">btdstream@gmail.com</a></div>
+      <div><h4>СОЦСЕТИ</h4><a href="https://t.me/propunion" target="_blank" rel="noopener noreferrer" data-contact="telegram">TELEGRAM ↗</a><a href="https://wa.me/79102041086" target="_blank" rel="noopener noreferrer" data-contact="whatsapp">WHATSAPP ↗</a><a href="https://vk.ru/propeller.media" target="_blank" rel="noopener noreferrer" data-contact="vk">VK ↗</a><a href="https://nethouse.id/propeller-prod" target="_blank" rel="noopener noreferrer" data-contact="instagram">INSTAGRAM ↗</a></div>
+      <div><h4>КОНТАКТЫ</h4><a href="tel:+79102041086" data-contact="phone">+7(910)204-10-86</a><a href="mailto:btdstream@gmail.com" data-contact="email">btdstream@gmail.com</a></div>
       <div><h4>ГЕОГРАФИЯ</h4><span>МОСКВА / ОРЁЛ</span><span>РОССИЯ</span><span class="mono" style="margin-top:8px;display:block">55.75° N — 52.96° N</span></div>
     </div>
     <div class="f-bottom mono">
@@ -718,7 +721,7 @@ footer{border-top:1px solid var(--line);padding:8vh 0 calc(4vh + var(--sab));ove
   <div class="case-in" id="caseBody"></div>
 </div>
 
-<div id="photoView" aria-hidden="true"><img alt="Фото проекта"></div>
+<div id="photoView" aria-hidden="true" role="dialog"><button class="case-close" style="position:absolute;top:calc(20px + var(--sat));right:calc(20px + var(--sar));z-index:9502;background:var(--bg)">ЗАКРЫТЬ ×</button><img alt="Фото проекта"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
@@ -735,7 +738,7 @@ const DESKTOP = FINE && !TOUCH && WIDE && !RM;
 const $ = s => document.querySelector(s);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-const CONFIG = { contacts: { telegram:'https://t.me/propunion', whatsapp:'', vk:'https://vk.ru/propeller.media', instagram:'https://nethouse.id/propeller-prod', phone:'tel:+79102041086', email:'mailto:btdstream@gmail.com' } };
+const CONFIG = { contacts: { telegram:'https://t.me/propunion', whatsapp:'https://wa.me/79102041086', vk:'https://vk.ru/propeller.media', instagram:'https://nethouse.id/propeller-prod', phone:'tel:+79102041086', email:'mailto:btdstream@gmail.com' } };
 
 const PRICES = [
   {name:'ПОЧАСОВАЯ', val:'5 000 ₽/ЧАС', forOne:'почасовая съёмка — платите только за время', inc:['2 оператора','набор оборудования','выезд на локацию','подготовка к съёмке','съёмка на локации','передача материала через облачное хранилище','хранение материала в течение месяца'], hot:false},
@@ -772,81 +775,148 @@ const DEFAULT_PROJECTS = [
 
 let ALL_PROJECTS = [], curList = [], curFilter = 'concerts', curIdx = 0;
 
+function getCover(p){
+  if(!p) return IMG.backstage;
+  if(p.cover && String(p.cover).trim()) return p.cover.trim();
+  if(p.thumbnail_url && String(p.thumbnail_url).trim()) return p.thumbnail_url.trim();
+  const v = p.video || p.video_url || '';
+  if(v){
+    const yt = v.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+    if(yt) return `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg`;
+    const rt = v.match(/rutube\.ru\/(?:video\/private|video|play\/embed|shorts|pl|videos)\/([A-Za-z0-9]+)/i);
+    if(rt) return `https://pic.rutubelist.ru/video/${rt[1]}.jpg`;
+  }
+  return IMG.backstage;
+}
+
+function isShorts(p){
+  if(!p) return false;
+  if(p.category === 'reels') return true;
+  const f = String(p.format || '').toUpperCase();
+  if(f.includes('REELS') || f.includes('SHORTS') || f.includes('TIKTOK') || f.includes('ВЕРТИКАЛ') || f.includes('КЛИП')) return true;
+  const v = String(p.video || p.video_url || '').toLowerCase();
+  if(v.includes('/shorts') || v.includes('/clip') || v.includes('clip-') || v.includes('tiktok.com')) return true;
+  const t = String(p.title || '').toUpperCase();
+  if(t.includes('REELS') || t.includes('SHORTS')) return true;
+  return false;
+}
+
 async function loadPortfolio(){
-  try{ const r = await fetch(RAW_URL,{cache:'no-store'}); if(r.ok){ const d = await r.json(); if(d && Array.isArray(d.projects)) return d.projects; } }catch(e){}
-  try{ const r = await fetch('data/projects.json',{cache:'no-store'}); if(r.ok){ const d = await r.json(); if(d && Array.isArray(d.projects)) return d.projects; } }catch(e){}
-  return DEFAULT_PROJECTS;
+  let list = [];
+  try{
+    const r = await fetch('data/projects.json', {cache: 'no-store'});
+    if(r.ok){
+      const d = await r.json();
+      if(d && Array.isArray(d.projects) && d.projects.length) list = d.projects;
+    }
+  }catch(e){}
+  if(!list.length){
+    try{
+      const r = await fetch(RAW_URL, {cache: 'no-store'});
+      if(r.ok){
+        const d = await r.json();
+        if(d && Array.isArray(d.projects) && d.projects.length) list = d.projects;
+      }
+    }catch(e){}
+  }
+  if(!list.length) list = DEFAULT_PROJECTS;
+
+  // Background auto-enrichment: if any project has video but missing cover, fetch thumbnail
+  setTimeout(()=>{
+    list.forEach(p => {
+      if((!p.cover || !p.cover.trim()) && (!p.thumbnail_url || !p.thumbnail_url.trim())){
+        const v = p.video || p.video_url;
+        if(v){
+          fetch('/api/get-video-meta/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: v })
+          }).then(res => res.ok ? res.json() : null).then(meta => {
+            if(meta && (meta.thumbnail || meta.thumbnail_url)){
+              p.cover = meta.thumbnail || meta.thumbnail_url;
+              p.thumbnail_url = p.cover;
+              try {
+                const imgs = document.querySelectorAll(`img[alt="${CSS.escape(p.title)}"]`);
+                imgs.forEach(img => { if(img.src.includes('backstage') || !img.src) img.src = p.cover; });
+              } catch(e) {}
+            }
+          }).catch(()=>{});
+        }
+      }
+    });
+  }, 100);
+
+  return list;
 }
 
 function toEmbed(url){
   if(!url) return '';
   url = String(url).trim();
   
-  // Уже embed
   if(/youtube\.com\/embed\//i.test(url) || /video_ext\.php/i.test(url) || /rutube\.ru\/play\/embed\//i.test(url) || /player\.vimeo\.com\/video\//i.test(url)) return url;
   
-  // YouTube
-  if(/youtube\.com\/embed\//i.test(url) || /video_ext\.php/i.test(url) || /rutube\.ru\/play\/embed\//i.test(url)) return url;
   let m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
   if(m) return 'https://www.youtube.com/embed/'+m[1]+'?rel=0';
   
-  // Rutube: https://rutube.ru/video/abcd1234... -> embed
-  m = url.match(/rutube\.ru\/video\/([a-f0-9]+)/i);
-  if(m && m[1]) return 'https://rutube.ru/play/embed/'+m[1];
+  m = url.match(/rutube\.ru\/(?:video\/private|video|play\/embed|shorts|pl|videos)\/([A-Za-z0-9]+)/i);
+  if(m && m[1]) return 'https://rutube.ru/play/embed/'+m[1]+'/';
   
-  // Vimeo: https://vimeo.com/123456789 -> embed
   m = url.match(/vimeo\.com\/(\d+)/i);
   if(m && m[1]) return 'https://player.vimeo.com/video/'+m[1];
   
-  // VK
-  m = url.match(/(?:vk\.com|vkvideo\.ru)\/(?:video|clip)(-?\d+)_(\d+)/i);
-  if(m) return 'https://vk.com/video_ext.php?oid='+m[1]+'&id='+m[2]+'&hd=2';
-  m = url.match(/[?&]z=(?:video|clip)(-?\d+)_(\d+)/i);
+  m = url.match(/(?:vk\.com|vkvideo\.ru|vk\.ru)\/(?:video|clip|clips\/clip)\/?(-?\d+)_(\d+)/i) ||
+      url.match(/(?:vk\.com|vkvideo\.ru|vk\.ru)\/video_ext\.php\?(?:.*&)?oid=(-?\d+)(?:.*&)?id=(\d+)/i) ||
+      url.match(/[?&]z=(?:video|clip)(-?\d+)_(\d+)/i) ||
+      ((/(?:vk\.com|vkvideo\.ru|vk\.ru)/i.test(url)) ? url.match(/(-?\d+)_(\d+)/) : null);
   if(m) return 'https://vk.com/video_ext.php?oid='+m[1]+'&id='+m[2]+'&hd=2';
   
-  m = url.match(/rutube\.ru\/video\/([A-Za-z0-9]+)\/?/i);
-  if(m) return 'https://rutube.ru/play/embed/'+m[1];
   return '';
 }
 
 /* ---------- ФИЛЬТР КАТЕГОРИЙ ---------- */
-let lastScrollPos = 0;
 let showAllProjects = false;
 function renderCatBar(){
   const bar = $('#catBar');
-  // Порядок: concerts первый, затем commercials, clips, reels, other, и all в самом конце
+  if(!bar) return;
   const keys = ['concerts', 'commercials', 'clips', 'reels', 'other', 'all'];
-  bar.innerHTML = keys.map(k=>`<button type="button" class="cat-btn ${k===curFilter?'on':''}" data-cat="${k}">${k==='all'?'ВСЕ':CATEGORIES[k]}</button>`).join('');
+  if(!bar.children.length){
+    bar.innerHTML = keys.map(k=>`<button type="button" class="cat-btn ${k===curFilter?'on':''}" data-cat="${k}">${k==='all'?'ВСЕ':CATEGORIES[k]}</button>`).join('');
+  } else {
+    bar.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.classList.toggle('on', btn.dataset.cat === curFilter);
+    });
+  }
 }
 $('#catBar').addEventListener('click', e=>{
   const b = e.target.closest('.cat-btn'); if(!b) return;
   e.preventDefault();
-  e.stopPropagation();
-  lastScrollPos = window.scrollY || window.pageYOffset;
-  curFilter = b.dataset.cat;
+  const cat = b.dataset.cat;
+  if(cat === curFilter) return;
+
+  curFilter = cat;
   showAllProjects = false;
-  renderCatBar(); renderWorks();
-  setTimeout(()=>{
-    window.scrollTo({top: lastScrollPos, behavior: 'auto'});
-  }, 50);
+
+  renderCatBar();
+  renderWorks();
+
+  if(lenis){
+    lenis.resize();
+  }
 });
 
-/* ---------- РЕНДЕР КАРТОЧЕК (асимметричный паттерн сохраняется) ---------- */
+/* ---------- РЕНДЕР КАРТОЧЕК ---------- */
 const PATTERN = ['w-full','w-tall','w-side','w-editorial','w-wide','w-offset'];
-const PREVIEW_LIMIT = 6; // Показываем только 6 проектов в категории "ВСЕ" по умолчанию
+const PREVIEW_LIMIT = 6;
 function renderWorks(){
   let rawList = curFilter==='all' ? ALL_PROJECTS.slice() : ALL_PROJECTS.filter(p=>p.category===curFilter);
   
-  // Для категории "all" показываем сначала несколько разных проектов, потом кнопка "показать все"
   if(curFilter === 'all' && !showAllProjects && rawList.length > PREVIEW_LIMIT){
-    // Берём по одному проекту из каждой категории для разнообразия
     const cats = Object.keys(CATEGORIES);
     let preview = [];
     for(let cat of cats){
       const fromCat = rawList.filter(p=>p.category===cat);
       if(fromCat.length > 0) preview.push(fromCat[0]);
     }
-    // Если всё равно меньше лимита, дополняем остальными
     while(preview.length < PREVIEW_LIMIT && preview.length < rawList.length){
       for(let p of rawList){
         if(!preview.includes(p)) { preview.push(p); break; }
@@ -868,25 +938,26 @@ function renderWorks(){
     const cls = PATTERN[i % PATTERN.length];
     const cat = CATEGORIES[p.category] || 'ДРУГОЕ';
     const year = (p.added||'').slice(0,4) || '';
-    const watch = toEmbed(p.video) ? '<span class="w-has">▶ WATCH</span>' : '';
-    const cover = p.cover || IMG.backstage;
+    const embed = toEmbed(p.video || p.video_url);
+    const watch = embed ? '<span class="w-has">▶ WATCH</span>' : '';
+    const cover = getCover(p);
     if(cls==='w-editorial') return `
     <article class="work w-editorial" data-i="${i}">
       <div class="we-left">
         <div class="work-top mono"><span>${idx} / ${esc(cat)}</span><span>${esc(year)}</span>${watch}</div>
         <h3 class="we-title outl">${esc(p.title)}</h3>
         <div class="mono">${esc(p.client||'ПРОПЕЛЛЕР')} • ${esc(p.format||cat)}</div>
-        <button class="btn work-open" data-cursor="OPEN PROJECT →">${toEmbed(p.video)?'СМОТРЕТЬ ▶':'ОТКРЫТЬ →'}</button>
+        <button class="btn work-open" data-cursor="OPEN PROJECT →">${embed?'СМОТРЕТЬ ▶':'ОТКРЫТЬ →'}</button>
       </div>
       <div class="work-media" data-cursor="OPEN PROJECT →">
-        <img src="${esc(cover)}" alt="${esc(p.title)}" loading="lazy">
+        <img src="${esc(cover)}" alt="${esc(p.title)}" loading="lazy" onerror="this.onerror=null;this.src='${IMG.backstage}'">
         <div class="work-veil"></div><div class="work-play mono">▶ PLAY</div>
       </div>
     </article>`;
     return `
     <article class="work ${cls}" data-i="${i}">
       <div class="work-media" data-cursor="OPEN PROJECT →">
-        <img src="${esc(cover)}" alt="${esc(p.title)}" loading="lazy">
+        <img src="${esc(cover)}" alt="${esc(p.title)}" loading="lazy" onerror="this.onerror=null;this.src='${IMG.backstage}'">
         <div class="work-veil"></div><div class="work-play mono">▶ PLAY</div>
         <div class="work-top mono"><span>${idx} / ${esc(cat)}</span><span>${esc(year)}</span>${watch}</div>
         <div class="work-bottom"><h3>${esc(p.title)}</h3><span class="mono">${esc(p.client||'ПРОПЕЛЛЕР')} • ${esc(p.format||cat)}</span></div>
@@ -894,7 +965,6 @@ function renderWorks(){
     </article>`;
   }).join('');
   
-  // Если категория "all" и есть ещё проекты, добавляем кнопку "Показать все"
   if(curFilter === 'all' && !showAllProjects && ALL_PROJECTS.length > PREVIEW_LIMIT){
     html += `
     <div style="grid-column:1/-1;display:flex;justify-content:center;margin-top:4vh">
@@ -904,32 +974,54 @@ function renderWorks(){
   
   grid.innerHTML = html;
   
-  // Обработчик кнопки "Показать все"
   const showAllBtn = document.getElementById('showAllBtn');
   if(showAllBtn){
     showAllBtn.addEventListener('click', ()=>{
       showAllProjects = true;
       renderWorks();
-      // Плавно скроллим к началу сетки
       const worksSection = document.getElementById('works');
       if(worksSection){
         const rect = worksSection.getBoundingClientRect();
-        window.scrollBy({top: rect.top - 100, behavior: 'smooth'});
+        const target = (window.scrollY || window.pageYOffset) + rect.top - 80;
+        if(lenis){
+          lenis.resize();
+          lenis.scrollTo(target, { duration: 0.8 });
+        } else {
+          window.scrollTo({ top: target, behavior: 'smooth' });
+        }
       }
     });
   }
   
   initWorkAnims();
 }
+
+let workObserver = null;
 function initWorkAnims(){
-  if(!(hasST && !RM)) return;
-  gsap.utils.toArray('.work').forEach(w=>{
-    const m = w.querySelector('.work-media');
-    if(!m || m.dataset.anim) return; m.dataset.anim = 1;
-    gsap.fromTo(m,{clipPath:'inset(10% 5% 10% 5%)'},{clipPath:'inset(0% 0% 0% 0%)',duration:1.1,ease:'power4.out',
-      scrollTrigger:{trigger:w,start:'top 84%',once:true}});
-  });
-  ScrollTrigger.refresh();
+  if(workObserver){
+    try{ workObserver.disconnect(); }catch(e){}
+  }
+  if(RM) return;
+  if('IntersectionObserver' in window){
+    workObserver = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          const m = entry.target.querySelector('.work-media');
+          if(m && hasGSAP){
+            gsap.fromTo(m, {clipPath:'inset(6% 3% 6% 3%)', opacity: 0.85}, {clipPath:'inset(0% 0% 0% 0%)', opacity: 1, duration: 0.85, ease: 'power3.out'});
+          }
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.work').forEach(w=>{
+      workObserver.observe(w);
+    });
+  }
+  if(lenis){
+    lenis.resize();
+  }
 }
 
 /* ---------- СТРАНИЦА ПРОЕКТА (модалка) ---------- */
@@ -938,15 +1030,15 @@ function lockScroll(on){ document.documentElement.style.overflow = on ? 'hidden'
 function openCase(i){
   curIdx = i;
   const p = curList[i]; if(!p) return;
-  const embed = toEmbed(p.video);
+  const embed = toEmbed(p.video || p.video_url);
   const cat = CATEGORIES[p.category] || 'ДРУГОЕ';
   const year = (p.added||'').slice(0,4) || '—';
+  const shorts = isShorts(p);
   const media = embed
-    ? `<div class="case-frame"><iframe src="${embed}" title="${esc(p.title)}" loading="lazy" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`
-    : `<img src="${esc(p.cover||IMG.backstage)}" alt="${esc(p.title)}">`;
+    ? `<div class="case-frame ${shorts?'shorts':''}"><iframe src="${embed}" title="${esc(p.title)}" loading="lazy" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`
+    : `<img src="${esc(getCover(p))}" alt="${esc(p.title)}" onerror="this.onerror=null;this.src='${IMG.backstage}'">`;
   const photos = (p.images||[]).filter(Boolean);
   const links = (p.links||[]).filter(Boolean);
-  // Убраны блоки ЗАДАЧА, ИДЕЯ, ПРОЦЕСС - теперь показываем только медиа, мета и фото/ссылки
   caseBody.innerHTML = `
     <div class="case-head">
       <span class="mono"><b>${String(i+1).padStart(2,'0')} / ${esc(cat)}</b> • ${esc(year)}${embed?' • <span class="acc">▶ WATCH</span>':''}</span>
@@ -961,9 +1053,9 @@ function openCase(i){
       <div><h5>ГОРОД</h5><p>МОСКВА — ОРЁЛ</p></div>
     </div>
     ${photos.length?`<h5 class="case-h">ФОТО / ${photos.length} — НАЖМИ, ЧТОБЫ УВЕЛИЧИТЬ</h5>
-    <div class="case-photos">${photos.map(u=>`<img src="${esc(u)}" alt="Фото — ${esc(p.title)}" loading="lazy">`).join('')}</div>`:''}
+    <div class="case-photos">${photos.map(u=>`<img src="${esc(u)}" alt="Фото — ${esc(p.title)}" loading="lazy" onerror="this.style.display='none'">`).join('')}</div>`:''}
     ${links.length?`<h5 class="case-h">МАТЕРИАЛЫ</h5>
-    <div class="case-links">${links.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}<span aria-hidden="true">↗</span></a>`).join('')}</div>`:''}
+    <div class="case-links">${links.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(u)}<span aria-hidden="true">↗</span></a>`).join('')}</div>`:''}
     <div class="case-nav">
       <button class="btn" id="casePrev">← ПРЕД.</button>
       <a class="btn btn-acc" href="#contact" data-navlink id="caseCta">ХОЧУ ТАКОЙ ЖЕ <span class="arr">→</span></a>
@@ -979,15 +1071,27 @@ function openCase(i){
   $('#caseCta').onclick = closeCase;
 }
 function closeCase(){
+  const ifr = modal.querySelector('iframe');
+  if(ifr) ifr.src = 'about:blank';
   modal.classList.remove('open');
   lockScroll(false); lenis && lenis.start();
-  setTimeout(()=>{ if(!modal.classList.contains('open')) caseBody.innerHTML=''; }, 450);
+  setTimeout(()=>{ if(!modal.classList.contains('open')) caseBody.innerHTML=''; }, 400);
 }
 modal.addEventListener('click', e=>{ if(e.target===modal) closeCase(); });
 $('#worksGrid').addEventListener('click', e=>{
   const w = e.target.closest('.work'); if(w) openCase(+w.dataset.i);
 });
-addEventListener('keydown', e=>{ if(e.key==='Escape'){ closePhoto(); closeCase(); closeMenu(); } });
+addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    if(photoView.classList.contains('open')){
+      closePhoto();
+    } else if(modal.classList.contains('open')){
+      closeCase();
+    } else if(document.body.classList.contains('menu-open')){
+      closeMenu();
+    }
+  }
+});
 
 /* ---------- ЛАЙТБОКС ФОТО ---------- */
 const photoView = $('#photoView'), photoImg = photoView.querySelector('img');
@@ -1000,8 +1104,16 @@ photoView.addEventListener('click', closePhoto);
 
 /* ---------- СТАТИКА (как было) ---------- */
 document.querySelectorAll('[data-contact]').forEach(a=>{
-  const v = CONFIG.contacts[a.dataset.contact];
-  if(v){ a.setAttribute('href', v); a.removeAttribute('data-ph'); }
+  const k = a.dataset.contact;
+  const v = CONFIG.contacts[k];
+  if(v){
+    a.setAttribute('href', v);
+    if(v.startsWith('http')){
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+    }
+    a.removeAttribute('data-ph');
+  }
 });
 document.querySelectorAll('a[data-ph]').forEach(a=>{
   a.addEventListener('click', e=>{ const h=a.getAttribute('href'); if(!h||h==='#') e.preventDefault(); });
@@ -1033,8 +1145,20 @@ $('#year').textContent = new Date().getFullYear();
 /* ---------- ЗАГРУЗКА ПОРТФОЛИО И КОЛЛАБОРАЦИЙ ---------- */
 const COLLABS_RAW_URL = 'https://raw.githubusercontent.com/propellerprod/portfolio/main/data/collabs.json';
 async function loadCollabs(){
-  try{ const r = await fetch(COLLABS_RAW_URL,{cache:'no-store'}); if(r.ok){ const d = await r.json(); if(d && Array.isArray(d.collabs)) return d.collabs; } }catch(e){}
-  try{ const r = await fetch('data/collabs.json',{cache:'no-store'}); if(r.ok){ const d = await r.json(); if(d && Array.isArray(d.collabs)) return d.collabs; } }catch(e){}
+  try{
+    const r = await fetch('data/collabs.json', {cache: 'no-store'});
+    if(r.ok){
+      const d = await r.json();
+      if(d && Array.isArray(d.collabs) && d.collabs.length) return d.collabs;
+    }
+  }catch(e){}
+  try{
+    const r = await fetch(COLLABS_RAW_URL, {cache: 'no-store'});
+    if(r.ok){
+      const d = await r.json();
+      if(d && Array.isArray(d.collabs) && d.collabs.length) return d.collabs;
+    }
+  }catch(e){}
   return [];
 }
 Promise.all([loadPortfolio(), loadCollabs()]).then(([projList, collabList])=>{ 
@@ -1044,8 +1168,8 @@ Promise.all([loadPortfolio(), loadCollabs()]).then(([projList, collabList])=>{
   if(collabList.length > 0){
     $('#collabGrid').innerHTML = collabList.map(c=>`
       <div class="collab" data-reveal>
-        <div class="collab-ph">${c.img?`<img src="${c.img}" alt="${c.name}" loading="lazy">`:'<span class="mono">[ФОТО]</span>'}</div>
-        <div class="collab-name">${c.name}</div>
+        <div class="collab-ph">${c.img?`<img src="${esc(c.img)}" alt="${esc(c.name)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'mono\\'>[ФОТО]</span>'">`:'<span class="mono">[ФОТО]</span>'}</div>
+        <div class="collab-name">${esc(c.name)}</div>
       </div>`).join('');
   }
 });
@@ -1074,13 +1198,21 @@ if(document.readyState==='complete') _ready=true;
 let lenis=null;
 const hasGSAP=!!window.gsap;
 const hasST=!!(window.gsap&&window.ScrollTrigger);
+if('scrollRestoration' in history){ history.scrollRestoration = 'manual'; }
 if(hasST){ gsap.registerPlugin(ScrollTrigger); ScrollTrigger.config({ignoreMobileChanges:true}); }
 if(window.Lenis && DESKTOP){
   try{
-    lenis=new Lenis({lerp:.14,wheelMultiplier:1,smoothWheel:true,syncTouch:false});
+    lenis=new Lenis({lerp:.12,wheelMultiplier:1,smoothWheel:true,syncTouch:false});
     document.documentElement.classList.add('lenis','lenis-smooth');
-    (function lenisLoop(time){ lenis.raf(time); requestAnimationFrame(lenisLoop); })(performance.now());
-    if(hasST) lenis.on('scroll', ScrollTrigger.update);
+    if(hasST){
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add((time)=>{
+        lenis.raf(time * 1000);
+      });
+      gsap.ticker.lagSmoothing(0);
+    } else {
+      (function lenisLoop(time){ lenis.raf(time); requestAnimationFrame(lenisLoop); })(performance.now());
+    }
   }catch(e){ lenis=null; }
 }
 function goTo(hash){

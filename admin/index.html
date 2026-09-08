@@ -144,13 +144,18 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
   <section id="scrLogin">
     <h1 class="a-title">ВХОД<br>В АДМИНКУ</h1>
     <div class="login-box">
-      <p class="hint">Токен хранится <b>только в этом браузере</b> и не попадает в код сайта. Создайте его так: <b>GitHub → Settings → Developer settings → Fine-grained personal access tokens</b> → доступ только к репозиторию <b>propellerprod/portfolio</b> → право <b>Contents: Read and write</b>.</p>
+      <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--line)">
+        <button class="btn btn-acc" id="btnLocalLogin" style="width:100%;margin-bottom:8px">⚡ ВОЙТИ В РЕЖИМЕ СЕРВЕРА (МГНОВЕННО) →</button>
+        <span class="mono" style="color:var(--dim);font-size:11px">// Управление проектами прямо на сервере без необходимости GitHub токена</span>
+      </div>
+
+      <p class="hint">Или подключите GitHub PAT для прямой синхронизации с репозиторием. Токен хранится только в этом браузере: <b>GitHub → Settings → Developer settings → Fine-grained personal access tokens</b> → доступ к <b>propellerprod/portfolio</b> → <b>Contents: Read and write</b>.</p>
       <div class="f"><label>GITHUB ТОКЕН</label><input type="password" id="inToken" placeholder="github_pat_…" autocomplete="off"></div>
       <div class="two-col">
         <div class="f"><label>РЕПОЗИТОРИЙ (ВЛАДЕЛЕЦ/ИМЯ)</label><input id="inRepo" value="propellerprod/portfolio"></div>
         <div class="f"><label>ВЕТКА</label><input id="inBranch" value="main"></div>
       </div>
-      <button class="btn btn-acc" id="btnLogin">ВОЙТИ →</button>
+      <button class="btn" id="btnLogin" style="width:100%">ВОЙТИ С GITHUB ТОКЕНОМ →</button>
       <div class="status-line" id="loginErr"></div>
     </div>
   </section>
@@ -197,7 +202,7 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
       <div class="f">
         <label>ВИДЕО — ССЫЛКА И ИСТОЧНИК</label>
         <div class="video-row">
-          <input id="fVideoUrl" placeholder="https://rutube.ru/video/... или https://vk.com/video..." inputmode="url">
+          <input id="fVideoUrl" placeholder="https://vkvideo.ru/video..., https://vkvideo.ru/clip..., Rutube или YouTube" inputmode="url">
           <select id="fVideoSource" class="video-select">
             <option value="">ВЫБРАТЬ...</option>
             <option value="rutube">RUTUBE</option>
@@ -285,6 +290,7 @@ const COLLABS_FILE = 'data/collabs.json';
 
 let cfg = JSON.parse(localStorage.getItem('pp_cfg')||'null') || {owner:'propellerprod', repo:'portfolio', branch:'main'};
 let token = localStorage.getItem('pp_token') || '';
+let localMode = localStorage.getItem('pp_local') === 'true';
 let DATA = {projects:[]};
 let COLLABS_DATA = {collabs:[]};
 let curCat = null, editId = null, dragFrom = null, cfCb = null, editingCollabId = null;
@@ -323,6 +329,26 @@ function b64(str){
 
 /* ---------- ЗАГРУЗКА ДАННЫХ (с понятной диагностикой) ---------- */
 async function fetchFile(){
+  if(localMode || !token){
+    try{
+      const r = await fetch('/api/projects');
+      if(r.ok){
+        DATA = await r.json();
+        if(!Array.isArray(DATA.projects)) DATA = {projects:[]};
+        return 'local';
+      }
+    }catch(e){}
+    try{
+      const r = await fetch('../data/projects.json');
+      if(r.ok){
+        DATA = await r.json();
+        if(!Array.isArray(DATA.projects)) DATA = {projects:[]};
+        return 'local';
+      }
+    }catch(e){}
+    DATA = {projects:[]};
+    return 'local';
+  }
   let d;
   try{
     d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}?ref=${encodeURIComponent(cfg.branch)}`);
@@ -341,12 +367,32 @@ async function fetchFile(){
     DATA = JSON.parse(text);
   }catch(e){
     const preview = text.slice(0,40).replace(/\s+/g,' ');
-    throw new Error('data/projects.json содержит НЕ-JSON («'+preview+'…»). Откройте файл в GitHub → карандаш (Edit) → удалите всё → вставьте чистый JSON без слова const, без комментариев и без лишнего текста.');
+    throw new Error('data/projects.json содержит НЕ-JSON («'+preview+'…»). Откройте файл в GitHub → карандаш (Edit) → удалите всё → вставьте чистый JSON.');
   }
   if(!Array.isArray(DATA.projects)) DATA = {projects:[]};
   return d.sha;
 }
 async function fetchCollabsFile(){
+  if(localMode || !token){
+    try{
+      const r = await fetch('/api/collabs');
+      if(r.ok){
+        COLLABS_DATA = await r.json();
+        if(!Array.isArray(COLLABS_DATA.collabs)) COLLABS_DATA = {collabs:[]};
+        return 'local';
+      }
+    }catch(e){}
+    try{
+      const r = await fetch('../data/collabs.json');
+      if(r.ok){
+        COLLABS_DATA = await r.json();
+        if(!Array.isArray(COLLABS_DATA.collabs)) COLLABS_DATA = {collabs:[]};
+        return 'local';
+      }
+    }catch(e){}
+    COLLABS_DATA = {collabs:[]};
+    return 'local';
+  }
   let d;
   try{
     d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}?ref=${encodeURIComponent(cfg.branch)}`);
@@ -370,22 +416,44 @@ async function fetchCollabsFile(){
   return d.sha;
 }
 async function publish(msg){
-  let sha = null;
-  try{ const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}?ref=${encodeURIComponent(cfg.branch)}`); sha = d.sha; }catch(e){}
   DATA.updated = new Date().toISOString();
-  const body = {message: msg || 'portfolio: update projects', content: b64(JSON.stringify(DATA,null,2)), branch: cfg.branch};
-  if(sha) body.sha = sha;
-  await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}`, 'PUT', body);
-  $('#pubStatus').textContent = 'ОПУБЛИКОВАНО: ' + new Date().toLocaleTimeString('ru-RU');
+  try{
+    await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(DATA, null, 2)
+    });
+  }catch(e){
+    console.warn('[ADMIN] Local project save failed:', e);
+  }
+  if(token){
+    let sha = null;
+    try{ const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}?ref=${encodeURIComponent(cfg.branch)}`); sha = d.sha; }catch(e){}
+    const body = {message: msg || 'portfolio: update projects', content: b64(JSON.stringify(DATA,null,2)), branch: cfg.branch};
+    if(sha) body.sha = sha;
+    await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}`, 'PUT', body);
+  }
+  $('#pubStatus').textContent = 'СОХРАНЕНО: ' + new Date().toLocaleTimeString('ru-RU');
 }
 async function publishCollabs(msg){
-  let sha = null;
-  try{ const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}?ref=${encodeURIComponent(cfg.branch)}`); sha = d.sha; }catch(e){}
   COLLABS_DATA.updated = new Date().toISOString();
-  const body = {message: msg || 'portfolio: update collabs', content: b64(JSON.stringify(COLLABS_DATA,null,2)), branch: cfg.branch};
-  if(sha) body.sha = sha;
-  await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}`, 'PUT', body);
-  $('#pubStatus').textContent = 'ОПУБЛИКОВАНО: ' + new Date().toLocaleTimeString('ru-RU');
+  try{
+    await fetch('/api/collabs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(COLLABS_DATA, null, 2)
+    });
+  }catch(e){
+    console.warn('[ADMIN] Local collabs save failed:', e);
+  }
+  if(token){
+    let sha = null;
+    try{ const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}?ref=${encodeURIComponent(cfg.branch)}`); sha = d.sha; }catch(e){}
+    const body = {message: msg || 'portfolio: update collabs', content: b64(JSON.stringify(COLLABS_DATA,null,2)), branch: cfg.branch};
+    if(sha) body.sha = sha;
+    await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}`, 'PUT', body);
+  }
+  $('#pubStatus').textContent = 'СОХРАНЕНО: ' + new Date().toLocaleTimeString('ru-RU');
 }
 
 /* ---------- Video Parse (YouTube, Rutube, Vimeo) ---------- */
@@ -393,8 +461,8 @@ function parseVideoUrl(u){
   u = (u||'').trim(); if(!u) return null;
   
   // Rutube
-  const rm = u.match(/rutube\.ru\/video\/([a-f0-9]+)/i);
-  if(rm && rm[1]) return { type: 'rutube', id: rm[1], embed: `https://rutube.ru/play/embed/${rm[1]}` };
+  const rm = u.match(/rutube\.ru\/(?:video\/private|video|play\/embed|shorts|pl|videos)\/([a-zA-Z0-9]+)/i);
+  if(rm && rm[1]) return { type: 'rutube', id: rm[1], embed: `https://rutube.ru/play/embed/${rm[1]}/` };
   
   // YouTube
   const ym = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
@@ -404,32 +472,49 @@ function parseVideoUrl(u){
   const vm = u.match(/vimeo\.com\/(\d+)/i);
   if(vm && vm[1]) return { type: 'vimeo', id: vm[1], embed: `https://player.vimeo.com/video/${vm[1]}` };
   
+  // VK Video and VK Clips (vkvideo.ru, vk.com, vk.ru)
+  const vkm = parseVK(u);
+  if(vkm) return { type: 'vk', id: `${vkm.oid}_${vkm.id}`, isClip: vkm.isClip, embed: `https://vk.com/video_ext.php?oid=${vkm.oid}&id=${vkm.id}&hd=2` };
+
   return null;
 }
 
 function detectVideoSource(u){
   u = (u||'').trim().toLowerCase();
   if(u.includes('rutube.ru')) return 'rutube';
-  if(u.includes('vk.com/video') || u.includes('vk.com/clip')) return 'vk';
+  if(u.includes('vkvideo.ru') || u.includes('vk.com') || u.includes('vk.ru')) return 'vk';
   if(u.includes('youtube.com') || u.includes('youtu.be')) return 'youtube';
   if(u.includes('vimeo.com')) return 'vimeo';
   return '';
 }
 
 function parseRutube(u){
-  const m = u.match(/rutube\.ru\/video\/([A-Za-z0-9]+)\/?/i);
+  const m = u.match(/rutube\.ru\/(?:video\/private|video|play\/embed|shorts|pl|videos)\/([a-zA-Z0-9]+)/i);
   return m ? m[1] : null;
 }
 function parseVK(u){
-  const m = u.match(/vk\.com\/video(-?\d+)_(\d+)/i);
-  return m ? {oid: m[1], id: m[2]} : null;
+  u = (u||'').trim();
+  let m = u.match(/(?:vk\.com|vkvideo\.ru|vk\.ru)\/(?:video|clip|clips\/clip)\/?(-?\d+)_(\d+)/i);
+  if(m) return { oid: m[1], id: m[2], isClip: u.toLowerCase().includes('/clip') || u.toLowerCase().includes('clip-') };
+  
+  m = u.match(/(?:vk\.com|vkvideo\.ru|vk\.ru)\/video_ext\.php\?(?:.*&)?oid=(-?\d+)(?:.*&)?id=(\d+)/i);
+  if(m) return { oid: m[1], id: m[2], isClip: false };
+
+  m = u.match(/[?&]z=(?:video|clip)(-?\d+)_(\d+)/i);
+  if(m) return { oid: m[1], id: m[2], isClip: u.toLowerCase().includes('clip') };
+
+  if(/(?:vk\.com|vkvideo\.ru|vk\.ru)/i.test(u)){
+    m = u.match(/(-?\d+)_(\d+)/);
+    if(m) return { oid: m[1], id: m[2], isClip: u.toLowerCase().includes('clip') };
+  }
+  return null;
 }
 
 async function getVideoThumbnail(url, source){
   if(!url) throw new Error('Нет URL видео');
   const src = source || detectVideoSource(url);
   
-  // Попытка через серверный API (без CORS-ограничений)
+  // Попытка через серверный API (автоматически вытаскивает og:image для VK/VK Клипов и Rutube/YouTube)
   try {
     const apiResp = await fetch('/api/get-video-meta/', {
       method: 'POST',
@@ -458,8 +543,8 @@ async function getVideoThumbnail(url, source){
   }
   if(src === 'vk'){
     const vk = parseVK(url);
-    if(!vk) throw new Error('Неверная ссылка на VK Видео');
-    throw new Error('VK требует токен. Вставьте превью вручную (URL картинки) или используйте Rutube.');
+    if(!vk) throw new Error('Неверная ссылка на VK Видео / VK Клип');
+    throw new Error('Не удалось автоматически получить кадр из VK. Укажите URL обложки вручную в поле "ОБЛОЖКА".');
   }
   if(src === 'youtube'){
     const obj = parseVideoUrl(url);
@@ -494,18 +579,37 @@ function cb0(){ const f = cfCb; cfCb = null; f && f(); }
 /* ---------- LOGIN ---------- */
 (function setupLogin(){
   const btn = $('#btnLogin');
+  const btnLocal = $('#btnLocalLogin');
   const inpRepo = $('#inRepo');
   const inpBranch = $('#inBranch');
+  const err = $('#loginErr');
   if(!btn){ console.error('[ADMIN] Кнопка #btnLogin не найдена!'); return; }
   inpRepo.value = cfg.owner + '/' + cfg.repo;
   inpBranch.value = cfg.branch;
+
+  if(btnLocal){
+    btnLocal.onclick = async ()=>{
+      err.textContent = '';
+      localMode = true;
+      localStorage.setItem('pp_local', 'true');
+      try{
+        await fetchFile();
+        await fetchCollabsFile();
+        $('#btnLogout').hidden = false;
+        renderDash();
+        show('scrDash');
+        toast('ВХОД В РЕЖИМЕ СЕРВЕРА ✓');
+      }catch(e){
+        err.textContent = '// ОШИБКА ЗАГРУЗКИ: ' + (e.message || e);
+      }
+    };
+  }
   
   btn.onclick = async ()=>{
     console.log('[ADMIN] Клик по кнопке ВОЙТИ');
     const t = $('#inToken').value.trim();
     const repo = $('#inRepo').value.trim();
     const br = $('#inBranch').value.trim() || 'main';
-    const err = $('#loginErr');
     err.textContent = '';
     
     if(!t){ 
@@ -521,6 +625,8 @@ function cb0(){ const f = cfCb; cfCb = null; f && f(); }
     
     console.log('[ADMIN] Попытка входа с токеном:', t.substring(0,10)+'...');
     token = t;
+    localMode = false;
+    localStorage.removeItem('pp_local');
     const parts = repo.split('/');
     cfg = {owner:parts[0].trim(), repo:parts[1].trim(), branch:br.trim()};
     console.log('[ADMIN] Проверка токена и репозитория...');
@@ -555,8 +661,12 @@ function cb0(){ const f = cfCb; cfCb = null; f && f(); }
   });
 })();
 $('#btnLogout').onclick = ()=>{
-  localStorage.removeItem('pp_token'); token = '';
-  $('#btnLogout').hidden = true; show('scrLogin');
+  localStorage.removeItem('pp_token');
+  localStorage.removeItem('pp_local');
+  token = '';
+  localMode = false;
+  $('#btnLogout').hidden = true;
+  show('scrLogin');
 };
 
 /* ---------- DASHBOARD ---------- */
@@ -826,11 +936,19 @@ function checkVideoURL(){
 
   const src = detectVideoSource(u);
   if(!src){
-    st.innerHTML = '<span class="err">// НЕИЗВЕСТНАЯ ИЛИ НЕПОДДЕРЖИВАЕМАЯ ССЫЛКА (ПОДДЕРЖИВАЮТСЯ YOUTUBE, RUTUBE, VK, VIMEO)</span>';
+    st.innerHTML = '<span class="err">// НЕИЗВЕСТНАЯ ИЛИ НЕПОДДЕРЖИВАЕМАЯ ССЫЛКА (ПОДДЕРЖИВАЮТСЯ VK ВИДЕО / КЛИПЫ, RUTUBE, YOUTUBE, VIMEO)</span>';
   } else {
-    st.innerHTML = `<span class="ok">✓ ССЫЛКА РАСПОЗНАНА (${src.toUpperCase()})</span>`;
+    const isClip = u.toLowerCase().includes('/clip') || u.toLowerCase().includes('clip-') || u.toLowerCase().includes('/shorts');
+    const label = isClip ? (src === 'vk' ? 'VK КЛИП' : `${src.toUpperCase()} SHORTS`) : (src === 'vk' ? 'VK ВИДЕО' : src.toUpperCase());
+    st.innerHTML = `<span class="ok">✓ ССЫЛКА РАСПОЗНАНА (${label})</span>`;
     // Автовыбор источника
     $('#fVideoSource').value = src;
+    if(isClip && (!$('#fCat').value || $('#fCat').value === 'concerts') && !editId){
+      $('#fCat').value = 'reels';
+    }
+    if(isClip && !$('#fFormat').value){
+      $('#fFormat').value = 'REELS / КЛИП';
+    }
   }
 }
 $('#fVideoUrl').addEventListener('input', checkVideoURL);
@@ -877,9 +995,24 @@ $('#btnSave').onclick = async ()=>{
     return; 
   }
   
-  const videoSrc = $('#fVideoSource').value;
-  const thumbnailUrl = $('#videoPrevWrap').hidden ? '' : ($('#videoPrevImg').getAttribute('src') || '');
-  const cover = $('#fCover').value.trim();
+  const videoSrc = $('#fVideoSource').value || detectVideoSource(videoUrl);
+  let thumbnailUrl = $('#videoPrevWrap').hidden ? '' : ($('#videoPrevImg').getAttribute('src') || '');
+  let cover = $('#fCover').value.trim();
+
+  // Автоматическая попытка получить превью, если обложка не задана вручную
+  if(!cover && !thumbnailUrl && videoUrl){
+    try{
+      const autoThumb = await getVideoThumbnail(videoUrl, videoSrc);
+      if(autoThumb){
+        thumbnailUrl = autoThumb;
+        cover = autoThumb;
+      }
+    }catch(e){}
+  }
+  if(!cover && thumbnailUrl){
+    cover = thumbnailUrl;
+  }
+
   const images = [...$('#photos').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
   const links = [...$('#links').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
   
@@ -1003,6 +1136,17 @@ $('#btnSaveCollab').onclick = async ()=>{
 
 /* ---------- АВТОВХОД ---------- */
 (async function init(){
+  if(localMode){
+    try{
+      await fetchFile();
+      await fetchCollabsFile();
+      $('#btnLogout').hidden = false;
+      renderDash(); show('scrDash');
+      return;
+    }catch(e){
+      console.warn('[ADMIN] Local mode load error:', e);
+    }
+  }
   if(token){
     try{
       await checkRepoAccess();
