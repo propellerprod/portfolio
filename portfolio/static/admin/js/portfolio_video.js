@@ -1,5 +1,5 @@
 /**
- * Скрипт для автоматического получения превью видео из Rutube и VK Видео
+ * Скрипт для автоматического получения превью видео из Rutube, VK Видео, YouTube и VK Клипов
  * в админ-панели Django.
  */
 
@@ -9,6 +9,7 @@
         var videoUrlField = $('#id_video_url');
         var thumbnailUrlField = $('#id_thumbnail_url');
         var useAutoThumbnailCheckbox = $('#id_use_auto_thumbnail');
+        var isShortsCheckbox = $('#id_is_shorts');
         
         // Создаем кнопку для получения превью
         if (videoUrlField.length && thumbnailUrlField.length) {
@@ -59,19 +60,38 @@
                             // Устанавливаем URL превью в поле
                             thumbnailUrlField.val(response.thumbnail_url);
                             
-                            // Показываем сообщение об успехе
-                            statusMessage.css('color', '#28a745')
-                                .html('✓ Превью получено! (' + (response.service || 'видео') + ')');
+                            // Определяем тип сервиса для отображения
+                            var serviceNames = {
+                                'rutube': 'Rutube',
+                                'vk': 'VK Видео',
+                                'youtube': 'YouTube',
+                                'vk_clip': 'VK Клип'
+                            };
+                            var serviceName = serviceNames[response.service] || response.service || 'видео';
                             
-                            // Показываем предпросмотр
+                            // Показываем сообщение об успехе
+                            var shortsText = response.is_shorts ? ' 📱 Shorts/Клип' : '';
+                            statusMessage.css('color', '#28a745')
+                                .html('✓ Превью получено! (' + serviceName + ')' + shortsText);
+                            
+                            // Показываем предпросмотр с учетом пропорций
+                            var containerStyle = response.is_shorts 
+                                ? 'max-width: 200px; max-height: 350px;' 
+                                : 'max-width: 300px; max-height: 200px;';
+                            
                             previewContainer.html(
                                 '<img src="' + response.thumbnail_url + '" ' +
-                                'style="max-width: 300px; max-height: 200px; border-radius: 8px; ' +
+                                'style="' + containerStyle + ' border-radius: 8px; ' +
                                 'border: 2px solid #28a745; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">'
                             );
                             
                             // Автоматически ставим галочку "использовать авто-превью"
                             useAutoThumbnailCheckbox.prop('checked', true);
+                            
+                            // Автоматически ставим/снимаем галочку is_shorts
+                            if (isShortsCheckbox.length) {
+                                isShortsCheckbox.prop('checked', response.is_shorts || false);
+                            }
                             
                         } else {
                             // Ошибка

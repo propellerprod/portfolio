@@ -28,11 +28,19 @@
             overflow: hidden;
         }
         
+        /* Контейнер для видео 16:9 (обычные видео) */
         .video-container {
             position: relative;
             width: 100%;
             padding-bottom: 56.25%; /* 16:9 aspect ratio */
             background: #000;
+        }
+        
+        /* Контейнер для вертикальных видео 9:16 (Shorts/Клипы) */
+        .video-container.shorts {
+            padding-bottom: 177.78%; /* 9:16 aspect ratio */
+            max-width: 450px;
+            margin: 0 auto;
         }
         
         .video-container iframe {
@@ -138,6 +146,18 @@
             color: #999;
         }
         
+        /* Бейдж для Shorts/Клипов */
+        .shorts-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, #ff0050, #00f2ea);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
         @media (max-width: 768px) {
             .content h1 {
                 font-size: 1.5em;
@@ -146,13 +166,17 @@
             .content {
                 padding: 20px;
             }
+            
+            .video-container.shorts {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         {% if item.get_embed_url %}
-        <div class="video-container">
+        <div class="video-container {% if item.is_shorts %}shorts{% endif %}">
             <iframe 
                 src="{{ item.get_embed_url }}" 
                 allow="fullscreen; clipboard-write; encrypted-media"
@@ -161,7 +185,7 @@
             </iframe>
         </div>
         {% elif item.thumbnail_url or item.image %}
-        <div class="video-container" style="padding-bottom: 0; background: #f0f0f0;">
+        <div class="video-container {% if item.is_shorts %}shorts{% endif %}" style="padding-bottom: 0; background: #f0f0f0;">
             {% if item.thumbnail_url %}
             <div class="thumbnail-placeholder" style="background-image: url('{{ item.thumbnail_url }}');">
                 <div class="play-button"></div>
@@ -177,7 +201,12 @@
         {% endif %}
         
         <div class="content">
-            <h1>{{ item.title }}</h1>
+            <h1>
+                {{ item.title }}
+                {% if item.is_shorts %}
+                <span class="shorts-badge">📱 Shorts/Клип</span>
+                {% endif %}
+            </h1>
             
             {% if item.description %}
             <div class="description">

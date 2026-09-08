@@ -8,11 +8,11 @@ from .models import PortfolioItem
 @admin.register(PortfolioItem)
 class PortfolioItemAdmin(admin.ModelAdmin):
     """
-    Админка для элементов портфолио с поддержкой видео из Rutube и VK Видео.
+    Админка для элементов портфолио с поддержкой видео из Rutube, VK Видео, YouTube и VK Клипов.
     Включает кнопку для автоматического получения превью из видео.
     """
     list_display = ('title', 'video_source', 'get_thumbnail_preview', 'is_published', 'order', 'created_at')
-    list_filter = ('video_source', 'is_published', 'created_at')
+    list_filter = ('video_source', 'is_published', 'created_at', 'is_shorts')
     search_fields = ('title', 'description', 'video_url')
     ordering = ('order', '-created_at')
     
@@ -21,8 +21,8 @@ class PortfolioItemAdmin(admin.ModelAdmin):
             'fields': ('title', 'description', 'image')
         }),
         ('Видео', {
-            'fields': ('video_url', 'video_source', 'thumbnail_url', 'use_auto_thumbnail'),
-            'description': 'Добавьте ссылку на видео с Rutube или VK Видео. Нажмите "Получить превью" для автоматического извлечения обложки.'
+            'fields': ('video_url', 'video_source', 'thumbnail_url', 'use_auto_thumbnail', 'is_shorts'),
+            'description': 'Добавьте ссылку на видео с Rutube, VK Видео, YouTube или VK Клипов. Нажмите "Получить превью" для автоматического извлечения обложки.'
         }),
         ('Публикация', {
             'fields': ('is_published', 'order')
@@ -54,10 +54,12 @@ class PortfolioItemAdmin(admin.ModelAdmin):
             from video_utils.api import get_video_thumbnail
             thumbnail_info = get_video_thumbnail(obj.video_url)
             if thumbnail_info and thumbnail_info.get('thumbnail_url'):
+                shorts_badge = ' 📱 Shorts/Клип' if thumbnail_info.get('is_shorts') else ''
                 return format_html(
                     '<img src="{}" style="max-width: 300px; max-height: 200px; border-radius: 8px;" />'
-                    '<p style="color: green; margin-top: 10px;">✓ Превью доступно (не сохранено в БД)</p>',
-                    thumbnail_info['thumbnail_url']
+                    '<p style="color: green; margin-top: 10px;">✓ Превью доступно (не сохранено в БД){}</p>',
+                    thumbnail_info['thumbnail_url'],
+                    shorts_badge
                 )
             else:
                 return format_html('<p style="color: orange;">⚠ Превью не найдено. Убедитесь, что ссылка на видео корректна.</p>')
@@ -80,6 +82,7 @@ class PortfolioItemAdmin(admin.ModelAdmin):
             if thumbnail_info and thumbnail_info.get('thumbnail_url'):
                 extra_context['thumbnail_available'] = True
                 extra_context['thumbnail_url'] = thumbnail_info['thumbnail_url']
+                extra_context['is_shorts'] = thumbnail_info.get('is_shorts', False)
         
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
     
@@ -120,7 +123,8 @@ class PortfolioItemAdmin(admin.ModelAdmin):
                 'success': True,
                 'thumbnail_url': thumbnail_info['thumbnail_url'],
                 'service': thumbnail_info.get('service'),
-                'video_id': thumbnail_info.get('video_id')
+                'video_id': thumbnail_info.get('video_id'),
+                'is_shorts': thumbnail_info.get('is_shorts', False)
             })
         else:
             return JsonResponse({

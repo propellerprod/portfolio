@@ -1,5 +1,5 @@
 """
-Утилиты для получения превью видео с Rutube и VK Видео через API.
+Утилиты для получения превью видео с Rutube, VK Видео, YouTube и VK Клипов через API.
 Все превью получаются как ссылки на изображения, без скачивания файлов.
 """
 
@@ -30,27 +30,72 @@ def extract_video_id_rutube(url: str) -> Optional[str]:
     return None
 
 
-def extract_video_id_vk(url: str) -> Optional[str]:
+def extract_video_id_vk(url: str, is_clip: bool = False) -> Optional[str]:
     """
-    Извлекает ID видео из URL VK Видео.
+    Извлекает ID видео из URL VK Видео или VK Клипов.
     
     Примеры URL:
     - https://vk.com/video-123456_789012345
     - https://vk.com/video_ext.php?oid=-123456&id=789012345
+    - https://vk.com/clips-123456_789012345 (для клипов)
     """
-    patterns = [
-        r'vk\.com/video(-?\d+)_(\d+)',
-        r'vk\.com/video_ext\.php\?oid=(-?\d+)&id=(\d+)',
-    ]
+    if is_clip or '/clips' in url.lower():
+        patterns = [
+            r'vk\.com/clips(-?\d+)_?(\d+)?',
+            r'vk\.com/clip(-?\d+)_?(\d+)?',
+        ]
+    else:
+        patterns = [
+            r'vk\.com/video(-?\d+)_(\d+)',
+            r'vk\.com/video_ext\.php\?oid=(-?\d+)&id=(\d+)',
+        ]
     
     for pattern in patterns:
         match = re.search(pattern, url)
         if match:
             oid = match.group(1)
-            video_id = match.group(2)
+            video_id = match.group(2) if match.lastindex >= 2 else ''
+            if is_clip:
+                return f"{oid}_{video_id}" if video_id else oid
             return f"{oid}_{video_id}"
     
     return None
+
+
+def extract_video_id_youtube(url: str) -> Optional[str]:
+    """
+    Извлекает ID видео из URL YouTube.
+    
+    Примеры URL:
+    - https://www.youtube.com/watch?v=dQw4w9WgXcQ
+    - https://youtu.be/dQw4w9WgXcQ
+    - https://www.youtube.com/shorts/dQw4w9WgXcQ
+    """
+    patterns = [
+        r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/shorts/)([a-zA-Z0-9_-]{11})',
+        r'youtube\.com/embed/([a-zA-Z0-9_-]{11})',
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    
+    return None
+
+
+def is_youtube_shorts(url: str) -> bool:
+    """
+    Проверяет, является ли видео YouTube Shorts.
+    """
+    return '/shorts/' in url.lower()
+
+
+def is_vk_clip(url: str) -> bool:
+    """
+    Проверяет, является ли видео VK Клипом.
+    """
+    return '/clips/' in url.lower() or '/clip' in url.lower()
 
 
 def get_rutube_thumbnail(video_url: str) -> Optional[str]:
@@ -99,7 +144,7 @@ def get_vk_video_thumbnail(video_url: str) -> Optional[str]:
     
     Для работы требуется токен VK API или использование публичных методов.
     """
-    video_id = extract_video_id_vk(video_url)
+    video_id = extract_video_id_vk(video_url, is_clip=False)
     if not video_id:
         return None
     
@@ -161,6 +206,44 @@ def get_vk_video_thumbnail(video_url: str) -> Optional[str]:
     return None
 
 
+def get_youtube_thumbnail(video_url: str) -> Optional[str]:
+    """
+    Получает ссылку на превью (обложку) видео с YouTube.
+    Возвращает URL изображения, не скачивая файл.
+    
+    YouTube предоставляет несколько вариантов превью:
+    - maxresdefault.jpg (максимальное разрешение)
+    - sddefault.jpg (среднее разрешение)
+    - hqdefault.jpg (высокое качество, доступно всегда)
+    """
+    video_id = extract_video_id_youtube(video_url)
+    if not video_id:
+        return None
+    
+    # Формируем URL превью (YouTube всегда возвращает картинку по этому URL)
+    # Используем maxresdefault, если нет - fallback на hqdefault
+    thumbnail_url = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
+    
+    # Проверяем доступность maxresdefault
+    try:
+        response = requests.head(thumbnail_url, timeout=5)
+        if response.status_code == 200 and int(response.headers.get('content-length', 0)) > 1000:
+            return thumbnail_url
+    except:
+        pass
+    
+    # Fallback на hqdefault (он доступен всегда)
+    return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
+
+
+def get_vk_clip_thumbnail(video_url: str) -> Optional[str]:
+    """
+    Получает ссылку на превью (обложку) VK Клипа.
+    Использует тот же метод, что и для обычных видео VK.
+    """
+    return get_vk_video_thumbnail(video_url)
+
+
 def get_video_thumbnail(video_url: str) -> Optional[Dict[str, Any]]:
     """
     Универсальная функция для получения превью видео.
@@ -169,8 +252,9 @@ def get_video_thumbnail(video_url: str) -> Optional[Dict[str, Any]]:
     Returns:
         Dict с ключами:
         - 'thumbnail_url': URL изображения превью
-        - 'service': название сервиса ('rutube' или 'vk')
+        - 'service': название сервиса ('rutube', 'vk', 'youtube', 'vk_clip')
         - 'video_id': ID видео в сервисе
+        - 'is_shorts': True для вертикальных видео (Shorts/Клипы)
         Или None если не удалось получить превью
     """
     if not video_url:
@@ -185,19 +269,48 @@ def get_video_thumbnail(video_url: str) -> Optional[Dict[str, Any]]:
             return {
                 'thumbnail_url': thumbnail_url,
                 'service': 'rutube',
-                'video_id': video_id
+                'video_id': video_id,
+                'is_shorts': False
+            }
+    
+    # Проверяем VK Клипы
+    if is_vk_clip(video_url):
+        thumbnail_url = get_vk_clip_thumbnail(video_url)
+        video_id = extract_video_id_vk(video_url, is_clip=True)
+        
+        if thumbnail_url or video_id:
+            return {
+                'thumbnail_url': thumbnail_url,
+                'service': 'vk_clip',
+                'video_id': video_id,
+                'is_shorts': True
             }
     
     # Проверяем VK Видео
     if 'vk.com' in video_url.lower() and '/video' in video_url.lower():
         thumbnail_url = get_vk_video_thumbnail(video_url)
-        video_id = extract_video_id_vk(video_url)
+        video_id = extract_video_id_vk(video_url, is_clip=False)
         
         if thumbnail_url or video_id:
             return {
                 'thumbnail_url': thumbnail_url,
                 'service': 'vk',
-                'video_id': video_id
+                'video_id': video_id,
+                'is_shorts': False
+            }
+    
+    # Проверяем YouTube (включая Shorts)
+    if 'youtube.com' in video_url.lower() or 'youtu.be' in video_url.lower():
+        thumbnail_url = get_youtube_thumbnail(video_url)
+        video_id = extract_video_id_youtube(video_url)
+        is_shorts = is_youtube_shorts(video_url)
+        
+        if thumbnail_url or video_id:
+            return {
+                'thumbnail_url': thumbnail_url,
+                'service': 'youtube',
+                'video_id': video_id,
+                'is_shorts': is_shorts
             }
     
     return None
@@ -213,14 +326,27 @@ def get_embed_url_rutube(video_url: str) -> Optional[str]:
     return None
 
 
-def get_embed_url_vk(video_url: str) -> Optional[str]:
+def get_embed_url_vk(video_url: str, is_clip: bool = False) -> Optional[str]:
     """
-    Получает URL для встраивания (embed) видео VK.
+    Получает URL для встраивания (embed) видео VK или VK Клипа.
     """
-    video_id = extract_video_id_vk(video_url)
+    video_id = extract_video_id_vk(video_url, is_clip=is_clip)
     if video_id and '_' in video_id:
         oid, vid = video_id.split('_', 1)
+        if is_clip:
+            # Для клипов используем тот же embed URL
+            return f"https://vk.com/video_ext.php?oid={oid}&id={vid}&hd=2"
         return f"https://vk.com/video_ext.php?oid={oid}&id={vid}&hd=2"
+    return None
+
+
+def get_embed_url_youtube(video_url: str) -> Optional[str]:
+    """
+    Получает URL для встраивания (embed) видео YouTube.
+    """
+    video_id = extract_video_id_youtube(video_url)
+    if video_id:
+        return f"https://www.youtube.com/embed/{video_id}"
     return None
 
 
@@ -228,10 +354,19 @@ def get_embed_url(video_url: str) -> Optional[str]:
     """
     Универсальная функция для получения URL встраивания видео.
     """
+    if not video_url:
+        return None
+    
     if 'rutube.ru' in video_url.lower():
         return get_embed_url_rutube(video_url)
     
+    if is_vk_clip(video_url):
+        return get_embed_url_vk(video_url, is_clip=True)
+    
     if 'vk.com' in video_url.lower() and '/video' in video_url.lower():
-        return get_embed_url_vk(video_url)
+        return get_embed_url_vk(video_url, is_clip=False)
+    
+    if 'youtube.com' in video_url.lower() or 'youtu.be' in video_url.lower():
+        return get_embed_url_youtube(video_url)
     
     return None
