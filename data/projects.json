@@ -1,6 +1,21 @@
 {
-  "updated": "2026-09-08T20:39:48.744Z",
+  "updated": "2026-09-08T20:50:05.544Z",
   "projects": [
+    {
+      "id": "pmtt58cobdlc1",
+      "added": "2026-09-08",
+      "title": "RUTUBE REELS",
+      "category": "concerts",
+      "cover": "",
+      "video_url": "https://rutube.ru/shorts/6c941bbc4027e13cca485498ffa6f139/?r=wd",
+      "video_source": "rutube",
+      "thumbnail_url": "",
+      "video": "https://rutube.ru/shorts/6c941bbc4027e13cca485498ffa6f139/?r=wd",
+      "images": [],
+      "links": [],
+      "client": "",
+      "format": ""
+    },
     {
       "id": "pmtt4oeg1fo9b",
       "added": "2026-09-08",
