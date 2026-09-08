@@ -1,20 +1,20 @@
 {
-  "updated": "2026-09-08T21:56:14.496Z",
+  "updated": "2026-09-08T21:57:18.946Z",
   "projects": [
     {
-      "id": "pmtt6nrmtirn4",
+      "id": "pmtt4oeg1fo9b",
       "added": "2026-09-08",
-      "title": "Reels",
-      "category": "reels",
-      "cover": "https://pic.rtbcdn.ru/video/2026-09-05/c0/a8/c0a80b3272190546a99ecde22b76a1c9.jpg",
-      "video_url": "https://rutube.ru/shorts/c9645790704ee35fa51d3da05dc554a8/?r=wd",
+      "title": "Rutube2",
+      "category": "concerts",
+      "cover": "https://pic.rtbcdn.ru/video/f3/3c/f33c29b6ef8a3637785a04bd5a7ee2d3.jpg",
+      "video_url": "https://rutube.ru/video/dbb73611a21b4e423f4c35d1c0b99b30/?r=wd",
       "video_source": "rutube",
-      "thumbnail_url": "https://pic.rtbcdn.ru/video/2026-09-05/c0/a8/c0a80b3272190546a99ecde22b76a1c9.jpg",
-      "video": "https://rutube.ru/shorts/c9645790704ee35fa51d3da05dc554a8/?r=wd",
+      "thumbnail_url": "https://pic.rtbcdn.ru/video/f3/3c/f33c29b6ef8a3637785a04bd5a7ee2d3.jpg",
+      "video": "https://rutube.ru/video/dbb73611a21b4e423f4c35d1c0b99b30/?r=wd",
       "images": [],
       "links": [],
       "client": "RUTUBE",
-      "format": "REELS / SHORTS"
+      "format": "КОНЦЕРТ / АФТЕРМУВИ"
     },
     {
       "id": "pmtosc69ngr7r",
