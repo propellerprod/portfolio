@@ -191,7 +191,7 @@ app.get('/api/get-video-meta/', handleVideoMeta);
 app.post('/api/get-video-meta', handleVideoMeta);
 app.get('/api/get-video-meta', handleVideoMeta);
 
-// API: Get/Update projects
+// API: Get projects (read-only)
 app.get('/api/projects', async (req, res) => {
   try {
     const raw = await fs.readFile(PROJECTS_FILE, 'utf-8');
@@ -202,20 +202,12 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
-app.post('/api/projects', async (req, res) => {
-  try {
-    const data = req.body;
-    if (!data || !Array.isArray(data.projects)) {
-      return res.status(400).json({ error: 'Некорректная структура: ожидается объект с полем projects' });
-    }
-    await fs.writeFile(PROJECTS_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    res.json({ success: true, count: data.projects.length });
-  } catch (err) {
-    res.status(500).json({ error: 'Не удалось сохранить projects.json', details: err.message });
-  }
+// Direct writing via server disabled for security
+app.post('/api/projects', (req, res) => {
+  res.status(403).json({ error: 'Прямое изменение через сервер отключено в целях безопасности. Изменения сохраняются напрямую в репозиторий GitHub через авторизацию по PAT.' });
 });
 
-// API: Get/Update collabs
+// API: Get collabs (read-only)
 app.get('/api/collabs', async (req, res) => {
   try {
     const raw = await fs.readFile(COLLABS_FILE, 'utf-8');
@@ -226,17 +218,9 @@ app.get('/api/collabs', async (req, res) => {
   }
 });
 
-app.post('/api/collabs', async (req, res) => {
-  try {
-    const data = req.body;
-    if (!data || !Array.isArray(data.collabs)) {
-      return res.status(400).json({ error: 'Некорректная структура: ожидается объект с полем collabs' });
-    }
-    await fs.writeFile(COLLABS_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    res.json({ success: true, count: data.collabs.length });
-  } catch (err) {
-    res.status(500).json({ error: 'Не удалось сохранить collabs.json', details: err.message });
-  }
+// Direct writing via server disabled for security
+app.post('/api/collabs', (req, res) => {
+  res.status(403).json({ error: 'Прямое изменение через сервер отключено в целях безопасности. Изменения сохраняются напрямую в репозиторий GitHub через авторизацию по PAT.' });
 });
 
 // Explicit Admin routes

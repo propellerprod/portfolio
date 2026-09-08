@@ -144,19 +144,18 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
   <section id="scrLogin">
     <h1 class="a-title">ВХОД<br>В АДМИНКУ</h1>
     <div class="login-box">
-      <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--line)">
-        <button class="btn btn-acc" id="btnLocalLogin" style="width:100%;margin-bottom:8px">⚡ ВОЙТИ В РЕЖИМЕ СЕРВЕРА (МГНОВЕННО) →</button>
-        <span class="mono" style="color:var(--dim);font-size:11px">// Управление проектами прямо на сервере без необходимости GitHub токена</span>
-      </div>
-
-      <p class="hint">Или подключите GitHub PAT для прямой синхронизации с репозиторием. Токен хранится только в этом браузере: <b>GitHub → Settings → Developer settings → Fine-grained personal access tokens</b> → доступ к <b>propellerprod/portfolio</b> → <b>Contents: Read and write</b>.</p>
+      <p class="hint" style="margin-bottom:20px;line-height:1.6">Панель управления защищена. Для внесения изменений в портфолио на GitHub Pages требуется персональный токен GitHub (PAT) с доступом к репозиторию. Токен хранится исключительно в локальном хранилище вашего браузера.</p>
       <div class="f"><label>GITHUB ТОКЕН</label><input type="password" id="inToken" placeholder="github_pat_…" autocomplete="off"></div>
       <div class="two-col">
         <div class="f"><label>РЕПОЗИТОРИЙ (ВЛАДЕЛЕЦ/ИМЯ)</label><input id="inRepo" value="propellerprod/portfolio"></div>
         <div class="f"><label>ВЕТКА</label><input id="inBranch" value="main"></div>
       </div>
-      <button class="btn" id="btnLogin" style="width:100%">ВОЙТИ С GITHUB ТОКЕНОМ →</button>
+      <button class="btn btn-acc" id="btnLogin" style="width:100%;margin-top:10px">ВОЙТИ С GITHUB ТОКЕНОМ →</button>
       <div class="status-line" id="loginErr"></div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line);font-size:11px;color:var(--dim);line-height:1.6">
+        <b>Как получить токен:</b><br>
+        GitHub → Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b> → Generate new token → доступ к репозиторию <b>propellerprod/portfolio</b> → Permissions: <b>Contents (Read and write)</b>.
+      </div>
     </div>
   </section>
 
@@ -290,14 +289,13 @@ const COLLABS_FILE = 'data/collabs.json';
 
 let cfg = JSON.parse(localStorage.getItem('pp_cfg')||'null') || {owner:'propellerprod', repo:'portfolio', branch:'main'};
 let token = localStorage.getItem('pp_token') || '';
-let localMode = localStorage.getItem('pp_local') === 'true';
 let DATA = {projects:[]};
 let COLLABS_DATA = {collabs:[]};
 let curCat = null, editId = null, dragFrom = null, cfCb = null, editingCollabId = null;
 
 /* ---------- GitHub API ---------- */
 async function gh(path, method='GET', body){
-  if(!token) throw new Error('Токен не введён');
+  if(!token) throw new Error('Токен GitHub не введён. Пожалуйста, выполните вход.');
   const r = await fetch('https://api.github.com/'+path, {
     method,
     headers:{
@@ -311,8 +309,8 @@ async function gh(path, method='GET', body){
     let msg='HTTP '+r.status;
     try{ const e=await r.json(); msg=e.message||msg; }catch(e){}
     if(r.status===401) msg='GitHub отклонил токен (401). Проверьте Fine-grained PAT и срок его действия.';
-    else if(r.status===403) msg='GitHub запретил доступ (403). Нужны права Contents: Read and write.';
-    else if(r.status===404) msg='Репозиторий или файл не найден (404). Проверьте owner/repo и ветку.';
+    else if(r.status===403) msg='GitHub запретил доступ (403). Убедитесь, что у токена есть право Contents: Read and write.';
+    else if(r.status===404) msg='Репозиторий или файл не найден (404). Проверьте репозиторий propellerprod/portfolio и ветку main.';
     throw new Error(msg);
   }
   return r.status===204 ? null : await r.json();
@@ -321,34 +319,22 @@ async function checkRepoAccess(){
   const repo=encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo);
   return await gh('repos/'+repo);
 }
-function b64(str){
+function toB64(str){
   const bytes = new TextEncoder().encode(str);
-  let bin = ''; bytes.forEach(b => bin += String.fromCharCode(b));
+  let bin = '';
+  for(let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
   return btoa(bin);
 }
+function fromB64(b64Str){
+  const bin = atob((b64Str||'').replace(/\s+/g, ''));
+  const bytes = new Uint8Array(bin.length);
+  for(let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder('utf-8').decode(bytes);
+}
 
-/* ---------- ЗАГРУЗКА ДАННЫХ (с понятной диагностикой) ---------- */
+/* ---------- ЗАГРУЗКА ДАННЫХ ИЗ GITHUB ---------- */
 async function fetchFile(){
-  if(localMode || !token){
-    try{
-      const r = await fetch('/api/projects');
-      if(r.ok){
-        DATA = await r.json();
-        if(!Array.isArray(DATA.projects)) DATA = {projects:[]};
-        return 'local';
-      }
-    }catch(e){}
-    try{
-      const r = await fetch('../data/projects.json');
-      if(r.ok){
-        DATA = await r.json();
-        if(!Array.isArray(DATA.projects)) DATA = {projects:[]};
-        return 'local';
-      }
-    }catch(e){}
-    DATA = {projects:[]};
-    return 'local';
-  }
+  if(!token) throw new Error('Требуется авторизация через GitHub токен');
   let d;
   try{
     d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}?ref=${encodeURIComponent(cfg.branch)}`);
@@ -359,7 +345,7 @@ async function fetchFile(){
   }
   let text;
   try{
-    text = decodeURIComponent(escape(atob(d.content.replace(/\n/g,''))));
+    text = fromB64(d.content);
   }catch(e){
     throw new Error('Файл '+FILE+' не читается (повреждена кодировка)');
   }
@@ -367,32 +353,13 @@ async function fetchFile(){
     DATA = JSON.parse(text);
   }catch(e){
     const preview = text.slice(0,40).replace(/\s+/g,' ');
-    throw new Error('data/projects.json содержит НЕ-JSON («'+preview+'…»). Откройте файл в GitHub → карандаш (Edit) → удалите всё → вставьте чистый JSON.');
+    throw new Error('data/projects.json содержит НЕ-JSON («'+preview+'…»). Откройте файл в GitHub и проверьте синтаксис JSON.');
   }
   if(!Array.isArray(DATA.projects)) DATA = {projects:[]};
   return d.sha;
 }
 async function fetchCollabsFile(){
-  if(localMode || !token){
-    try{
-      const r = await fetch('/api/collabs');
-      if(r.ok){
-        COLLABS_DATA = await r.json();
-        if(!Array.isArray(COLLABS_DATA.collabs)) COLLABS_DATA = {collabs:[]};
-        return 'local';
-      }
-    }catch(e){}
-    try{
-      const r = await fetch('../data/collabs.json');
-      if(r.ok){
-        COLLABS_DATA = await r.json();
-        if(!Array.isArray(COLLABS_DATA.collabs)) COLLABS_DATA = {collabs:[]};
-        return 'local';
-      }
-    }catch(e){}
-    COLLABS_DATA = {collabs:[]};
-    return 'local';
-  }
+  if(!token) throw new Error('Требуется авторизация через GitHub токен');
   let d;
   try{
     d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}?ref=${encodeURIComponent(cfg.branch)}`);
@@ -402,7 +369,7 @@ async function fetchCollabsFile(){
   }
   let text;
   try{
-    text = decodeURIComponent(escape(atob(d.content.replace(/\n/g,''))));
+    text = fromB64(d.content);
   }catch(e){
     throw new Error('Файл '+COLLABS_FILE+' не читается (повреждена кодировка)');
   }
@@ -410,50 +377,69 @@ async function fetchCollabsFile(){
     COLLABS_DATA = JSON.parse(text);
   }catch(e){
     const preview = text.slice(0,40).replace(/\s+/g,' ');
-    throw new Error('data/collabs.json содержит НЕ-JSON («'+preview+'…»). Исправьте JSON файл.');
+    throw new Error('data/collabs.json содержит НЕ-JSON («'+preview+'…»). Проверьте JSON файл.');
   }
   if(!Array.isArray(COLLABS_DATA.collabs)) COLLABS_DATA = {collabs:[]};
   return d.sha;
 }
 async function publish(msg){
+  if(!token) throw new Error('Требуется GitHub токен для сохранения');
   DATA.updated = new Date().toISOString();
+  
+  // Сохранение напрямую в GitHub репозиторий
+  let sha = null;
+  try{ 
+    const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}?ref=${encodeURIComponent(cfg.branch)}`); 
+    sha = d.sha; 
+  }catch(e){}
+  
+  const body = {
+    message: msg || 'portfolio: update projects',
+    content: toB64(JSON.stringify(DATA, null, 2)),
+    branch: cfg.branch
+  };
+  if(sha) body.sha = sha;
+  await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}`, 'PUT', body);
+
+  // Опциональная синхронизация локального файла, если сервер доступен
   try{
     await fetch('/api/projects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(DATA, null, 2)
     });
-  }catch(e){
-    console.warn('[ADMIN] Local project save failed:', e);
-  }
-  if(token){
-    let sha = null;
-    try{ const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}?ref=${encodeURIComponent(cfg.branch)}`); sha = d.sha; }catch(e){}
-    const body = {message: msg || 'portfolio: update projects', content: b64(JSON.stringify(DATA,null,2)), branch: cfg.branch};
-    if(sha) body.sha = sha;
-    await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}`, 'PUT', body);
-  }
-  $('#pubStatus').textContent = 'СОХРАНЕНО: ' + new Date().toLocaleTimeString('ru-RU');
+  }catch(e){}
+
+  $('#pubStatus').textContent = 'СОХРАНЕНО В GITHUB: ' + new Date().toLocaleTimeString('ru-RU');
 }
 async function publishCollabs(msg){
+  if(!token) throw new Error('Требуется GitHub токен для сохранения');
   COLLABS_DATA.updated = new Date().toISOString();
+  
+  // Сохранение напрямую в GitHub репозиторий
+  let sha = null;
+  try{ 
+    const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}?ref=${encodeURIComponent(cfg.branch)}`); 
+    sha = d.sha; 
+  }catch(e){}
+  
+  const body = {
+    message: msg || 'portfolio: update collabs',
+    content: toB64(JSON.stringify(COLLABS_DATA, null, 2)),
+    branch: cfg.branch
+  };
+  if(sha) body.sha = sha;
+  await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}`, 'PUT', body);
+
   try{
     await fetch('/api/collabs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(COLLABS_DATA, null, 2)
     });
-  }catch(e){
-    console.warn('[ADMIN] Local collabs save failed:', e);
-  }
-  if(token){
-    let sha = null;
-    try{ const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}?ref=${encodeURIComponent(cfg.branch)}`); sha = d.sha; }catch(e){}
-    const body = {message: msg || 'portfolio: update collabs', content: b64(JSON.stringify(COLLABS_DATA,null,2)), branch: cfg.branch};
-    if(sha) body.sha = sha;
-    await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}`, 'PUT', body);
-  }
-  $('#pubStatus').textContent = 'СОХРАНЕНО: ' + new Date().toLocaleTimeString('ru-RU');
+  }catch(e){}
+
+  $('#pubStatus').textContent = 'СОХРАНЕНО В GITHUB: ' + new Date().toLocaleTimeString('ru-RU');
 }
 
 /* ---------- Video Parse (YouTube, Rutube, Vimeo) ---------- */
@@ -579,31 +565,12 @@ function cb0(){ const f = cfCb; cfCb = null; f && f(); }
 /* ---------- LOGIN ---------- */
 (function setupLogin(){
   const btn = $('#btnLogin');
-  const btnLocal = $('#btnLocalLogin');
   const inpRepo = $('#inRepo');
   const inpBranch = $('#inBranch');
   const err = $('#loginErr');
   if(!btn){ console.error('[ADMIN] Кнопка #btnLogin не найдена!'); return; }
   inpRepo.value = cfg.owner + '/' + cfg.repo;
   inpBranch.value = cfg.branch;
-
-  if(btnLocal){
-    btnLocal.onclick = async ()=>{
-      err.textContent = '';
-      localMode = true;
-      localStorage.setItem('pp_local', 'true');
-      try{
-        await fetchFile();
-        await fetchCollabsFile();
-        $('#btnLogout').hidden = false;
-        renderDash();
-        show('scrDash');
-        toast('ВХОД В РЕЖИМЕ СЕРВЕРА ✓');
-      }catch(e){
-        err.textContent = '// ОШИБКА ЗАГРУЗКИ: ' + (e.message || e);
-      }
-    };
-  }
   
   btn.onclick = async ()=>{
     console.log('[ADMIN] Клик по кнопке ВОЙТИ');
@@ -614,7 +581,7 @@ function cb0(){ const f = cfCb; cfCb = null; f && f(); }
     
     if(!t){ 
       console.error('[ADMIN] Токен не введён');
-      err.textContent = '// ВСТАВЬТЕ ТОКЕН'; 
+      err.textContent = '// ВСТАВЬТЕ GITHUB ТОКЕН (PAT)'; 
       return; 
     }
     if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){ 
@@ -625,7 +592,6 @@ function cb0(){ const f = cfCb; cfCb = null; f && f(); }
     
     console.log('[ADMIN] Попытка входа с токеном:', t.substring(0,10)+'...');
     token = t;
-    localMode = false;
     localStorage.removeItem('pp_local');
     const parts = repo.split('/');
     cfg = {owner:parts[0].trim(), repo:parts[1].trim(), branch:br.trim()};
@@ -640,14 +606,14 @@ function cb0(){ const f = cfCb; cfCb = null; f && f(); }
       $('#btnLogout').hidden = false;
       renderDash(); 
       show('scrDash');
-      toast('ПОДКЛЮЧЕНО ✓');
+      toast('ПОДКЛЮЧЕНО К GITHUB ✓');
       console.log('[ADMIN] Вход успешен');
     }catch(e){
       console.error('[ADMIN] Ошибка входа:', e);
       token = '';
       let errMsg = e.message || 'Неизвестная ошибка';
       if(errMsg.includes('401')){
-        errMsg += '\n\n// ЧТО ДЕЛАТЬ:\n// 1. Зайдите на https://github.com/settings/tokens\n// 2. Удалите старый токен\n// 3. Создайте новый Fine-grained PAT\n// 4. Выберите репозиторий propellerprod/portfolio\n// 5. Дайте право Contents: Read and write\n// 6. Скопируйте новый токен и вставьте сюда';
+        errMsg += '\n\n// ЧТО ДЕЛАТЬ:\n// 1. Зайдите на https://github.com/settings/tokens\n// 2. Проверьте или создайте новый Fine-grained PAT\n// 3. Выберите репозиторий propellerprod/portfolio\n// 4. Дайте право Contents: Read and write\n// 5. Скопируйте новый токен и вставьте сюда';
       }else if(errMsg.includes('403')){
         errMsg += '\n\n// ПРОВЕРЬТЕ ПРАВА ДОСТУПА:\n// Токен должен иметь право Contents: Read and write\n// для репозитория propellerprod/portfolio';
       }else if(errMsg.includes('404')){
@@ -664,7 +630,6 @@ $('#btnLogout').onclick = ()=>{
   localStorage.removeItem('pp_token');
   localStorage.removeItem('pp_local');
   token = '';
-  localMode = false;
   $('#btnLogout').hidden = true;
   show('scrLogin');
 };
@@ -1136,17 +1101,7 @@ $('#btnSaveCollab').onclick = async ()=>{
 
 /* ---------- АВТОВХОД ---------- */
 (async function init(){
-  if(localMode){
-    try{
-      await fetchFile();
-      await fetchCollabsFile();
-      $('#btnLogout').hidden = false;
-      renderDash(); show('scrDash');
-      return;
-    }catch(e){
-      console.warn('[ADMIN] Local mode load error:', e);
-    }
-  }
+  localStorage.removeItem('pp_local');
   if(token){
     try{
       await checkRepoAccess();
@@ -1160,7 +1115,7 @@ $('#btnSaveCollab').onclick = async ()=>{
       show('scrLogin');
       let errMsg = e.message || 'Неизвестная ошибка';
       if(errMsg.includes('401')){
-        errMsg += '\n\n// ЧТО ДЕЛАТЬ:\n// 1. Зайдите на https://github.com/settings/tokens\n// 2. Удалите старый токен\n// 3. Создайте новый Fine-grained PAT\n// 4. Выберите репозиторий propellerprod/portfolio\n// 5. Дайте право Contents: Read and write\n// 6. Скопируйте новый токен и вставьте сюда';
+        errMsg += '\n\n// ЧТО ДЕЛАТЬ:\n// 1. Зайдите на https://github.com/settings/tokens\n// 2. Проверьте или создайте новый Fine-grained PAT\n// 3. Выберите репозиторий propellerprod/portfolio\n// 4. Дайте право Contents: Read and write\n// 5. Скопируйте новый токен и вставьте сюда';
       }else if(errMsg.includes('403')){
         errMsg += '\n\n// ПРОВЕРЬТЕ ПРАВА ДОСТУПА:\n// Токен должен иметь право Contents: Read and write\n// для репозитория propellerprod/portfolio';
       }else if(errMsg.includes('404')){
