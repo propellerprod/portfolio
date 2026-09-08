@@ -650,6 +650,13 @@ async function moveProject(from, to){
   try{ await publish('portfolio: reorder'); renderList(); toast('ПОРЯДОК СОХРАНЁН ✓'); }
   catch(err){ toast('ОШИБКА: '+err.message, true); await fetchFile().catch(()=>{}); renderList(); }
 }
+async function moveCollab(from, to){
+  const arr = COLLABS_DATA.collabs;
+  const [m] = arr.splice(from,1);
+  arr.splice(to,0,m);
+  try{ await publishCollabs('portfolio: reorder collabs'); renderDash(); toast('ПОРЯДОК КОЛЛАБОРАЦИЙ СОХРАНЁН ✓'); }
+  catch(err){ toast('ОШИБКА: '+err.message, true); await fetchCollabsFile().catch(()=>{}); renderDash(); }
+}
 
 /* ---------- РЕДАКТОР ---------- */
 function openEditor(id, defCat){
