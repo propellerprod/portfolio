@@ -68,6 +68,8 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
 .row{display:grid;grid-template-columns:44px 90px 1fr auto;gap:14px;align-items:center;border:1px solid var(--line);background:var(--panel);padding:12px;margin-bottom:10px;transition:border-color .3s,opacity .3s}
 .row.over{border-color:var(--acc)}
 .row.dragging{opacity:.4}
+.collab-card.dragging{opacity:.4;border-style:dashed}
+.collab-card.over{border-color:var(--acc);transform:scale(1.02)}
 .row .grip{cursor:grab;color:var(--dim);font-size:18px;user-select:none;text-align:center}
 .row img.thumb{width:90px;height:60px;object-fit:cover;background:var(--bg2)}
 .row .noimg{width:90px;height:60px;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--dim);font-family:var(--fm);font-size:9px}
@@ -353,11 +355,31 @@ async function publishCollabs(msg){
   $('#pubStatus').textContent = 'ОПУБЛИКОВАНО: ' + new Date().toLocaleTimeString('ru-RU');
 }
 
-/* ---------- YouTube ---------- */
-function parseYT(u){
+/* ---------- Video Parse (YouTube, Rutube, Vimeo) ---------- */
+function parseVideoUrl(u){
   u = (u||'').trim(); if(!u) return null;
-  const m = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
-  return m ? m[1] : null;
+  
+  // Rutube: https://rutube.ru/video/abcd1234...
+  const rm = u.match(/rutube\.ru\/video\/([a-f0-9]+)/i);
+  if(rm && rm[1]) return { type: 'rutube', id: rm[1], embed: `https://rutube.ru/play/embed/${rm[1]}` };
+  
+  // YouTube
+  const ym = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+  if(ym && ym[1]) return { type: 'youtube', id: ym[1], embed: `https://www.youtube.com/embed/${ym[1]}` };
+  
+  // Vimeo: https://vimeo.com/123456789
+  const vm = u.match(/vimeo\.com\/(\d+)/i);
+  if(vm && vm[1]) return { type: 'vimeo', id: vm[1], embed: `https://player.vimeo.com/video/${vm[1]}` };
+  
+  return null;
+}
+
+function getVideoThumb(videoObj){
+  if(!videoObj) return '';
+  if(videoObj.type === 'youtube') return `https://img.youtube.com/vi/${videoObj.id}/mqdefault.jpg`;
+  if(videoObj.type === 'rutube') return `https://pic.rutubelist.ru/video/${videoObj.id.substring(0,2)}/${videoObj.id.substring(2,4)}/${videoObj.id}.jpg`; // approximate
+  if(videoObj.type === 'vimeo') return ''; // Vimeo requires API for thumb
+  return '';
 }
 
 /* ---------- UI helpers ---------- */
@@ -476,13 +498,37 @@ function renderCollabDash(){
     return;
   }
   grid.innerHTML = COLLABS_DATA.collabs.map((c,i)=>`
-    <button class="cat-card" data-collab-idx="${i}" title="Редактировать • Удалить: Shift+Click">
-      ${c.img ? `<img src="${esc(c.img)}" alt="" style="width:60px;height:60px;object-fit:cover;border:1px solid var(--line);margin-bottom:8px" onerror="this.style.display=\'none\'">` : '<div style="width:60px;height:60px;border:1px dashed var(--line);margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:9px">НЕТ ФОТО</div>'}
+    <div class="cat-card collab-card" data-collab-idx="${i}" title="Редактировать • Удалить: Shift+Click">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        ${c.img ? `<img src="${esc(c.img)}" alt="" style="width:60px;height:60px;object-fit:cover;border:1px solid var(--line)" onerror="this.style.display='none'">` : '<div style="width:60px;height:60px;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:9px">НЕТ ФОТО</div>'}
+        <span class="mono" style="color:var(--dim);font-size:9px">#${i+1}</span>
+      </div>
       <span class="n" style="font-size:14px">${esc(c.name||'БЕЗ ИМЕНИ')}</span>
       <span class="mono">${(c.links&&c.links.length)?c.links.length+' ССЫЛОК':'НЕТ ССЫЛОК'}</span>
-    </button>
+    </div>
   `).join('');
+
+  /* Обработчик клика для коллабораций */
+  const cards = grid.querySelectorAll('.collab-card');
+  cards.forEach(card=>{
+    card.addEventListener('click', e=>{
+      if(e.shiftKey || e.ctrlKey || e.metaKey){
+        const idx = parseInt(card.dataset.collabIdx);
+        const c = COLLABS_DATA.collabs[idx];
+        askConfirm('Удалить коллаборацию "'+(c.name||'БЕЗ ИМЕНИ')+'"?", async ()=>{
+          COLLABS_DATA.collabs.splice(idx,1);
+          try{ await publishCollabs('portfolio: delete collab'); renderDash(); toast('КОЛЛАБОРАЦИЯ УДАЛЕНА ✓'); }
+          catch(err){ toast('ОШИБКА: '+err.message, true); await fetchCollabsFile().catch(()=>{}); renderDash(); }
+        });
+        e.preventDefault();
+        e.stopPropagation();
+      }else{
+        openCollabEditor(parseInt(card.dataset.collabIdx));
+      }
+    });
+  });
 }
+
 $('#collabGrid').addEventListener('click', e=>{
   const card = e.target.closest('.cat-card');
   if(!card || !card.dataset.collabIdx) return;
@@ -498,6 +544,8 @@ $('#collabGrid').addEventListener('click', e=>{
     e.preventDefault();
     e.stopPropagation();
   }else{
+    /* не реагировать на клик, если это был grip для перетаскивания */
+    if(e.target.classList.contains('grip')) return;
     openCollabEditor(parseInt(card.dataset.collabIdx));
   }
 });
@@ -688,25 +736,37 @@ function checkCover(){
 }
 $('#fCover').addEventListener('input', checkCover);
 
-/* проверка YouTube */
-function checkYT(){
+/* проверка видео (YouTube, Rutube, Vimeo) */
+function checkVideo(){
   const u = $('#fVideo').value.trim();
   const pv = $('#ytPrev'), st = $('#ytStatus');
   st.textContent = ''; pv.hidden = true; pv.innerHTML = '';
   if(!u) return;
-  const id = parseYT(u);
-  if(!id){ st.innerHTML = '<span class="err">// НЕКОРРЕКТНАЯ ССЫЛКА YOUTUBE. ПРИМЕР: https://youtu.be/XXXXXXXXXXX</span>'; return; }
-  st.innerHTML = '<span class="ok">✓ ВИДЕО НАЙДЕНО: '+id+'</span>';
+  
+  const videoObj = parseVideoUrl(u);
+  if(!videoObj){ 
+    st.innerHTML = '<span class="err">// НЕКОРРЕКТНАЯ ССЫЛКА. ПОДДЕРЖИВАЮТСЯ: YOUTUBE, RUTUBE, VIMEO</span>'; 
+    return; 
+  }
+  
+  st.innerHTML = `<span class="ok">✓ ВИДЕО НАЙДЕНО (${videoObj.type.toUpperCase()}): ${videoObj.id}</span>`;
   pv.hidden = false;
-  const img = document.createElement('img');
-  img.src = 'https://img.youtube.com/vi/'+id+'/mqdefault.jpg';
-  img.alt = 'Превью видео';
-  img.onerror = ()=>img.style.display = 'none';
+  
+  const thumbUrl = getVideoThumb(videoObj);
+  if(thumbUrl){
+    const img = document.createElement('img');
+    img.src = thumbUrl;
+    img.alt = 'Превью видео';
+    img.onerror = ()=>img.style.display = 'none';
+    pv.appendChild(img);
+  }
+  
   const span = document.createElement('span');
-  span.className = 'mono'; span.textContent = 'YOUTUBE / '+id;
-  pv.append(img, span);
+  span.className = 'mono'; 
+  span.textContent = `${videoObj.type.toUpperCase()} / ${videoObj.id}`;
+  pv.appendChild(span);
 }
-$('#fVideo').addEventListener('input', checkYT);
+$('#fVideo').addEventListener('input', checkVideo);
 
 /* сохранение */
 $('#btnSave').onclick = async ()=>{
@@ -715,7 +775,7 @@ $('#btnSave').onclick = async ()=>{
   const title = $('#fTitle').value.trim();
   if(!title){ st.innerHTML = '<span class="err">// НАЗВАНИЕ ОБЯЗАТЕЛЬНО</span>'; return; }
   const video = $('#fVideo').value.trim();
-  if(video && !parseYT(video)){ st.innerHTML = '<span class="err">// ИСПРАВЬТЕ ССЫЛКУ YOUTUBE ИЛИ ОЧИСТИТЕ ПОЛЕ</span>'; return; }
+  if(video && !parseVideoUrl(video)){ st.innerHTML = '<span class="err">// ИСПРАВЬТЕ ССЫЛКУ НА ВИДЕО (YOUTUBE/RUTUBE/VIMEO) ИЛИ ОЧИСТИТЕ ПОЛЕ</span>'; return; }
   const cover = $('#fCover').value.trim();
   const images = [...$('#photos').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
   const links = [...$('#links').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
