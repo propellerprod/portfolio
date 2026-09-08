@@ -3,11 +3,13 @@ from django.db import models
 
 class PortfolioItem(models.Model):
     """
-    Модель элемента портфолио с поддержкой видео из Rutube и VK Видео.
+    Модель элемента портфолио с поддержкой видео из Rutube, VK Видео, YouTube (включая Shorts) и VK Клипов.
     """
     VIDEO_SOURCE_CHOICES = [
         ('rutube', 'Rutube'),
         ('vk', 'VK Видео'),
+        ('youtube', 'YouTube'),
+        ('vk_clip', 'VK Клип'),
         ('other', 'Другое'),
     ]
     
@@ -24,7 +26,7 @@ class PortfolioItem(models.Model):
     video_url = models.URLField(
         max_length=500,
         blank=True,
-        verbose_name='Ссылка на видео (Rutube или VK Видео)'
+        verbose_name='Ссылка на видео (Rutube, VK Видео, YouTube, VK Клип)'
     )
     
     # Определяем источник видео
@@ -47,6 +49,12 @@ class PortfolioItem(models.Model):
     use_auto_thumbnail = models.BooleanField(
         default=False,
         verbose_name='Автоматически получать превью из видео'
+    )
+    
+    # Флаг для вертикальных видео (Shorts/Клипы)
+    is_shorts = models.BooleanField(
+        default=False,
+        verbose_name='Вертикальное видео (Shorts/Клип)'
     )
     
     # Дополнительное изображение проекта (опционально)
@@ -116,11 +124,15 @@ class PortfolioItem(models.Model):
         if not self.video_url:
             return None
         
-        from video_utils.api import extract_video_id_rutube, extract_video_id_vk
+        from video_utils.api import extract_video_id_rutube, extract_video_id_vk, extract_video_id_youtube
         
         if 'rutube.ru' in self.video_url.lower():
             return extract_video_id_rutube(self.video_url)
+        elif 'vk.com' in self.video_url.lower() and '/clips' in self.video_url.lower():
+            return extract_video_id_vk(self.video_url, is_clip=True)
         elif 'vk.com' in self.video_url.lower() and '/video' in self.video_url.lower():
-            return extract_video_id_vk(self.video_url)
+            return extract_video_id_vk(self.video_url, is_clip=False)
+        elif 'youtube.com' in self.video_url.lower() or 'youtu.be' in self.video_url.lower():
+            return extract_video_id_youtube(self.video_url)
         
         return None
