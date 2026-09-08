@@ -524,7 +524,16 @@ function cb0(){ const f = cfCb; cfCb = null; f && f(); }
     }catch(e){
       console.error('[ADMIN] Ошибка входа:', e);
       token = '';
-      err.textContent = '// ОШИБКА: ' + e.message;
+      let errMsg = e.message || 'Неизвестная ошибка';
+      // Добавляем подсказки по решению проблем с токеном
+      if(errMsg.includes('401')){
+        errMsg += '\n\n// ЧТО ДЕЛАТЬ:\n// 1. Зайдите на https://github.com/settings/tokens\n// 2. Удалите старый токен\n// 3. Создайте новый Fine-grained PAT\n// 4. Выберите репозиторий propellerprod/portfolio\n// 5. Дайте право Contents: Read and write\n// 6. Скопируйте новый токен и вставьте сюда';
+      }else if(errMsg.includes('403')){
+        errMsg += '\n\n// ПРОВЕРЬТЕ ПРАВА ДОСТУПА:\n// Токен должен иметь право Contents: Read and write\n// для репозитория propellerprod/portfolio';
+      }else if(errMsg.includes('404')){
+        errMsg += '\n\n// ПРОВЕРЬТЕ НАЗВАНИЕ РЕПОЗИТОРИЯ:\n// Убедитесь что репозиторий существует и ветка main активна';
+      }
+      err.textContent = '// ОШИБКА: ' + errMsg;
     }
   };  $('#inToken').addEventListener('keydown', e=>{
     if(e.key==='Enter') btn.click();
@@ -1006,7 +1015,15 @@ $('#btnSaveCollab').onclick = async ()=>{
     }catch(e){
       token = ''; localStorage.removeItem('pp_token');
       show('scrLogin');
-      $('#loginErr').textContent = '// ОШИБКА ДАННЫХ: ' + e.message;
+      let errMsg = e.message || 'Неизвестная ошибка';
+      if(errMsg.includes('401')){
+        errMsg += '\\n\\n// ЧТО ДЕЛАТЬ:\\n// 1. Зайдите на https://github.com/settings/tokens\\n// 2. Удалите старый токен\\n// 3. Создайте новый Fine-grained PAT\\n// 4. Выберите репозиторий propellerprod/portfolio\\n// 5. Дайте право Contents: Read and write\\n// 6. Скопируйте новый токен и вставьте сюда';
+      }else if(errMsg.includes('403')){
+        errMsg += '\\n\\n// ПРОВЕРЬТЕ ПРАВА ДОСТУПА:\\n// Токен должен иметь право Contents: Read and write\\n// для репозитория propellerprod/portfolio';
+      }else if(errMsg.includes('404')){
+        errMsg += '\\n\\n// ПРОВЕРЬТЕ НАЗВАНИЕ РЕПОЗИТОРИЯ:\\n// Убедитесь что репозиторий существует и ветка main активна';
+      }
+      $('#loginErr').textContent = '// ОШИБКА ДАННЫХ: ' + errMsg;
       return;
     }
   }
