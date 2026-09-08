@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Портфолио</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: #777;
+            font-size: 1.1em;
+        }
+        
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .portfolio-item {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .portfolio-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .item-thumbnail {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            background: #000;
+            overflow: hidden;
+        }
+        
+        .item-thumbnail img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .portfolio-item:hover .item-thumbnail img {
+            transform: scale(1.05);
+        }
+        
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .portfolio-item:hover .play-overlay {
+            opacity: 1;
+        }
+        
+        .play-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .play-icon::before {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 20px solid #333;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            margin-left: 5px;
+        }
+        
+        .item-content {
+            padding: 20px;
+        }
+        
+        .item-content h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .item-content p {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .video-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #3498db;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+        
+        .video-badge.rutube {
+            background: #0077ff;
+        }
+        
+        .video-badge.vk {
+            background: #0077FF;
+        }
+        
+        .video-badge.youtube {
+            background: #ff0000;
+        }
+        
+        .video-badge.vk_clip {
+            background: #0077FF;
+        }
+        
+        /* Бейдж для Shorts/Клипов */
+        .shorts-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, #ff0050, #00f2ea);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        /* Вертикальный контейнер для Shorts/Клипов */
+        .item-thumbnail.shorts {
+            padding-bottom: 177.78%; /* 9:16 aspect ratio */
+        }
+        
+        .date {
+            color: #999;
+            font-size: 0.85em;
+        }
+        
+        .no-items {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 10px;
+            color: #999;
+        }
+        
+        @media (max-width: 768px) {
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📁 Портфолио проектов</h1>
+            <p>Видео работы с Rutube и VK Видео</p>
+        </header>
+        
+        {% if items %}
+        <div class="portfolio-grid">
+            {% for item in items %}
+            <div class="portfolio-item" onclick="window.location.href='{% url "portfolio:detail" item.pk %}'">
+                <div class="item-thumbnail {% if item.is_shorts %}shorts{% endif %}">
+                    {% with thumb_url=item.get_thumbnail_url %}
+                    {% if thumb_url %}
+                    <img src="{{ thumb_url }}" alt="{{ item.title }}">
+                    {% elif item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                    {% else %}
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    {% endif %}
+                    {% endwith %}
+                    
+                    {% if item.is_shorts %}
+                    <div class="shorts-indicator">📱 Shorts</div>
+                    {% endif %}
+                    
+                    {% if item.video_url %}
+                    <div class="play-overlay">
+                        <div class="play-icon"></div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="item-content">
+                    <h3>{{ item.title }}</h3>
+                    {% if item.description %}
+                    <p>{{ item.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    
+                    <div class="item-meta">
+                        {% if item.video_source != 'other' and item.video_url %}
+                        <span class="video-badge {{ item.video_source }}">
+                            {{ item.get_video_source_display }}
+                        </span>
+                        {% else %}
+                        <span></span>
+                        {% endif %}
+                        <span class="date">{{ item.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-items">
+            <h2>Пока нет проектов</h2>
+            <p>Добавьте проекты через админ-панель</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -68,8 +68,6 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
 .row{display:grid;grid-template-columns:44px 90px 1fr auto;gap:14px;align-items:center;border:1px solid var(--line);background:var(--panel);padding:12px;margin-bottom:10px;transition:border-color .3s,opacity .3s}
 .row.over{border-color:var(--acc)}
 .row.dragging{opacity:.4}
-.collab-card.dragging{opacity:.4;border-style:dashed}
-.collab-card.over{border-color:var(--acc);transform:scale(1.02)}
 .row .grip{cursor:grab;color:var(--dim);font-size:18px;user-select:none;text-align:center}
 .row img.thumb{width:90px;height:60px;object-fit:cover;background:var(--bg2)}
 .row .noimg{width:90px;height:60px;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--dim);font-family:var(--fm);font-size:9px}
@@ -90,6 +88,14 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
 .link-row{display:grid;grid-template-columns:1fr 48px;gap:10px;margin-bottom:10px}
 .yt-prev{display:flex;gap:12px;align-items:center;margin-top:10px}
 .yt-prev img{width:120px;height:68px;object-fit:cover;border:1px solid var(--line)}
+.video-row{display:grid;grid-template-columns:1fr 48px;gap:10px;margin-bottom:10px;align-items:start}
+.video-select{min-height:48px;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:0 14px;font:inherit}
+.video-select option{background:var(--bg)}
+.btn-thumb{min-height:48px;padding:0 16px;font:600 10px var(--fb);letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);transition:.3s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-thumb:hover{border-color:var(--acc);color:var(--acc)}
+.btn-thumb:disabled{opacity:.5;pointer-events:none}
+.video-prev-wrap{margin-top:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.video-prev-img{width:120px;height:68px;object-fit:cover;border:1px solid var(--line);background:var(--bg2)}
 .cover-prev{margin-top:12px;border:1px solid var(--line);max-width:420px}
 .cover-prev img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
 .cover-prev.bad{border-color:var(--err);color:var(--err);font-family:var(--fm);font-size:10px;padding:14px}
@@ -186,10 +192,22 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
         <div class="status-line" id="coverStatus"></div>
       </div>
       <div class="f">
-        <label>YOUTUBE — URL ВИДЕО</label>
-        <input id="fVideo" placeholder="https://www.youtube.com/watch?v=…" inputmode="url">
-        <div class="yt-prev" id="ytPrev" hidden></div>
-        <div class="status-line" id="ytStatus"></div>
+        <label>ВИДЕО — ССЫЛКА И ИСТОЧНИК</label>
+        <div class="video-row">
+          <input id="fVideoUrl" placeholder="https://rutube.ru/video/... или https://vk.com/video..." inputmode="url">
+          <select id="fVideoSource" class="video-select">
+            <option value="">ВЫБРАТЬ...</option>
+            <option value="rutube">RUTUBE</option>
+            <option value="vk">VK ВИДЕО</option>
+            <option value="youtube">YOUTUBE</option>
+          </select>
+        </div>
+        <button class="btn-thumb" id="btnGetThumb" style="margin-top:10px">📷 ПОЛУЧИТЬ ПРЕВЬЮ ИЗ ВИДЕО</button>
+        <div class="video-prev-wrap" id="videoPrevWrap" hidden>
+          <img class="video-prev-img" id="videoPrevImg" alt="PREVIEW">
+          <span class="mono" id="videoPrevStatus"></span>
+        </div>
+        <div class="status-line" id="videoStatus"></div>
       </div>
       <div class="two-col">
         <div class="f"><label>КЛИЕНТ / АРТИСТ (НЕОБЯЗАТЕЛЬНО)</label><input id="fClient" placeholder="[БРЕНД]"></div>
@@ -257,7 +275,7 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
 'use strict';
 const $ = s => document.querySelector(s);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const CATEGORIES = { concerts:'КОНЦЕРТЫ', commercials:'РЕКЛАМА', clips:'КЛИПЫ', reels:'REELS', other:'ДРУГОЕ' };
+const CATEGORIES = { concerts:'КОНЦЕРТЫ', commercials:'БЛОГЕРЫ', clips:'КЛИПЫ', reels:'REELS', other:'ДРУГОЕ' };
 const FILE = 'data/projects.json';
 const COLLABS_FILE = 'data/collabs.json';
 
@@ -269,18 +287,29 @@ let curCat = null, editId = null, dragFrom = null, cfCb = null, editingCollabId 
 
 /* ---------- GitHub API ---------- */
 async function gh(path, method='GET', body){
+  if(!token) throw new Error('Токен не введён');
   const r = await fetch('https://api.github.com/'+path, {
     method,
-    headers:{Authorization:'Bearer '+token, Accept:'application/vnd.github+json'},
+    headers:{
+      'Authorization':'Bearer '+token,
+      'Accept':'application/vnd.github+json',
+      'X-GitHub-Api-Version':'2022-11-28'
+    },
     body: body ? JSON.stringify(body) : undefined
   });
   if(!r.ok){
-    let msg = 'HTTP '+r.status;
-    try{ const e = await r.json(); msg = e.message || msg; }catch(e){}
-    if(r.status===401||r.status===403) msg = 'Токен не подходит или нет прав (нужно Contents: Read&Write)';
+    let msg='HTTP '+r.status;
+    try{ const e=await r.json(); msg=e.message||msg; }catch(e){}
+    if(r.status===401) msg='GitHub отклонил токен (401). Проверьте Fine-grained PAT и срок его действия.';
+    else if(r.status===403) msg='GitHub запретил доступ (403). Нужны права Contents: Read and write.';
+    else if(r.status===404) msg='Репозиторий или файл не найден (404). Проверьте owner/repo и ветку.';
     throw new Error(msg);
   }
   return r.status===204 ? null : await r.json();
+}
+async function checkRepoAccess(){
+  const repo=encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo);
+  return await gh('repos/'+repo);
 }
 function b64(str){
   const bytes = new TextEncoder().encode(str);
@@ -292,7 +321,7 @@ function b64(str){
 async function fetchFile(){
   let d;
   try{
-    d = await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${FILE}?ref=${cfg.branch}`);
+    d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}?ref=${encodeURIComponent(cfg.branch)}`);
   }catch(e){
     /* файла ещё нет — начинаем с пустого списка */
     if(/404|Not Found|was not found/i.test(e.message)){ DATA = {projects:[]}; return null; }
@@ -308,7 +337,7 @@ async function fetchFile(){
     DATA = JSON.parse(text);
   }catch(e){
     const preview = text.slice(0,40).replace(/\s+/g,' ');
-    throw new Error('data/projects.json содержит НЕ-JSON («'+preview+'…'). Откройте файл в GitHub → карандаш (Edit) → удалите всё → вставьте чистый JSON без слова const, без комментариев и без лишнего текста.');
+    throw new Error('data/projects.json содержит НЕ-JSON («'+preview+'…»). Откройте файл в GitHub → карандаш (Edit) → удалите всё → вставьте чистый JSON без слова const, без комментариев и без лишнего текста.');
   }
   if(!Array.isArray(DATA.projects)) DATA = {projects:[]};
   return d.sha;
@@ -316,7 +345,7 @@ async function fetchFile(){
 async function fetchCollabsFile(){
   let d;
   try{
-    d = await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${COLLABS_FILE}?ref=${cfg.branch}`);
+    d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}?ref=${encodeURIComponent(cfg.branch)}`);
   }catch(e){
     if(/404|Not Found|was not found/i.test(e.message)){ COLLABS_DATA = {collabs:[]}; return null; }
     throw e;
@@ -331,27 +360,27 @@ async function fetchCollabsFile(){
     COLLABS_DATA = JSON.parse(text);
   }catch(e){
     const preview = text.slice(0,40).replace(/\s+/g,' ');
-    throw new Error('data/collabs.json содержит НЕ-JSON («'+preview+'…'). Исправьте JSON файл.');
+    throw new Error('data/collabs.json содержит НЕ-JSON («'+preview+'…»). Исправьте JSON файл.');
   }
   if(!Array.isArray(COLLABS_DATA.collabs)) COLLABS_DATA = {collabs:[]};
   return d.sha;
 }
 async function publish(msg){
   let sha = null;
-  try{ const d = await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${FILE}?ref=${cfg.branch}`); sha = d.sha; }catch(e){}
+  try{ const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}?ref=${encodeURIComponent(cfg.branch)}`); sha = d.sha; }catch(e){}
   DATA.updated = new Date().toISOString();
   const body = {message: msg || 'portfolio: update projects', content: b64(JSON.stringify(DATA,null,2)), branch: cfg.branch};
   if(sha) body.sha = sha;
-  await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${FILE}`, 'PUT', body);
+  await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}`, 'PUT', body);
   $('#pubStatus').textContent = 'ОПУБЛИКОВАНО: ' + new Date().toLocaleTimeString('ru-RU');
 }
 async function publishCollabs(msg){
   let sha = null;
-  try{ const d = await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${COLLABS_FILE}?ref=${cfg.branch}`); sha = d.sha; }catch(e){}
+  try{ const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}?ref=${encodeURIComponent(cfg.branch)}`); sha = d.sha; }catch(e){}
   COLLABS_DATA.updated = new Date().toISOString();
   const body = {message: msg || 'portfolio: update collabs', content: b64(JSON.stringify(COLLABS_DATA,null,2)), branch: cfg.branch};
   if(sha) body.sha = sha;
-  await gh(`repos/${cfg.owner}/${cfg.repo}/contents/${COLLABS_FILE}`, 'PUT', body);
+  await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}`, 'PUT', body);
   $('#pubStatus').textContent = 'ОПУБЛИКОВАНО: ' + new Date().toLocaleTimeString('ru-RU');
 }
 
@@ -382,6 +411,50 @@ function getVideoThumb(videoObj){
   return '';
 }
 
+/* ---------- Rutube & VK Video ---------- */
+function parseRutube(u){
+  u = (u||'').trim(); if(!u) return null;
+  const m = u.match(/rutube\.ru\/video\/([A-Za-z0-9]+)\/?/i);
+  return m ? m[1] : null;
+}
+function parseVK(u){
+  u = (u||'').trim(); if(!u) return null;
+  const m = u.match(/vk\.com\/video(-?\d+)_(\d+)/i);
+  return m ? {oid: m[1], id: m[2]} : null;
+}
+function detectVideoSource(u){
+  u = (u||'').trim().toLowerCase();
+  if(u.includes('rutube.ru')) return 'rutube';
+  if(u.includes('vk.com/video') || u.includes('vk.com/clip')) return 'vk';
+  if(u.includes('youtube.com') || u.includes('youtu.be')) return 'youtube';
+  return '';
+}
+async function getVideoThumbnail(url, source){
+  if(!url) throw new Error('Нет URL видео');
+  const src = source || detectVideoSource(url);
+  if(src === 'rutube'){
+    const id = parseRutube(url);
+    if(!id) throw new Error('Неверная ссылка на Rutube');
+    const r = await fetch('https://rutube.ru/api/video/'+id+'/');
+    if(!r.ok) throw new Error('Rutube API: '+r.status);
+    const d = await r.json();
+    if(d.cover_url) return d.cover_url;
+    if(d.thumbnail_url) return d.thumbnail_url;
+    throw new Error('Превью не найдено в API Rutube');
+  }
+  if(src === 'vk'){
+    const vk = parseVK(url);
+    if(!vk) throw new Error('Неверная ссылка на VK Видео');
+    throw new Error('VK требует токен. Вставьте превью вручную или используйте Rutube.');
+  }
+  if(src === 'youtube'){
+    const id = parseYT(url);
+    if(!id) throw new Error('Неверная ссылка на YouTube');
+    return 'https://img.youtube.com/vi/'+id+'/mqdefault.jpg';
+  }
+  throw new Error('Неподдерживаемый источник видео');
+}
+
 /* ---------- UI helpers ---------- */
 function show(id){
   ['scrLogin','scrDash','scrList','scrEdit','scrCollabEdit'].forEach(s => $('#'+s).hidden = s!==id);
@@ -400,39 +473,25 @@ function askConfirm(text, cb){
   $('#cfText').textContent = text; cfCb = cb;
   $('#confirm').classList.add('open');
 }
-$('#cfYes').onclick = ()=>{ 
-  const cb = cfCb; 
-  cfCb = null; 
-  $('#confirm').classList.remove('open'); 
-  if(cb) cb(); 
-};
-$('#cfNo').onclick = ()=>{ 
-  cfCb = null; 
-  $('#confirm').classList.remove('open'); 
-};
+$('#cfYes').onclick = ()=>{ $('#confirm').classList.remove('open'); cb0(); };
+$('#cfNo').onclick = ()=>{ $('#confirm').classList.remove('open'); cfCb = null; };
+function cb0(){ const f = cfCb; cfCb = null; f && f(); }
 
 /* ---------- LOGIN ---------- */
-function setupLogin(){
+(function setupLogin(){
   const btn = $('#btnLogin');
   const inpRepo = $('#inRepo');
   const inpBranch = $('#inBranch');
-  const err = $('#loginErr');
-  
-  if(!btn){ 
-    console.error('[ADMIN] Кнопка #btnLogin не найдена!'); 
-    return; 
-  }
-  
+  if(!btn){ console.error('[ADMIN] Кнопка #btnLogin не найдена!'); return; }
   inpRepo.value = cfg.owner + '/' + cfg.repo;
   inpBranch.value = cfg.branch;
   
-  btn.addEventListener('click', async (e)=>{
-    e.preventDefault();
-    e.stopPropagation();
+  btn.onclick = async ()=>{
     console.log('[ADMIN] Клик по кнопке ВОЙТИ');
     const t = $('#inToken').value.trim();
     const repo = $('#inRepo').value.trim();
     const br = $('#inBranch').value.trim() || 'main';
+    const err = $('#loginErr');
     err.textContent = '';
     
     if(!t){ 
@@ -449,9 +508,11 @@ function setupLogin(){
     console.log('[ADMIN] Попытка входа с токеном:', t.substring(0,10)+'...');
     token = t;
     const parts = repo.split('/');
-    cfg = {owner:parts[0], repo:parts[1], branch:br};
+    cfg = {owner:parts[0].trim(), repo:parts[1].trim(), branch:br.trim()};
+    console.log('[ADMIN] Проверка токена и репозитория...');
     
     try{
+      await checkRepoAccess();
       await fetchFile();
       localStorage.setItem('pp_token', token);
       localStorage.setItem('pp_cfg', JSON.stringify(cfg));
@@ -465,9 +526,10 @@ function setupLogin(){
       token = '';
       err.textContent = '// ОШИБКА: ' + e.message;
     }
-  }, {once:false});
-}
-
+  };  $('#inToken').addEventListener('keydown', e=>{
+    if(e.key==='Enter') btn.click();
+  });
+})();
 $('#btnLogout').onclick = ()=>{
   localStorage.removeItem('pp_token'); token = '';
   $('#btnLogout').hidden = true; show('scrLogin');
@@ -503,9 +565,11 @@ function renderCollabDash(){
         ${c.img ? `<img src="${esc(c.img)}" alt="" style="width:60px;height:60px;object-fit:cover;border:1px solid var(--line)" onerror="this.style.display='none'">` : '<div style="width:60px;height:60px;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:9px">НЕТ ФОТО</div>'}
         <span class="mono" style="color:var(--dim);font-size:9px">#${i+1}</span>
       </div>
+    <button class="cat-card" data-collab-idx="${i}" title="Редактировать • Удалить: Shift+Click">
+      ${c.img ? `<img src="${esc(c.img)}" alt="" style="width:60px;height:60px;object-fit:cover;border:1px solid var(--line);margin-bottom:8px" onerror="this.style.display=\'none\'">` : '<div style="width:60px;height:60px;border:1px dashed var(--line);margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:9px">НЕТ ФОТО</div>'}
       <span class="n" style="font-size:14px">${esc(c.name||'БЕЗ ИМЕНИ')}</span>
       <span class="mono">${(c.links&&c.links.length)?c.links.length+' ССЫЛОК':'НЕТ ССЫЛОК'}</span>
-    </div>
+    </button>
   `).join('');
 
   /* Обработчик клика для коллабораций */
@@ -544,8 +608,6 @@ $('#collabGrid').addEventListener('click', e=>{
     e.preventDefault();
     e.stopPropagation();
   }else{
-    /* не реагировать на клик, если это был grip для перетаскивания */
-    if(e.target.classList.contains('grip')) return;
     openCollabEditor(parseInt(card.dataset.collabIdx));
   }
 });
@@ -570,10 +632,10 @@ function renderList(){
   rows.innerHTML = list.map((p,i)=>`
     <div class="row" draggable="true" data-id="${esc(p.id)}">
       <div class="grip" title="Перетащить">⠿</div>
-      ${p.cover ? `<img class="thumb" src="${esc(p.cover)}" alt="" loading="lazy">` : '<div class="noimg">НЕТ ФОТО</div>'}
+      ${p.cover || p.thumbnail_url ? `<img class="thumb" src="${esc(p.thumbnail_url || p.cover)}" alt="" loading="lazy">` : '<div class="noimg">НЕТ ФОТО</div>'}
       <div class="bd">
         <div class="t">${esc(p.title)}</div>
-        <div class="m">${String(i+1).padStart(2,'0')} • ${CATEGORIES[p.category]} • ${esc((p.added||'').slice(0,10))}${p.video?' • ▶':''}${(p.images||[]).length?' • ФОТО '+(p.images||[]).length:''}</div>
+        <div class="m">${String(i+1).padStart(2,'0')} • ${CATEGORIES[p.category]} • ${esc((p.added||'').slice(0,10))}${p.video_url || p.video?' • ▶':''}${(p.images||[]).length?' • ФОТО '+(p.images||[]).length:''}</div>
       </div>
       <div class="ops">
         <button class="mini" data-op="up" title="Выше">↑</button>
@@ -650,13 +712,6 @@ async function moveProject(from, to){
   try{ await publish('portfolio: reorder'); renderList(); toast('ПОРЯДОК СОХРАНЁН ✓'); }
   catch(err){ toast('ОШИБКА: '+err.message, true); await fetchFile().catch(()=>{}); renderList(); }
 }
-async function moveCollab(from, to){
-  const arr = COLLABS_DATA.collabs;
-  const [m] = arr.splice(from,1);
-  arr.splice(to,0,m);
-  try{ await publishCollabs('portfolio: reorder collabs'); renderDash(); toast('ПОРЯДОК КОЛЛАБОРАЦИЙ СОХРАНЁН ✓'); }
-  catch(err){ toast('ОШИБКА: '+err.message, true); await fetchCollabsFile().catch(()=>{}); renderDash(); }
-}
 
 /* ---------- РЕДАКТОР ---------- */
 function openEditor(id, defCat){
@@ -667,15 +722,26 @@ function openEditor(id, defCat){
   $('#fTitle').value = p ? p.title : '';
   $('#fCat').value = p ? p.category : (defCat||'concerts');
   $('#fCover').value = p ? (p.cover||'') : '';
-  $('#fVideo').value = p ? (p.video||'') : '';
+  const videoUrl = p ? (p.video_url || p.video || '') : '';
+  const videoSrc = p ? (p.video_source || detectVideoSource(videoUrl)) : '';
+  $('#fVideoUrl').value = videoUrl;
+  $('#fVideoSource').value = videoSrc;
   $('#fClient').value = p ? (p.client||'') : '';
   $('#fFormat').value = p ? (p.format||'') : '';
   $('#saveStatus').textContent = '';
+  $('#videoPrevWrap').hidden = true;
+  $('#videoPrevImg').src = '';
+  $('#videoPrevStatus').textContent = '';
+  if(p && p.thumbnail_url){
+    $('#videoPrevWrap').hidden = false;
+    $('#videoPrevImg').src = p.thumbnail_url;
+    $('#videoPrevStatus').textContent = 'ТЕКУЩЕЕ ПРЕВЬЮ';
+  }
   $('#photos').innerHTML = '';
   (p && (p.images||[]).length ? p.images : ['']).forEach(u=>addPhotoRow(u));
   $('#links').innerHTML = '';
   (p && (p.links||[]).length ? p.links : ['']).forEach(u=>addLinkRow(u));
-  checkCover(); checkYT();
+  checkCover();
   show('scrEdit');
 }
 $('#backList').onclick = e=>{ e.preventDefault(); renderList(); show('scrList'); };
@@ -774,6 +840,27 @@ function checkVideo(){
   pv.appendChild(span);
 }
 $('#fVideo').addEventListener('input', checkVideo);
+/* кнопка получения превью из видео */
+$('#btnGetThumb').onclick = async ()=>{
+  const st = $('#videoStatus');
+  const url = $('#fVideoUrl').value.trim();
+  const src = $('#fVideoSource').value;
+  st.textContent = '';
+  if(!url){ st.innerHTML = '<span class="err">// СНАЧАЛА ВСТАВЬТЕ ССЫЛКУ НА ВИДЕО</span>'; return; }
+  const btn = $('#btnGetThumb');
+  btn.disabled = true; btn.textContent = 'ЗАГРУЗКА…';
+  try{
+    const thumbUrl = await getVideoThumbnail(url, src);
+    $('#videoPrevWrap').hidden = false;
+    $('#videoPrevImg').src = thumbUrl;
+    $('#videoPrevStatus').textContent = 'ПРЕВЬЮ ПОЛУЧЕНО ✓';
+    st.innerHTML = '<span class="ok">// ПРЕВЬЮ ЗАГРУЖЕНО — НАЖМИТЕ СОХРАНИТЬ</span>';
+  }catch(err){
+    st.innerHTML = '<span class="err">// ОШИБКА: '+esc(err.message)+'</span>';
+    toast('ОШИБКА ПРЕВЬЮ: '+err.message, true);
+  }
+  btn.disabled = false; btn.textContent = '📷 ПОЛУЧИТЬ ПРЕВЬЮ ИЗ ВИДЕО';
+};
 
 /* сохранение */
 $('#btnSave').onclick = async ()=>{
@@ -783,6 +870,9 @@ $('#btnSave').onclick = async ()=>{
   if(!title){ st.innerHTML = '<span class="err">// НАЗВАНИЕ ОБЯЗАТЕЛЬНО</span>'; return; }
   const video = $('#fVideo').value.trim();
   if(video && !parseVideoUrl(video)){ st.innerHTML = '<span class="err">// ИСПРАВЬТЕ ССЫЛКУ НА ВИДЕО (YOUTUBE/RUTUBE/VIMEO) ИЛИ ОЧИСТИТЕ ПОЛЕ</span>'; return; }
+  const videoUrl = $('#fVideoUrl').value.trim();
+  const videoSrc = $('#fVideoSource').value;
+  const thumbnailUrl = $('#videoPrevImg').src || '';
   const cover = $('#fCover').value.trim();
   const images = [...$('#photos').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
   const links = [...$('#links').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
@@ -790,7 +880,10 @@ $('#btnSave').onclick = async ()=>{
     title,
     category: $('#fCat').value,
     cover,
-    video,
+    video_url: videoUrl,
+    video_source: videoSrc,
+    thumbnail_url: thumbnailUrl,
+    video: videoUrl,
     images,
     links,
     client: $('#fClient').value.trim(),
@@ -902,11 +995,9 @@ $('#btnSaveCollab').onclick = async ()=>{
 
 /* ---------- АВТОВХОД ---------- */
 (async function init(){
-  // Сначала вызываем setupLogin для регистрации обработчика кнопки
-  setupLogin();
-  
   if(token){
     try{
+      await checkRepoAccess();
       await fetchFile();
       await fetchCollabsFile();
       $('#btnLogout').hidden = false;
