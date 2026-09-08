@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-08T21:30:03.557Z",
+  "updated": "2026-09-08T21:56:14.496Z",
   "projects": [
     {
       "id": "pmtt6nrmtirn4",
@@ -15,21 +15,6 @@
       "links": [],
       "client": "RUTUBE",
       "format": "REELS / SHORTS"
-    },
-    {
-      "id": "pmtt4oeg1fo9b",
-      "added": "2026-09-08",
-      "title": "Rutube2",
-      "category": "concerts",
-      "cover": "https://pic.rtbcdn.ru/video/f3/3c/f33c29b6ef8a3637785a04bd5a7ee2d3.jpg",
-      "video_url": "https://rutube.ru/video/dbb73611a21b4e423f4c35d1c0b99b30/?r=wd",
-      "video_source": "rutube",
-      "thumbnail_url": "https://pic.rtbcdn.ru/video/f3/3c/f33c29b6ef8a3637785a04bd5a7ee2d3.jpg",
-      "video": "https://rutube.ru/video/dbb73611a21b4e423f4c35d1c0b99b30/?r=wd",
-      "images": [],
-      "links": [],
-      "client": "RUTUBE",
-      "format": "КОНЦЕРТ / АФТЕРМУВИ"
     },
     {
       "id": "pmtosc69ngr7r",
