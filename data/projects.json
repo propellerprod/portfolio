@@ -1,6 +1,21 @@
 {
-  "updated": "2026-09-06T20:17:01.887Z",
+  "updated": "2026-09-08T10:25:26.752Z",
   "projects": [
+    {
+      "id": "pmtsix27r9dvg",
+      "added": "2026-09-08",
+      "title": "fgfgff",
+      "category": "concerts",
+      "cover": "",
+      "video_url": "https://rutube.ru/video/private/8ed590bf881095648ef59f9701931a2b/?p=nKOlm7iv6kbmUFqWi4Ek-g",
+      "video_source": "rutube",
+      "thumbnail_url": "https://propellerprod.github.io/portfolio/admin/",
+      "video": "https://rutube.ru/video/private/8ed590bf881095648ef59f9701931a2b/?p=nKOlm7iv6kbmUFqWi4Ek-g",
+      "images": [],
+      "links": [],
+      "client": "",
+      "format": ""
+    },
     {
       "id": "pmtosc69ngr7r",
       "added": "2026-09-05",
