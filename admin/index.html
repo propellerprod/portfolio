@@ -88,6 +88,14 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
 .link-row{display:grid;grid-template-columns:1fr 48px;gap:10px;margin-bottom:10px}
 .yt-prev{display:flex;gap:12px;align-items:center;margin-top:10px}
 .yt-prev img{width:120px;height:68px;object-fit:cover;border:1px solid var(--line)}
+.video-row{display:grid;grid-template-columns:1fr 48px;gap:10px;margin-bottom:10px;align-items:start}
+.video-select{min-height:48px;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:0 14px;font:inherit}
+.video-select option{background:var(--bg)}
+.btn-thumb{min-height:48px;padding:0 16px;font:600 10px var(--fb);letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);transition:.3s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-thumb:hover{border-color:var(--acc);color:var(--acc)}
+.btn-thumb:disabled{opacity:.5;pointer-events:none}
+.video-prev-wrap{margin-top:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.video-prev-img{width:120px;height:68px;object-fit:cover;border:1px solid var(--line);background:var(--bg2)}
 .cover-prev{margin-top:12px;border:1px solid var(--line);max-width:420px}
 .cover-prev img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
 .cover-prev.bad{border-color:var(--err);color:var(--err);font-family:var(--fm);font-size:10px;padding:14px}
@@ -184,10 +192,22 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
         <div class="status-line" id="coverStatus"></div>
       </div>
       <div class="f">
-        <label>YOUTUBE — URL ВИДЕО</label>
-        <input id="fVideo" placeholder="https://www.youtube.com/watch?v=…" inputmode="url">
-        <div class="yt-prev" id="ytPrev" hidden></div>
-        <div class="status-line" id="ytStatus"></div>
+        <label>ВИДЕО — ССЫЛКА И ИСТОЧНИК</label>
+        <div class="video-row">
+          <input id="fVideoUrl" placeholder="https://rutube.ru/video/... или https://vk.com/video..." inputmode="url">
+          <select id="fVideoSource" class="video-select">
+            <option value="">ВЫБРАТЬ...</option>
+            <option value="rutube">RUTUBE</option>
+            <option value="vk">VK ВИДЕО</option>
+            <option value="youtube">YOUTUBE</option>
+          </select>
+        </div>
+        <button class="btn-thumb" id="btnGetThumb" style="margin-top:10px">📷 ПОЛУЧИТЬ ПРЕВЬЮ ИЗ ВИДЕО</button>
+        <div class="video-prev-wrap" id="videoPrevWrap" hidden>
+          <img class="video-prev-img" id="videoPrevImg" alt="PREVIEW">
+          <span class="mono" id="videoPrevStatus"></span>
+        </div>
+        <div class="status-line" id="videoStatus"></div>
       </div>
       <div class="two-col">
         <div class="f"><label>КЛИЕНТ / АРТИСТ (НЕОБЯЗАТЕЛЬНО)</label><input id="fClient" placeholder="[БРЕНД]"></div>
@@ -371,6 +391,50 @@ function parseYT(u){
   return m ? m[1] : null;
 }
 
+/* ---------- Rutube & VK Video ---------- */
+function parseRutube(u){
+  u = (u||'').trim(); if(!u) return null;
+  const m = u.match(/rutube\.ru\/video\/([A-Za-z0-9]+)\/?/i);
+  return m ? m[1] : null;
+}
+function parseVK(u){
+  u = (u||'').trim(); if(!u) return null;
+  const m = u.match(/vk\.com\/video(-?\d+)_(\d+)/i);
+  return m ? {oid: m[1], id: m[2]} : null;
+}
+function detectVideoSource(u){
+  u = (u||'').trim().toLowerCase();
+  if(u.includes('rutube.ru')) return 'rutube';
+  if(u.includes('vk.com/video') || u.includes('vk.com/clip')) return 'vk';
+  if(u.includes('youtube.com') || u.includes('youtu.be')) return 'youtube';
+  return '';
+}
+async function getVideoThumbnail(url, source){
+  if(!url) throw new Error('Нет URL видео');
+  const src = source || detectVideoSource(url);
+  if(src === 'rutube'){
+    const id = parseRutube(url);
+    if(!id) throw new Error('Неверная ссылка на Rutube');
+    const r = await fetch('https://rutube.ru/api/video/'+id+'/');
+    if(!r.ok) throw new Error('Rutube API: '+r.status);
+    const d = await r.json();
+    if(d.cover_url) return d.cover_url;
+    if(d.thumbnail_url) return d.thumbnail_url;
+    throw new Error('Превью не найдено в API Rutube');
+  }
+  if(src === 'vk'){
+    const vk = parseVK(url);
+    if(!vk) throw new Error('Неверная ссылка на VK Видео');
+    throw new Error('VK требует токен. Вставьте превью вручную или используйте Rutube.');
+  }
+  if(src === 'youtube'){
+    const id = parseYT(url);
+    if(!id) throw new Error('Неверная ссылка на YouTube');
+    return 'https://img.youtube.com/vi/'+id+'/mqdefault.jpg';
+  }
+  throw new Error('Неподдерживаемый источник видео');
+}
+
 /* ---------- UI helpers ---------- */
 function show(id){
   ['scrLogin','scrDash','scrList','scrEdit','scrCollabEdit'].forEach(s => $('#'+s).hidden = s!==id);
@@ -522,10 +586,10 @@ function renderList(){
   rows.innerHTML = list.map((p,i)=>`
     <div class="row" draggable="true" data-id="${esc(p.id)}">
       <div class="grip" title="Перетащить">⠿</div>
-      ${p.cover ? `<img class="thumb" src="${esc(p.cover)}" alt="" loading="lazy">` : '<div class="noimg">НЕТ ФОТО</div>'}
+      ${p.cover || p.thumbnail_url ? `<img class="thumb" src="${esc(p.thumbnail_url || p.cover)}" alt="" loading="lazy">` : '<div class="noimg">НЕТ ФОТО</div>'}
       <div class="bd">
         <div class="t">${esc(p.title)}</div>
-        <div class="m">${String(i+1).padStart(2,'0')} • ${CATEGORIES[p.category]} • ${esc((p.added||'').slice(0,10))}${p.video?' • ▶':''}${(p.images||[]).length?' • ФОТО '+(p.images||[]).length:''}</div>
+        <div class="m">${String(i+1).padStart(2,'0')} • ${CATEGORIES[p.category]} • ${esc((p.added||'').slice(0,10))}${p.video_url || p.video?' • ▶':''}${(p.images||[]).length?' • ФОТО '+(p.images||[]).length:''}</div>
       </div>
       <div class="ops">
         <button class="mini" data-op="up" title="Выше">↑</button>
@@ -612,15 +676,26 @@ function openEditor(id, defCat){
   $('#fTitle').value = p ? p.title : '';
   $('#fCat').value = p ? p.category : (defCat||'concerts');
   $('#fCover').value = p ? (p.cover||'') : '';
-  $('#fVideo').value = p ? (p.video||'') : '';
+  const videoUrl = p ? (p.video_url || p.video || '') : '';
+  const videoSrc = p ? (p.video_source || detectVideoSource(videoUrl)) : '';
+  $('#fVideoUrl').value = videoUrl;
+  $('#fVideoSource').value = videoSrc;
   $('#fClient').value = p ? (p.client||'') : '';
   $('#fFormat').value = p ? (p.format||'') : '';
   $('#saveStatus').textContent = '';
+  $('#videoPrevWrap').hidden = true;
+  $('#videoPrevImg').src = '';
+  $('#videoPrevStatus').textContent = '';
+  if(p && p.thumbnail_url){
+    $('#videoPrevWrap').hidden = false;
+    $('#videoPrevImg').src = p.thumbnail_url;
+    $('#videoPrevStatus').textContent = 'ТЕКУЩЕЕ ПРЕВЬЮ';
+  }
   $('#photos').innerHTML = '';
   (p && (p.images||[]).length ? p.images : ['']).forEach(u=>addPhotoRow(u));
   $('#links').innerHTML = '';
   (p && (p.links||[]).length ? p.links : ['']).forEach(u=>addLinkRow(u));
-  checkCover(); checkYT();
+  checkCover();
   show('scrEdit');
 }
 $('#backList').onclick = e=>{ e.preventDefault(); renderList(); show('scrList'); };
@@ -688,25 +763,27 @@ function checkCover(){
 }
 $('#fCover').addEventListener('input', checkCover);
 
-/* проверка YouTube */
-function checkYT(){
-  const u = $('#fVideo').value.trim();
-  const pv = $('#ytPrev'), st = $('#ytStatus');
-  st.textContent = ''; pv.hidden = true; pv.innerHTML = '';
-  if(!u) return;
-  const id = parseYT(u);
-  if(!id){ st.innerHTML = '<span class="err">// НЕКОРРЕКТНАЯ ССЫЛКА YOUTUBE. ПРИМЕР: https://youtu.be/XXXXXXXXXXX</span>'; return; }
-  st.innerHTML = '<span class="ok">✓ ВИДЕО НАЙДЕНО: '+id+'</span>';
-  pv.hidden = false;
-  const img = document.createElement('img');
-  img.src = 'https://img.youtube.com/vi/'+id+'/mqdefault.jpg';
-  img.alt = 'Превью видео';
-  img.onerror = ()=>img.style.display = 'none';
-  const span = document.createElement('span');
-  span.className = 'mono'; span.textContent = 'YOUTUBE / '+id;
-  pv.append(img, span);
-}
-$('#fVideo').addEventListener('input', checkYT);
+/* кнопка получения превью из видео */
+$('#btnGetThumb').onclick = async ()=>{
+  const st = $('#videoStatus');
+  const url = $('#fVideoUrl').value.trim();
+  const src = $('#fVideoSource').value;
+  st.textContent = '';
+  if(!url){ st.innerHTML = '<span class="err">// СНАЧАЛА ВСТАВЬТЕ ССЫЛКУ НА ВИДЕО</span>'; return; }
+  const btn = $('#btnGetThumb');
+  btn.disabled = true; btn.textContent = 'ЗАГРУЗКА…';
+  try{
+    const thumbUrl = await getVideoThumbnail(url, src);
+    $('#videoPrevWrap').hidden = false;
+    $('#videoPrevImg').src = thumbUrl;
+    $('#videoPrevStatus').textContent = 'ПРЕВЬЮ ПОЛУЧЕНО ✓';
+    st.innerHTML = '<span class="ok">// ПРЕВЬЮ ЗАГРУЖЕНО — НАЖМИТЕ СОХРАНИТЬ</span>';
+  }catch(err){
+    st.innerHTML = '<span class="err">// ОШИБКА: '+esc(err.message)+'</span>';
+    toast('ОШИБКА ПРЕВЬЮ: '+err.message, true);
+  }
+  btn.disabled = false; btn.textContent = '📷 ПОЛУЧИТЬ ПРЕВЬЮ ИЗ ВИДЕО';
+};
 
 /* сохранение */
 $('#btnSave').onclick = async ()=>{
@@ -714,8 +791,9 @@ $('#btnSave').onclick = async ()=>{
   st.textContent = '';
   const title = $('#fTitle').value.trim();
   if(!title){ st.innerHTML = '<span class="err">// НАЗВАНИЕ ОБЯЗАТЕЛЬНО</span>'; return; }
-  const video = $('#fVideo').value.trim();
-  if(video && !parseYT(video)){ st.innerHTML = '<span class="err">// ИСПРАВЬТЕ ССЫЛКУ YOUTUBE ИЛИ ОЧИСТИТЕ ПОЛЕ</span>'; return; }
+  const videoUrl = $('#fVideoUrl').value.trim();
+  const videoSrc = $('#fVideoSource').value;
+  const thumbnailUrl = $('#videoPrevImg').src || '';
   const cover = $('#fCover').value.trim();
   const images = [...$('#photos').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
   const links = [...$('#links').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
@@ -723,7 +801,10 @@ $('#btnSave').onclick = async ()=>{
     title,
     category: $('#fCat').value,
     cover,
-    video,
+    video_url: videoUrl,
+    video_source: videoSrc,
+    thumbnail_url: thumbnailUrl,
+    video: videoUrl,
     images,
     links,
     client: $('#fClient').value.trim(),
