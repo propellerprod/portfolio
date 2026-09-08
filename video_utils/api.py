@@ -31,14 +31,25 @@ def _detect_source(url: str) -> Optional[str]:
 
 
 def extract_video_id_youtube(url: str) -> Optional[str]:
+    """Извлекает ID видео YouTube из различных форматов URL."""
+    url_str = url or ""
+    
+    # Паттерн для youtube.com/shorts/ID
+    shorts_match = re.search(r"youtube\.com/shorts/([A-Za-z0-9_-]{11})", url_str)
+    if shorts_match:
+        return shorts_match.group(1)
+    
+    # Паттерн для youtube.com/watch?v=ID и youtu.be/ID
     patterns = [
-        r"(?:youtube\.com/watch\?(?:.*&)?v=|youtu\.be/|youtube\.com/shorts/|youtube\.com/embed/)([A-Za-z0-9_-]{11})",
+        r"(?:youtube\.com/watch\?(?:.*&)?v=|youtu\.be/|youtube\.com/embed/)([A-Za-z0-9_-]{11})",
     ]
     for pattern in patterns:
-        match = re.search(pattern, url or "")
+        match = re.search(pattern, url_str)
         if match:
             return match.group(1)
-    parsed = urlparse(url or "")
+    
+    # Fallback через parse_qs
+    parsed = urlparse(url_str)
     vid = parse_qs(parsed.query).get("v", [None])[0]
     if vid and re.fullmatch(r"[A-Za-z0-9_-]{11}", vid):
         return vid
