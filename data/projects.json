@@ -1,16 +1,16 @@
 {
-  "updated": "2026-09-08T20:34:33.892Z",
+  "updated": "2026-09-08T20:39:48.744Z",
   "projects": [
     {
       "id": "pmtt4oeg1fo9b",
       "added": "2026-09-08",
-      "title": "Rutube",
+      "title": "Rutube2",
       "category": "concerts",
       "cover": "",
-      "video_url": "https://rutube.ru/video/private/8ed590bf881095648ef59f9701931a2b/?p=nKOlm7iv6kbmUFqWi4Ek-g",
+      "video_url": "https://rutube.ru/video/dbb73611a21b4e423f4c35d1c0b99b30/?r=wd",
       "video_source": "rutube",
       "thumbnail_url": "",
-      "video": "https://rutube.ru/video/private/8ed590bf881095648ef59f9701931a2b/?p=nKOlm7iv6kbmUFqWi4Ek-g",
+      "video": "https://rutube.ru/video/dbb73611a21b4e423f4c35d1c0b99b30/?r=wd",
       "images": [],
       "links": [],
       "client": "",
