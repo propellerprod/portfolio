@@ -1,0 +1,8 @@
+{
+  "name": "ПРОПЕЛЛЕР — видеопродакшн / съёмка / контент",
+  "description": "ПРОПЕЛЛЕР — команда операторов и контент-креаторов. Съёмка рекламы, Reels, YouTube, мероприятий, клипов и коммерческого видео. Москва и Орёл.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

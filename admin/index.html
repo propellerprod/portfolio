@@ -429,6 +429,23 @@ async function getVideoThumbnail(url, source){
   if(!url) throw new Error('Нет URL видео');
   const src = source || detectVideoSource(url);
   
+  // Попытка через серверный API (без CORS-ограничений)
+  try {
+    const apiResp = await fetch('/api/get-video-meta/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, source: src })
+    });
+    if (apiResp.ok) {
+      const data = await apiResp.json();
+      if (data.thumbnail || data.thumbnail_url) {
+        return data.thumbnail || data.thumbnail_url;
+      }
+    }
+  } catch (e) {
+    // fallback к браузерной обработке
+  }
+
   if(src === 'rutube'){
     const id = parseRutube(url);
     if(!id) throw new Error('Неверная ссылка на Rutube');
