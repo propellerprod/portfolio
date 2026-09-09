@@ -768,25 +768,32 @@ const RAW_URL = 'https://raw.githubusercontent.com/propellerprod/portfolio/main/
 
 /* fallback, если JSON недоступен */
 const DEFAULT_PROJECTS = [
-  {id:'d1', title:'NIGHT DRIVE', category:'commercials', cover:IMG.car, video:'', images:[], links:[], format:'РЕКЛАМА • 45 SEC', client:'[БРЕНД]', added:'2026-01-05'},
-  {id:'d2', title:'STATIC', category:'clips', cover:IMG.music, video:'', images:[], links:[], format:'КЛИП • 3 MIN', client:'[АРТИСТ]', added:'2025-11-20'},
-  {id:'d3', title:'BETON', category:'other', cover:IMG.fashion, video:'', images:[], links:[], format:'LOOKBOOK • 90 SEC', client:'[БРЕНД]', added:'2025-10-02'},
-  {id:'d4', title:'ПОДКАСТЫ', category:'other', cover:IMG.interview, video:'', images:[], links:[], format:'ПОДКАСТ • 12 MIN', client:'[КЛИЕНТ]', added:'2025-08-14'},
-  {id:'d5', title:'Маркарян', category:'concerts', cover:IMG.concert, video:'', images:[], links:[], format:'АФТЕРМУВИ • 2 MIN', client:'[ПЛОЩАДКА]', added:'2024-12-11'},
-  {id:'d6', title:'REELS', category:'reels', cover:IMG.reels, video:'', images:[], links:[], format:'REELS • СЕРИЯ', client:'[БЛОГЕР]', added:'2024-09-30'}
+  {id:'pmtosc69ngr7r', title:'John However', category:'reels', cover:'https://i.ytimg.com/vi/C-B7WWWUwFQ/maxresdefault.jpg', video_url:'https://youtube.com/watch?v=C-B7WWWUwFQ', video_source:'youtube', images:[], links:[], client:'John However', format:'рилсы к основному видео', added:'2026-09-05'},
+  {id:'pmtopjig0vy2c', title:'СК КРЕПОСТЬ', category:'reels', cover:'https://i.ytimg.com/vi/rxxuZWrdUqE/maxresdefault.jpg', video_url:'https://youtube.com/shorts/rxxuZWrdUqE', video_source:'youtube', images:[], links:[], client:'СК КРЕПОСТЬ', format:'REELS', added:'2026-09-05'},
+  {id:'pmtopgy5ujqdw', title:'RARE MOD 2', category:'reels', cover:'https://i.ytimg.com/vi/SY_hxMmUGtE/maxresdefault.jpg', video_url:'https://youtube.com/shorts/SY_hxMmUGtE', video_source:'youtube', images:[], links:[], client:'RARE MOD', format:'REELS', added:'2026-09-05'},
+  {id:'pmtopcbaxxd08', title:'RARE MOD', category:'reels', cover:'https://i.ytimg.com/vi/-Bn48mJsLE8/maxresdefault.jpg', video_url:'https://youtube.com/shorts/-Bn48mJsLE8', video_source:'youtube', images:[], links:[], client:'RARE MOD', format:'REELS', added:'2026-09-05'},
+  {id:'pmtop78vc9i8q', title:'PLAY GROUND', category:'reels', cover:'https://i.ytimg.com/vi/MQxRgPcWb_k/maxresdefault.jpg', video_url:'https://youtube.com/shorts/MQxRgPcWb_k', video_source:'youtube', images:[], links:[], client:'', format:'', added:'2026-09-05'},
+  {id:'d5', title:'LIL CRYSTALLL', category:'concerts', cover:'https://i.ytimg.com/vi/bXnC9r5Bqxk/maxresdefault.jpg', video_url:'https://youtube.com/watch?v=bXnC9r5Bqxk', video_source:'youtube', images:[], links:[], client:'LIL CRYSTALLL', format:'КОНЦЕРТ • АФТЕРМУВИ', added:'2026-09-05'},
+  {id:'pmtop1tks5bb4', title:'ROD AWARDS 2025', category:'concerts', cover:'https://i.ytimg.com/vi/cQn0z3mR8-8/maxresdefault.jpg', video_url:'https://youtube.com/watch?v=cQn0z3mR8-8', video_source:'youtube', images:[], links:[], client:'ROD DANCE', format:'АФТЕРМУВИ ПРЕМИИ', added:'2026-09-05'},
+  {id:'pmtoonbt096ll', title:'ROD DANCE', category:'concerts', cover:'https://i.ytimg.com/vi/8F9x7Q2k8vA/maxresdefault.jpg', video_url:'https://youtube.com/watch?v=8F9x7Q2k8vA', video_source:'youtube', images:[], links:[], client:'ROD DANCE', format:'ЧЕМПИОНАТ • 2 MIN', added:'2026-09-05'},
+  {id:'pmtonscgmp804', title:'МЕЛАНЖ', category:'commercials', cover:'https://i.ytimg.com/vi/1_1Fm5H_i70/maxresdefault.jpg', video_url:'https://youtube.com/watch?v=1_1Fm5H_i70', video_source:'youtube', images:[], links:[], client:'МЕЛАНЖ', format:'РЕКЛАМА • 60 SEC', added:'2026-09-05'},
+  {id:'d4', title:'ШИЛО и Olegha77', category:'clips', cover:'https://i.ytimg.com/vi/aZ8x5n9-5lE/maxresdefault.jpg', video_url:'https://youtube.com/watch?v=aZ8x5n9-5lE', video_source:'youtube', images:[], links:[], client:'Olegha77', format:'КЛИП • 3 MIN', added:'2026-09-05'},
+  {id:'d1', title:'Neekich', category:'clips', cover:'https://i.ytimg.com/vi/3y7eB-z0zM8/maxresdefault.jpg', video_url:'https://youtube.com/watch?v=3y7eB-z0zM8', video_source:'youtube', images:[], links:[], client:'Neekich', format:'КЛИП • 3 MIN', added:'2026-09-05'},
+  {id:'d2', title:'ARUSH', category:'clips', cover:'https://i.ytimg.com/vi/2N3hB7d8z4Q/maxresdefault.jpg', video_url:'https://youtube.com/watch?v=2N3hB7d8z4Q', video_source:'youtube', images:[], links:[], client:'ARUSH', format:'КЛИП • 3 MIN', added:'2026-09-05'},
+  {id:'d6', title:'MARK KUKLIN', category:'other', cover:'https://i.ytimg.com/vi/qB0e_0o54z4/maxresdefault.jpg', video_url:'https://youtube.com/watch?v=qB0e_0o54z4', video_source:'youtube', images:[], links:[], client:'MARK KUKLIN', format:'ТАНЦЕВАЛЬНЫЙ ВИЖУАЛ', added:'2026-09-05'}
 ];
 
 let ALL_PROJECTS = [], curList = [], curFilter = 'concerts', curIdx = 0;
 
 function getCover(p){
   if(!p) return IMG.backstage;
-  if(p.cover && String(p.cover).trim()) return p.cover.trim();
-  if(p.thumbnail_url && String(p.thumbnail_url).trim()) return p.thumbnail_url.trim();
-  const v = p.video || p.video_url || '';
+  const c = String(p.cover || p.thumbnail_url || '').trim();
+  if(c) return c;
+  const v = String(p.video_url || p.video || '').trim();
   if(v){
-    const yt = v.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+    const yt = v.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,15})/i);
     if(yt) return `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg`;
-    const rt = v.match(/rutube\.ru\/(?:video\/private|video|play\/embed|shorts|pl|videos)\/([A-Za-z0-9]+)/i);
+    const rt = v.match(/rutube\.ru\/(?:video\/private|video|play\/embed|shorts|pl|videos)\/([a-zA-Z0-9]{16,40})/i);
     if(rt) return `https://pic.rutubelist.ru/video/${rt[1]}.jpg`;
   }
   return IMG.backstage;
@@ -797,7 +804,7 @@ function isShorts(p){
   if(p.category === 'reels') return true;
   const f = String(p.format || '').toUpperCase();
   if(f.includes('REELS') || f.includes('SHORTS') || f.includes('TIKTOK') || f.includes('ВЕРТИКАЛ') || f.includes('КЛИП')) return true;
-  const v = String(p.video || p.video_url || '').toLowerCase();
+  const v = String(p.video_url || p.video || '').toLowerCase();
   if(v.includes('/shorts') || v.includes('/clip') || v.includes('clip-') || v.includes('tiktok.com')) return true;
   const t = String(p.title || '').toUpperCase();
   if(t.includes('REELS') || t.includes('SHORTS')) return true;
@@ -811,44 +818,29 @@ async function loadPortfolio(){
     if(r.ok){
       const d = await r.json();
       if(d && Array.isArray(d.projects) && d.projects.length) list = d.projects;
+    } else {
+      console.warn('[PORTFOLIO] data/projects.json вернул статус:', r.status);
     }
-  }catch(e){}
+  }catch(e){
+    console.warn('[PORTFOLIO] Ошибка загрузки data/projects.json:', e.message);
+  }
   if(!list.length){
     try{
       const r = await fetch(RAW_URL, {cache: 'no-store'});
       if(r.ok){
         const d = await r.json();
         if(d && Array.isArray(d.projects) && d.projects.length) list = d.projects;
+      } else {
+        console.warn('[PORTFOLIO] RAW_URL вернул статус:', r.status);
       }
-    }catch(e){}
+    }catch(e){
+      console.warn('[PORTFOLIO] Ошибка загрузки RAW_URL:', e.message);
+    }
   }
-  if(!list.length) list = DEFAULT_PROJECTS;
-
-  // Background auto-enrichment: if any project has video but missing cover, fetch thumbnail
-  setTimeout(()=>{
-    list.forEach(p => {
-      if((!p.cover || !p.cover.trim()) && (!p.thumbnail_url || !p.thumbnail_url.trim())){
-        const v = p.video || p.video_url;
-        if(v){
-          fetch('/api/get-video-meta/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: v })
-          }).then(res => res.ok ? res.json() : null).then(meta => {
-            if(meta && (meta.thumbnail || meta.thumbnail_url)){
-              p.cover = meta.thumbnail || meta.thumbnail_url;
-              p.thumbnail_url = p.cover;
-              try {
-                const imgs = document.querySelectorAll(`img[alt="${CSS.escape(p.title)}"]`);
-                imgs.forEach(img => { if(img.src.includes('backstage') || !img.src) img.src = p.cover; });
-              } catch(e) {}
-            }
-          }).catch(()=>{});
-        }
-      }
-    });
-  }, 100);
-
+  if(!list.length){
+    console.error('[PORTFOLIO] Используется резервный список проектов');
+    list = DEFAULT_PROJECTS;
+  }
   return list;
 }
 
@@ -858,20 +850,20 @@ function toEmbed(url){
   
   if(/youtube\.com\/embed\//i.test(url) || /video_ext\.php/i.test(url) || /rutube\.ru\/play\/embed\//i.test(url) || /player\.vimeo\.com\/video\//i.test(url)) return url;
   
-  let m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+  let m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,15})/i);
   if(m) return 'https://www.youtube.com/embed/'+m[1]+'?rel=0';
   
-  m = url.match(/rutube\.ru\/(?:video\/private|video|play\/embed|shorts|pl|videos)\/([A-Za-z0-9]+)/i);
+  m = url.match(/rutube\.ru\/(?:video\/private|video|play\/embed|shorts|pl|videos)\/([a-zA-Z0-9]{16,40})/i);
   if(m && m[1]) return 'https://rutube.ru/play/embed/'+m[1]+'/';
   
-  m = url.match(/vimeo\.com\/(\d+)/i);
+  m = url.match(/vimeo\.com\/(?:video\/)?(\d{5,12})/i);
   if(m && m[1]) return 'https://player.vimeo.com/video/'+m[1];
   
-  m = url.match(/(?:vk\.com|vkvideo\.ru|vk\.ru)\/(?:video|clip|clips\/clip)\/?(-?\d+)_(\d+)/i) ||
-      url.match(/(?:vk\.com|vkvideo\.ru|vk\.ru)\/video_ext\.php\?(?:.*&)?oid=(-?\d+)(?:.*&)?id=(\d+)/i) ||
-      url.match(/[?&]z=(?:video|clip)(-?\d+)_(\d+)/i) ||
-      ((/(?:vk\.com|vkvideo\.ru|vk\.ru)/i.test(url)) ? url.match(/(-?\d+)_(\d+)/) : null);
-  if(m) return 'https://vk.com/video_ext.php?oid='+m[1]+'&id='+m[2]+'&hd=2';
+  // VK Video & Clips
+  let vkm = url.match(/(?:vk\.com|vkvideo\.ru|vk\.ru)\/(?:video|clip|clips\/clip)\/?(-?\d+)_(\d+)/i) ||
+            url.match(/(?:vk\.com|vkvideo\.ru|vk\.ru)\/video_ext\.php\?(?:.*&)?oid=(-?\d+)(?:.*&)?id=(\d+)/i) ||
+            url.match(/[?&]z=(?:video|clip)(-?\d+)_(\d+)/i);
+  if(vkm && vkm[1] && vkm[2]) return 'https://vk.com/video_ext.php?oid='+vkm[1]+'&id='+vkm[2]+'&hd=2';
   
   return '';
 }
@@ -894,7 +886,13 @@ $('#catBar').addEventListener('click', e=>{
   const b = e.target.closest('.cat-btn'); if(!b) return;
   e.preventDefault();
   const cat = b.dataset.cat;
-  if(cat === curFilter) return;
+  if(cat === curFilter){
+    if(curFilter === 'all' && showAllProjects){
+      showAllProjects = false;
+      renderWorks();
+    }
+    return;
+  }
 
   curFilter = cat;
   showAllProjects = false;
@@ -1029,11 +1027,22 @@ function initWorkAnims(){
 
 /* ---------- СТРАНИЦА ПРОЕКТА (модалка) ---------- */
 const modal = $('#caseModal'), caseBody = $('#caseBody');
+let lastActiveEl = null;
+
 function lockScroll(on){ document.documentElement.style.overflow = on ? 'hidden' : ''; }
+
 function openCase(i){
   curIdx = i;
   const p = curList[i]; if(!p) return;
-  const embed = toEmbed(p.video || p.video_url);
+  lastActiveEl = document.activeElement;
+  
+  if(p.id && window.location.hash !== '#project-' + p.id){
+    try{
+      history.replaceState(null, '', '#project-' + encodeURIComponent(p.id));
+    }catch(e){}
+  }
+  
+  const embed = toEmbed(p.video_url || p.video);
   const cat = CATEGORIES[p.category] || 'ДРУГОЕ';
   const year = (p.added||'').slice(0,4) || '—';
   const shorts = isShorts(p);
@@ -1042,12 +1051,13 @@ function openCase(i){
     : `<img src="${esc(getCover(p))}" alt="${esc(p.title)}" onerror="this.onerror=null;this.src='${IMG.backstage}'">`;
   const photos = (p.images||[]).filter(Boolean);
   const links = (p.links||[]).filter(Boolean);
+  
   caseBody.innerHTML = `
     <div class="case-head">
       <span class="mono"><b>${String(i+1).padStart(2,'0')} / ${esc(cat)}</b> • ${esc(year)}${embed?' • <span class="acc">▶ WATCH</span>':''}</span>
-      <button class="case-close" id="caseClose">ЗАКРЫТЬ ×</button>
+      <button class="case-close" id="caseClose" aria-label="Закрыть проект">ЗАКРЫТЬ ×</button>
     </div>
-    <h3 class="case-title">${esc(p.title)}</h3>
+    <h3 class="case-title" id="caseTitle">${esc(p.title)}</h3>
     <div class="case-media">${media}</div>
     <div class="case-meta">
       <div><h5>КАТЕГОРИЯ</h5><p>${esc(cat)}</p></div>
@@ -1059,27 +1069,68 @@ function openCase(i){
     ${links.length?`<h5 class="case-h">МАТЕРИАЛЫ</h5>
     <div class="case-links">${links.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(u)}<span aria-hidden="true">↗</span></a>`).join('')}</div>`:''}
     <div class="case-nav">
-      <button class="btn" id="casePrev">← ПРЕД.</button>
+      <button class="btn" id="casePrev" aria-label="Предыдущий проект">← ПРЕД.</button>
       <a class="btn btn-acc" href="#contact" data-navlink id="caseCta">ХОЧУ ТАКОЙ ЖЕ <span class="arr">→</span></a>
-      <button class="btn" id="caseNext">СЛЕД. →</button>
-      <button class="case-close" id="caseClose2" style="flex:1 1 100%">ЗАКРЫТЬ ×</button>
+      <button class="btn" id="caseNext" aria-label="Следующий проект">СЛЕД. →</button>
+      <button class="case-close" id="caseClose2" style="flex:1 1 100%" aria-label="Закрыть проект">ЗАКРЫТЬ ×</button>
     </div>`;
-  modal.classList.add('open'); modal.scrollTop = 0;
-  lockScroll(true); lenis && lenis.stop();
+  
+  modal.setAttribute('aria-labelledby', 'caseTitle');
+  modal.classList.add('open'); 
+  modal.scrollTop = 0;
+  lockScroll(true); 
+  lenis && lenis.stop();
+  
+  const closeBtn = $('#caseClose');
+  if(closeBtn) closeBtn.focus();
+
   $('#caseClose').onclick = closeCase;
   $('#caseClose2').onclick = closeCase;
   $('#casePrev').onclick = ()=>openCase((i-1+curList.length)%curList.length);
   $('#caseNext').onclick = ()=>openCase((i+1)%curList.length);
   $('#caseCta').onclick = closeCase;
 }
+
 function closeCase(){
+  if(window.location.hash.startsWith('#project-')){
+    try{
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }catch(e){}
+  }
   const ifr = modal.querySelector('iframe');
   if(ifr) ifr.src = 'about:blank';
   modal.classList.remove('open');
-  lockScroll(false); lenis && lenis.start();
+  lockScroll(false); 
+  lenis && lenis.start();
   setTimeout(()=>{ if(!modal.classList.contains('open')) caseBody.innerHTML=''; }, 400);
+  if(lastActiveEl && typeof lastActiveEl.focus === 'function'){
+    try{ lastActiveEl.focus(); }catch(e){}
+    lastActiveEl = null;
+  }
 }
+
 modal.addEventListener('click', e=>{ if(e.target===modal) closeCase(); });
+
+// Focus trap within modal when open
+modal.addEventListener('keydown', e => {
+  if (e.key !== 'Tab') return;
+  const focusables = modal.querySelectorAll('button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  if (!focusables.length) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (e.shiftKey) {
+    if (document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    }
+  } else {
+    if (document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+});
+
 $('#worksGrid').addEventListener('click', e=>{
   const w = e.target.closest('.work'); if(w) openCase(+w.dataset.i);
 });
@@ -1152,15 +1203,23 @@ async function loadCollabs(){
     if(r.ok){
       const d = await r.json();
       if(d && Array.isArray(d.collabs) && d.collabs.length) return d.collabs;
+    } else {
+      console.warn('[COLLABS] data/collabs.json вернул статус:', r.status);
     }
-  }catch(e){}
+  }catch(e){
+    console.warn('[COLLABS] Ошибка загрузки data/collabs.json:', e.message);
+  }
   try{
     const r = await fetch(COLLABS_RAW_URL, {cache: 'no-store'});
     if(r.ok){
       const d = await r.json();
       if(d && Array.isArray(d.collabs) && d.collabs.length) return d.collabs;
+    } else {
+      console.warn('[COLLABS] RAW_URL вернул статус:', r.status);
     }
-  }catch(e){}
+  }catch(e){
+    console.warn('[COLLABS] Ошибка загрузки RAW_URL:', e.message);
+  }
   return [];
 }
 Promise.all([loadPortfolio(), loadCollabs()]).then(([projList, collabList])=>{ 
@@ -1168,12 +1227,56 @@ Promise.all([loadPortfolio(), loadCollabs()]).then(([projList, collabList])=>{
   renderCatBar(); 
   renderWorks();
   if(collabList.length > 0){
-    $('#collabGrid').innerHTML = collabList.map(c=>`
+    $('#collabGrid').innerHTML = collabList.map(c=>{
+      const hasLink = Array.isArray(c.links) && c.links.length && c.links[0] && String(c.links[0]).trim();
+      const linkUrl = hasLink ? esc(String(c.links[0]).trim()) : '';
+      const photoHtml = c.img
+        ? `<img src="${esc(c.img)}" alt="${esc(c.name)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'mono\\'>[ФОТО]</span>'">`
+        : '<span class="mono">[ФОТО]</span>';
+      
+      if(hasLink){
+        return `
+        <a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="collab" data-reveal style="text-decoration:none;display:block" aria-label="${esc(c.name)} — открыть ссылку">
+          <div class="collab-ph">${photoHtml}</div>
+          <div class="collab-name">${esc(c.name)} <span class="mono" style="font-size:11px;opacity:.6" aria-hidden="true">↗</span></div>
+        </a>`;
+      }
+      return `
       <div class="collab" data-reveal>
-        <div class="collab-ph">${c.img?`<img src="${esc(c.img)}" alt="${esc(c.name)}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'mono\\'>[ФОТО]</span>'">`:'<span class="mono">[ФОТО]</span>'}</div>
+        <div class="collab-ph">${photoHtml}</div>
         <div class="collab-name">${esc(c.name)}</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
+
+  // Прямое открытие кейса по URL (например #project-pmtosc69ngr7r или ?project=pmtosc69ngr7r)
+  function handleDirectProjectUrl(){
+    const hash = window.location.hash || '';
+    const params = new URLSearchParams(window.location.search);
+    const targetId = params.get('project') || (hash.startsWith('#project-') ? decodeURIComponent(hash.slice(9)) : '');
+    if(!targetId) return;
+
+    const targetProj = ALL_PROJECTS.find(p => String(p.id) === targetId);
+    if(targetProj){
+      curFilter = targetProj.category || 'all';
+      showAllProjects = true;
+      renderCatBar();
+      renderWorks();
+      const idx = curList.findIndex(p => String(p.id) === targetId);
+      if(idx >= 0){
+        setTimeout(()=>openCase(idx), 200);
+      }
+    }
+  }
+  handleDirectProjectUrl();
+  window.addEventListener('hashchange', ()=>{
+    const hash = window.location.hash || '';
+    if(!hash.startsWith('#project-') && modal.classList.contains('open')){
+      closeCase();
+    } else if(hash.startsWith('#project-')){
+      handleDirectProjectUrl();
+    }
+  });
 });
 
 /* ---------- LOADER ---------- */

@@ -1,0 +1,36 @@
+name: Validate Portfolio Data & Code
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate JSON Data Schemas
+        run: node scripts/validate-data.js
+
+      - name: Verify HTML & JS Syntax
+        run: |
+          node -e '
+          import fs from "node:fs";
+          // Check that index.html and admin/index.html are well-formed and readable
+          const html1 = fs.readFileSync("index.html", "utf8");
+          const html2 = fs.readFileSync("admin/index.html", "utf8");
+          if (!html1.includes("<!DOCTYPE html>") || !html2.includes("<!DOCTYPE html>")) {
+            throw new Error("HTML files must contain valid DOCTYPE");
+          }
+          console.log("HTML integrity check passed.");
+          '

@@ -144,7 +144,7 @@ h1.a-title{font-family:var(--fd);font-weight:900;font-size:clamp(26px,5vw,52px);
   <section id="scrLogin">
     <h1 class="a-title">ВХОД<br>В АДМИНКУ</h1>
     <div class="login-box">
-      <p class="hint" style="margin-bottom:20px;line-height:1.6">Панель управления защищена. Для внесения изменений в портфолио на GitHub Pages требуется персональный токен GitHub (PAT) с доступом к репозиторию. Токен хранится исключительно в локальном хранилище вашего браузера.</p>
+      <p class="hint" style="margin-bottom:20px;line-height:1.6">Статическая панель управления для публикации изменений напрямую в GitHub через GitHub Contents API (без отдельного бэкенда). Токен хранится только в текущей сессии вкладки (sessionStorage) и удаляется при закрытии или выходе.</p>
       <div class="f"><label>GITHUB ТОКЕН</label><input type="password" id="inToken" placeholder="github_pat_…" autocomplete="off"></div>
       <div class="two-col">
         <div class="f"><label>РЕПОЗИТОРИЙ (ВЛАДЕЛЕЦ/ИМЯ)</label><input id="inRepo" value="propellerprod/portfolio"></div>
@@ -287,36 +287,65 @@ const CATEGORIES = { concerts:'КОНЦЕРТЫ', commercials:'БЛОГЕРЫ', 
 const FILE = 'data/projects.json';
 const COLLABS_FILE = 'data/collabs.json';
 
-let cfg = JSON.parse(localStorage.getItem('pp_cfg')||'null') || {owner:'propellerprod', repo:'portfolio', branch:'main'};
-let token = localStorage.getItem('pp_token') || '';
+let cfg = JSON.parse(sessionStorage.getItem('pp_cfg') || localStorage.getItem('pp_cfg') || 'null') || {owner:'propellerprod', repo:'portfolio', branch:'main'};
+let token = sessionStorage.getItem('pp_token') || '';
+// Clean legacy token from localStorage to prevent persistent credential exposure
+if (localStorage.getItem('pp_token')) {
+  if (!token) token = localStorage.getItem('pp_token');
+  localStorage.removeItem('pp_token');
+}
 let DATA = {projects:[]};
 let COLLABS_DATA = {collabs:[]};
-let curCat = null, editId = null, dragFrom = null, cfCb = null, editingCollabId = null;
+let curCat = null, editId = null, dragFromId = null, cfCb = null, editingCollabId = null;
+
+function isValidHttpUrl(str){
+  if(!str || typeof str !== 'string') return false;
+  str = str.trim();
+  if(!str) return false;
+  try{
+    const u = new URL(str);
+    return u.protocol === 'https:' || u.protocol === 'http:';
+  }catch{
+    return false;
+  }
+}
 
 /* ---------- GitHub API ---------- */
 async function gh(path, method='GET', body){
   if(!token) throw new Error('Токен GitHub не введён. Пожалуйста, выполните вход.');
-  const r = await fetch('https://api.github.com/'+path, {
-    method,
-    headers:{
-      'Authorization':'Bearer '+token,
-      'Accept':'application/vnd.github+json',
-      'X-GitHub-Api-Version':'2022-11-28'
-    },
-    body: body ? JSON.stringify(body) : undefined
-  });
-  if(!r.ok){
-    let msg='HTTP '+r.status;
-    try{ const e=await r.json(); msg=e.message||msg; }catch(e){}
-    if(r.status===401) msg='GitHub отклонил токен (401). Проверьте Fine-grained PAT и срок его действия.';
-    else if(r.status===403) msg='GitHub запретил доступ (403). Убедитесь, что у токена есть право Contents: Read and write.';
-    else if(r.status===404) msg='Репозиторий или файл не найден (404). Проверьте репозиторий propellerprod/portfolio и ветку main.';
-    throw new Error(msg);
+  let r;
+  try{
+    r = await fetch('https://api.github.com/'+path, {
+      method,
+      headers:{
+        'Authorization':'Bearer '+token,
+        'Accept':'application/vnd.github+json',
+        'X-GitHub-Api-Version':'2022-11-28'
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+  }catch(networkErr){
+    console.error('[GITHUB API] Сетевая ошибка:', networkErr);
+    throw new Error('Сетевая ошибка при обращении к GitHub API: ' + networkErr.message);
   }
-  return r.status===204 ? null : await r.json();
+
+  if(!r.ok){
+    let msg = 'HTTP ' + r.status;
+    let detail = '';
+    try{ const e = await r.json(); detail = e.message || ''; msg = detail || msg; }catch(e){}
+    if(r.status === 401) msg = 'GitHub отклонил токен (401). Проверьте Fine-grained PAT и срок его действия.';
+    else if(r.status === 403) msg = 'GitHub запретил доступ (403). Убедитесь, что у токена есть право Contents: Read and write.';
+    else if(r.status === 404) msg = 'Репозиторий или файл не найден (404). Проверьте ' + esc(cfg.owner + '/' + cfg.repo) + ' и ветку ' + esc(cfg.branch) + '.';
+    else if(r.status === 409) msg = 'Конфликт версий в GitHub (HTTP 409): файл в репозитории был изменён другим коммитом. Данные в форме не потеряны. Нажмите «Синхронизировать», затем повторите сохранение.';
+    else if(r.status === 422) msg = 'GitHub API отклонил запрос (422): ' + (detail || 'некорректные параметры запроса');
+    const err = new Error(msg);
+    err.status = r.status;
+    throw err;
+  }
+  return r.status === 204 ? null : await r.json();
 }
 async function checkRepoAccess(){
-  const repo=encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo);
+  const repo = encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo);
   return await gh('repos/'+repo);
 }
 function toB64(str){
@@ -340,7 +369,7 @@ async function fetchFile(){
     d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}?ref=${encodeURIComponent(cfg.branch)}`);
   }catch(e){
     /* файла ещё нет — начинаем с пустого списка */
-    if(/404|Not Found|was not found/i.test(e.message)){ DATA = {projects:[]}; return null; }
+    if(e.status === 404 || /404|Not Found/i.test(e.message)){ DATA = {projects:[]}; return null; }
     throw e;
   }
   let text;
@@ -353,7 +382,7 @@ async function fetchFile(){
     DATA = JSON.parse(text);
   }catch(e){
     const preview = text.slice(0,40).replace(/\s+/g,' ');
-    throw new Error('data/projects.json содержит НЕ-JSON («'+preview+'…»). Откройте файл в GitHub и проверьте синтаксис JSON.');
+    throw new Error('data/projects.json содержит некорректный JSON («'+preview+'…»). Откройте файл в GitHub и проверьте синтаксис.');
   }
   if(!Array.isArray(DATA.projects)) DATA = {projects:[]};
   return d.sha;
@@ -364,7 +393,7 @@ async function fetchCollabsFile(){
   try{
     d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}?ref=${encodeURIComponent(cfg.branch)}`);
   }catch(e){
-    if(/404|Not Found|was not found/i.test(e.message)){ COLLABS_DATA = {collabs:[]}; return null; }
+    if(e.status === 404 || /404|Not Found/i.test(e.message)){ COLLABS_DATA = {collabs:[]}; return null; }
     throw e;
   }
   let text;
@@ -377,7 +406,7 @@ async function fetchCollabsFile(){
     COLLABS_DATA = JSON.parse(text);
   }catch(e){
     const preview = text.slice(0,40).replace(/\s+/g,' ');
-    throw new Error('data/collabs.json содержит НЕ-JSON («'+preview+'…»). Проверьте JSON файл.');
+    throw new Error('data/collabs.json содержит некорректный JSON («'+preview+'…»). Проверьте JSON файл.');
   }
   if(!Array.isArray(COLLABS_DATA.collabs)) COLLABS_DATA = {collabs:[]};
   return d.sha;
@@ -386,12 +415,16 @@ async function publish(msg){
   if(!token) throw new Error('Требуется GitHub токен для сохранения');
   DATA.updated = new Date().toISOString();
   
-  // Сохранение напрямую в GitHub репозиторий
+  // Сохранение напрямую в GitHub репозиторий через GitHub Contents API
   let sha = null;
   try{ 
     const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}?ref=${encodeURIComponent(cfg.branch)}`); 
     sha = d.sha; 
-  }catch(e){}
+  }catch(e){
+    if(e.status !== 404){
+      console.warn('[PUBLISH] Не удалось получить SHA файла projects.json:', e.message);
+    }
+  }
   
   const body = {
     message: msg || 'portfolio: update projects',
@@ -401,27 +434,22 @@ async function publish(msg){
   if(sha) body.sha = sha;
   await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${FILE}`, 'PUT', body);
 
-  // Опциональная синхронизация локального файла, если сервер доступен
-  try{
-    await fetch('/api/projects', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(DATA, null, 2)
-    });
-  }catch(e){}
-
   $('#pubStatus').textContent = 'СОХРАНЕНО В GITHUB: ' + new Date().toLocaleTimeString('ru-RU');
 }
 async function publishCollabs(msg){
   if(!token) throw new Error('Требуется GitHub токен для сохранения');
   COLLABS_DATA.updated = new Date().toISOString();
   
-  // Сохранение напрямую в GitHub репозиторий
+  // Сохранение напрямую в GitHub репозиторий через GitHub Contents API
   let sha = null;
   try{ 
     const d = await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}?ref=${encodeURIComponent(cfg.branch)}`); 
     sha = d.sha; 
-  }catch(e){}
+  }catch(e){
+    if(e.status !== 404){
+      console.warn('[PUBLISH] Не удалось получить SHA файла collabs.json:', e.message);
+    }
+  }
   
   const body = {
     message: msg || 'portfolio: update collabs',
@@ -431,18 +459,10 @@ async function publishCollabs(msg){
   if(sha) body.sha = sha;
   await gh(`repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${COLLABS_FILE}`, 'PUT', body);
 
-  try{
-    await fetch('/api/collabs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(COLLABS_DATA, null, 2)
-    });
-  }catch(e){}
-
   $('#pubStatus').textContent = 'СОХРАНЕНО В GITHUB: ' + new Date().toLocaleTimeString('ru-RU');
 }
 
-/* ---------- Video Parse (YouTube, Rutube, Vimeo) ---------- */
+/* ---------- Video Parse (YouTube, Rutube, Vimeo, VK) ---------- */
 function parseVideoUrl(u){
   u = (u||'').trim(); if(!u) return null;
   
@@ -499,45 +519,53 @@ function parseVK(u){
 async function getVideoThumbnail(url, source){
   if(!url) throw new Error('Нет URL видео');
   const src = source || detectVideoSource(url);
-  
-  // Попытка через серверный API (автоматически вытаскивает og:image для VK/VK Клипов и Rutube/YouTube)
-  try {
-    const apiResp = await fetch('/api/get-video-meta/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, source: src })
-    });
-    if (apiResp.ok) {
-      const data = await apiResp.json();
-      if (data.thumbnail || data.thumbnail_url) {
-        return data.thumbnail || data.thumbnail_url;
+
+  if(src === 'youtube'){
+    const obj = parseVideoUrl(url);
+    if(!obj || obj.type !== 'youtube') throw new Error('Неверная ссылка на YouTube');
+    return 'https://img.youtube.com/vi/'+obj.id+'/maxresdefault.jpg';
+  }
+
+  if(src === 'vimeo'){
+    const obj = parseVideoUrl(url);
+    if(!obj || obj.type !== 'vimeo') throw new Error('Неверная ссылка на Vimeo');
+    try{
+      const r = await fetch('https://vimeo.com/api/v2/video/'+obj.id+'.json');
+      if(r.ok){
+        const d = await r.json();
+        if(Array.isArray(d) && d[0] && d[0].thumbnail_large){
+          return d[0].thumbnail_large;
+        }
       }
+    }catch(e){
+      console.warn('[VIMEO THUMB] Ошибка загрузки превью Vimeo:', e);
     }
-  } catch (e) {
-    // fallback к браузерной обработке
+    throw new Error('Не удалось получить превью из Vimeo. Укажите ссылку на обложку в поле «ОБЛОЖКА».');
   }
 
   if(src === 'rutube'){
     const id = parseRutube(url);
     if(!id) throw new Error('Неверная ссылка на Rutube');
-    const r = await fetch('https://rutube.ru/api/video/'+id+'/');
-    if(!r.ok) throw new Error('Rutube API: '+r.status);
-    const d = await r.json();
-    if(d.cover_url) return d.cover_url;
-    if(d.thumbnail_url) return d.thumbnail_url;
-    throw new Error('Превью не найдено в API Rutube');
+    try{
+      const r = await fetch('https://rutube.ru/api/video/'+id+'/');
+      if(r.ok){
+        const d = await r.json();
+        if(d.thumbnail_url) return d.thumbnail_url;
+        if(d.cover_url) return d.cover_url;
+      }
+    }catch(e){
+      console.warn('[RUTUBE THUMB] Ошибка API Rutube:', e);
+    }
+    return 'https://pic.rutubelist.ru/video/'+id+'.jpg';
   }
+
   if(src === 'vk'){
     const vk = parseVK(url);
     if(!vk) throw new Error('Неверная ссылка на VK Видео / VK Клип');
-    throw new Error('Не удалось автоматически получить кадр из VK. Укажите URL обложки вручную в поле "ОБЛОЖКА".');
+    throw new Error('VK Видео и Клипы требуют ручной ввод обложки. Вставьте прямую ссылку на фото/кадр в поле «ОБЛОЖКА».');
   }
-  if(src === 'youtube'){
-    const obj = parseVideoUrl(url);
-    if(!obj || obj.type !== 'youtube') throw new Error('Неверная ссылка на YouTube');
-    return 'https://img.youtube.com/vi/'+obj.id+'/mqdefault.jpg';
-  }
-  throw new Error('Неподдерживаемый источник видео для авто-превью');
+
+  throw new Error('Неподдерживаемый источник видео для авто-превью. Вставьте ссылку на обложку вручную.');
 }
 
 /* ---------- UI helpers ---------- */
@@ -573,43 +601,38 @@ function cb0(){ const f = cfCb; cfCb = null; f && f(); }
   inpBranch.value = cfg.branch;
   
   btn.onclick = async ()=>{
-    console.log('[ADMIN] Клик по кнопке ВОЙТИ');
     const t = $('#inToken').value.trim();
     const repo = $('#inRepo').value.trim();
     const br = $('#inBranch').value.trim() || 'main';
     err.textContent = '';
     
     if(!t){ 
-      console.error('[ADMIN] Токен не введён');
       err.textContent = '// ВСТАВЬТЕ GITHUB ТОКЕН (PAT)'; 
       return; 
     }
     if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){ 
-      console.error('[ADMIN] Неверный формат репозитория');
       err.textContent = '// РЕПОЗИТОРИЙ В ФОРМАТЕ: ВЛАДЕЛЕЦ/ИМЯ'; 
       return; 
     }
     
-    console.log('[ADMIN] Попытка входа с токеном:', t.substring(0,10)+'...');
     token = t;
-    localStorage.removeItem('pp_local');
     const parts = repo.split('/');
     cfg = {owner:parts[0].trim(), repo:parts[1].trim(), branch:br.trim()};
-    console.log('[ADMIN] Проверка токена и репозитория...');
     
     try{
       await checkRepoAccess();
       await fetchFile();
       await fetchCollabsFile();
-      localStorage.setItem('pp_token', token);
-      localStorage.setItem('pp_cfg', JSON.stringify(cfg));
+      sessionStorage.setItem('pp_token', token);
+      sessionStorage.setItem('pp_cfg', JSON.stringify(cfg));
+      localStorage.removeItem('pp_token');
+      localStorage.removeItem('pp_local');
       $('#btnLogout').hidden = false;
       renderDash(); 
       show('scrDash');
       toast('ПОДКЛЮЧЕНО К GITHUB ✓');
-      console.log('[ADMIN] Вход успешен');
     }catch(e){
-      console.error('[ADMIN] Ошибка входа:', e);
+      console.error('[ADMIN] Ошибка входа:', e.message);
       token = '';
       let errMsg = e.message || 'Неизвестная ошибка';
       if(errMsg.includes('401')){
@@ -627,22 +650,31 @@ function cb0(){ const f = cfCb; cfCb = null; f && f(); }
   });
 })();
 $('#btnLogout').onclick = ()=>{
+  sessionStorage.removeItem('pp_token');
+  sessionStorage.removeItem('pp_cfg');
   localStorage.removeItem('pp_token');
+  localStorage.removeItem('pp_cfg');
   localStorage.removeItem('pp_local');
   token = '';
   $('#btnLogout').hidden = true;
   show('scrLogin');
+  toast('ВЫ ВЫШЛИ ИЗ АДМИНКИ');
 };
 
 /* ---------- DASHBOARD ---------- */
 function renderDash(){
-  $('#catGrid').innerHTML = Object.keys(CATEGORIES).map(k=>{
+  const allCard = `<button class="cat-card" data-cat="all">
+    <span class="mono">${String(DATA.projects.length).padStart(2,'0')} ПРОЕКТОВ</span>
+    <span class="n">ВСЕ ПРОЕКТЫ</span>
+  </button>`;
+  const catCards = Object.keys(CATEGORIES).map(k=>{
     const n = DATA.projects.filter(p=>p.category===k).length;
     return `<button class="cat-card" data-cat="${k}">
       <span class="mono">${String(n).padStart(2,'0')} ПРОЕКТОВ</span>
       <span class="n">${CATEGORIES[k]}</span>
     </button>`;
   }).join('');
+  $('#catGrid').innerHTML = allCard + catCards;
   renderCollabDash();
 }
 $('#catGrid').addEventListener('click', e=>{
@@ -675,33 +707,41 @@ $('#collabGrid').addEventListener('click', e=>{
   if(!card || !card.dataset.collabIdx) return;
   /* если зажат Shift/Ctrl/Meta — удаление, иначе редактирование */
   if(e.shiftKey || e.ctrlKey || e.metaKey){
-    const idx = parseInt(card.dataset.collabIdx);
+    const idx = parseInt(card.dataset.collabIdx, 10);
     const c = COLLABS_DATA.collabs[idx];
-    /* ИСПРАВЛЕНИЕ: кавычки закрыты корректно, нет ошибки синтаксиса */
     askConfirm('Удалить коллаборацию "'+(c.name||'БЕЗ ИМЕНИ')+'"?', async ()=>{
       COLLABS_DATA.collabs.splice(idx,1);
-      try{ await publishCollabs('portfolio: delete collab'); renderDash(); toast('КОЛЛАБОРАЦИЯ УДАЛЕНА ✓'); }
-      catch(err){ toast('ОШИБКА: '+err.message, true); await fetchCollabsFile().catch(()=>{}); renderDash(); }
+      try{ 
+        await publishCollabs('portfolio: delete collab'); 
+        renderDash(); 
+        toast('КОЛЛАБОРАЦИЯ УДАЛЕНА ✓'); 
+      }catch(err){ 
+        console.error('[COLLAB DEL] Ошибка удаления:', err);
+        toast('ОШИБКА: '+err.message, true); 
+        await fetchCollabsFile().catch(()=>{}); 
+        renderDash(); 
+      }
     });
     e.preventDefault();
     e.stopPropagation();
   }else{
-    openCollabEditor(parseInt(card.dataset.collabIdx));
+    openCollabEditor(parseInt(card.dataset.collabIdx, 10));
   }
 });
 $('#btnAddCollabTop').onclick = ()=>openCollabEditor(null);
 
 /* ---------- СПИСОК ---------- */
 function openList(cat){
-  curCat = cat;
-  $('#listTitle').textContent = CATEGORIES[cat];
-  renderList(); show('scrList');
+  curCat = cat || 'all';
+  $('#listTitle').textContent = curCat === 'all' ? 'ВСЕ ПРОЕКТЫ' : (CATEGORIES[curCat] || curCat);
+  renderList(); 
+  show('scrList');
 }
 $('#backDash').onclick = e=>{ e.preventDefault(); renderDash(); show('scrDash'); };
-$('#btnAdd').onclick = ()=>openEditor(null, curCat);
+$('#btnAdd').onclick = ()=>openEditor(null, curCat === 'all' ? 'concerts' : curCat);
 
 function renderList(){
-  const list = DATA.projects.filter(p=>p.category===curCat);
+  const list = curCat === 'all' ? DATA.projects : DATA.projects.filter(p=>p.category===curCat);
   const rows = $('#rows');
   if(!list.length){
     rows.innerHTML = '<p class="mono">[ ПОКА ПУСТО — ДОБАВЬТЕ ПЕРВЫЙ ПРОЕКТ ]</p>';
@@ -710,14 +750,14 @@ function renderList(){
   rows.innerHTML = list.map((p,i)=>`
     <div class="row" draggable="true" data-id="${esc(p.id)}">
       <div class="grip" title="Перетащить">⠿</div>
-      ${p.cover || p.thumbnail_url ? `<img class="thumb" src="${esc(p.thumbnail_url || p.cover)}" alt="" loading="lazy">` : '<div class="noimg">НЕТ ФОТО</div>'}
+      ${p.cover ? `<img class="thumb" src="${esc(p.cover)}" alt="" loading="lazy">` : '<div class="noimg">НЕТ ФОТО</div>'}
       <div class="bd">
         <div class="t">${esc(p.title)}</div>
-        <div class="m">${String(i+1).padStart(2,'0')} • ${CATEGORIES[p.category]} • ${esc((p.added||'').slice(0,10))}${p.video_url || p.video?' • ▶':''}${(p.images||[]).length?' • ФОТО '+(p.images||[]).length:''}</div>
+        <div class="m">${String(i+1).padStart(2,'0')} • ${CATEGORIES[p.category] || p.category} • ${esc((p.added||'').slice(0,10))}${p.video_url || p.video?' • ▶':''}${(p.images||[]).length?' • ФОТО '+(p.images||[]).length:''}</div>
       </div>
       <div class="ops">
-        <button class="mini" data-op="up" title="Выше">↑</button>
-        <button class="mini" data-op="down" title="Ниже">↓</button>
+        <button class="mini" data-op="up" title="Выше" aria-label="Переместить выше">↑</button>
+        <button class="mini" data-op="down" title="Ниже" aria-label="Переместить ниже">↓</button>
         <button class="mini" data-op="edit">РЕД.</button>
         <button class="mini del" data-op="del">УДАЛИТЬ</button>
       </div>
@@ -736,7 +776,7 @@ function renderList(){
 const rowsBox = $('#rows');
 rowsBox.addEventListener('dragstart', e=>{
   const r = e.target.closest('.row'); if(!r) return;
-  dragFrom = [...rowsBox.children].indexOf(r);
+  dragFromId = r.dataset.id;
   r.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
 });
@@ -748,16 +788,18 @@ rowsBox.addEventListener('dragover', e=>{
 });
 rowsBox.addEventListener('drop', async e=>{
   e.preventDefault();
-  const r = e.target.closest('.row'); if(!r || dragFrom==null) return;
-  const to = [...rowsBox.children].indexOf(r);
+  const r = e.target.closest('.row'); 
+  const targetId = r ? r.dataset.id : null;
   [...rowsBox.children].forEach(x=>x.classList.remove('over','dragging'));
-  if(to===dragFrom) return;
-  await moveProject(dragFrom, to);
-  dragFrom = null;
+  if(!dragFromId || !targetId || dragFromId === targetId) return;
+  await reorderProject(dragFromId, targetId);
+  dragFromId = null;
 });
 rowsBox.addEventListener('dragend', ()=>{
+  dragFromId = null;
   [...rowsBox.children].forEach(x=>x.classList.remove('over','dragging'));
 });
+
 rowsBox.addEventListener('click', async e=>{
   const btn = e.target.closest('.mini'); if(!btn) return;
   const row = btn.closest('.row');
@@ -766,29 +808,53 @@ rowsBox.addEventListener('click', async e=>{
   if(op==='edit'){ openEditor(id); return; }
   if(op==='del'){
     const globalIdx = DATA.projects.findIndex(p=>String(p.id)===id);
+    if(globalIdx < 0) return;
     askConfirm('Удалить этот проект?', async ()=>{
-      DATA.projects.splice(globalIdx,1);
-      try{ await publish('portfolio: delete project'); renderList(); toast('ПРОЕКТ УДАЛЁН ✓'); }
-      catch(err){ toast('ОШИБКА: '+err.message, true); await fetchFile().catch(()=>{}); renderList(); }
+      DATA.projects.splice(globalIdx, 1);
+      try{ 
+        await publish('portfolio: delete project'); 
+        renderList(); 
+        toast('ПРОЕКТ УДАЛЁН ✓'); 
+      }catch(err){ 
+        console.error('[PROJECT DEL] Ошибка удаления:', err);
+        toast('ОШИБКА: '+err.message, true); 
+        await fetchFile().catch(()=>{}); 
+        renderList(); 
+      }
     });
     return;
   }
   if(op==='up' || op==='down'){
-    const local = DATA.projects.filter(p=>p.category===curCat);
-    const li = local.findIndex(p=>String(p.id)===id);
-    const ni = op==='up' ? li-1 : li+1;
-    if(ni<0 || ni>=local.length) return;
-    const gi = DATA.projects.indexOf(local[li]);
-    const gn = DATA.projects.indexOf(local[ni]);
-    await moveProject(gi, gn);
+    const visible = curCat === 'all' ? DATA.projects : DATA.projects.filter(p=>p.category===curCat);
+    const li = visible.findIndex(p=>String(p.id)===String(id));
+    if(li < 0) return;
+    const ni = op==='up' ? li - 1 : li + 1;
+    if(ni < 0 || ni >= visible.length) return;
+    await reorderProject(id, visible[ni].id);
   }
 });
-async function moveProject(from, to){
+
+async function reorderProject(fromId, targetId){
+  if(!fromId || !targetId || String(fromId) === String(targetId)) return;
   const arr = DATA.projects;
-  const [m] = arr.splice(from,1);
-  arr.splice(to,0,m);
-  try{ await publish('portfolio: reorder'); renderList(); toast('ПОРЯДОК СОХРАНЁН ✓'); }
-  catch(err){ toast('ОШИБКА: '+err.message, true); await fetchFile().catch(()=>{}); renderList(); }
+  const fromGlobalIdx = arr.findIndex(p => String(p.id) === String(fromId));
+  const targetGlobalIdx = arr.findIndex(p => String(p.id) === String(targetId));
+  if(fromGlobalIdx < 0 || targetGlobalIdx < 0) return;
+
+  const [item] = arr.splice(fromGlobalIdx, 1);
+  const newTargetIdx = arr.findIndex(p => String(p.id) === String(targetId));
+  arr.splice(newTargetIdx, 0, item);
+
+  try{ 
+    await publish('portfolio: reorder projects'); 
+    renderList(); 
+    toast('ПОРЯДОК СОХРАНЁН ✓'); 
+  }catch(err){ 
+    console.error('[REORDER] Ошибка сохранения порядка:', err);
+    toast('ОШИБКА: '+err.message, true); 
+    await fetchFile().catch(()=>{}); 
+    renderList(); 
+  }
 }
 
 /* ---------- РЕДАКТОР ПРОЕКТОВ ---------- */
@@ -955,9 +1021,17 @@ $('#btnSave').onclick = async ()=>{
   if(!title){ st.innerHTML = '<span class="err">// НАЗВАНИЕ ОБЯЗАТЕЛЬНО</span>'; return; }
   
   const videoUrl = $('#fVideoUrl').value.trim();
-  if(videoUrl && !detectVideoSource(videoUrl)){ 
-    st.innerHTML = '<span class="err">// ИСПРАВЬТЕ ССЫЛКУ НА ВИДЕО ИЛИ ОЧИСТИТЕ ПОЛЕ</span>'; 
-    return; 
+  if(videoUrl){
+    if(!isValidHttpUrl(videoUrl)){
+      st.innerHTML = '<span class="err">// НЕКОРРЕКТНЫЙ URL ВИДЕО (ТРЕБУЕТСЯ HTTP/HTTPS)</span>';
+      toast('ОШИБКА: Некорректный URL видео', true);
+      return;
+    }
+    if(!detectVideoSource(videoUrl)){ 
+      st.innerHTML = '<span class="err">// ИСПРАВЬТЕ ССЫЛКУ НА ВИДЕО (RUTUBE, VK, YOUTUBE, VIMEO)</span>'; 
+      toast('ОШИБКА: Неподдерживаемый сервис видео', true);
+      return; 
+    }
   }
   
   const videoSrc = $('#fVideoSource').value || detectVideoSource(videoUrl);
@@ -972,27 +1046,49 @@ $('#btnSave').onclick = async ()=>{
         thumbnailUrl = autoThumb;
         cover = autoThumb;
       }
-    }catch(e){}
+    }catch(e){
+      console.warn('[SAVE THUMB] Авто-превью не получено:', e.message);
+    }
   }
   if(!cover && thumbnailUrl){
     cover = thumbnailUrl;
   }
 
+  if(cover && !isValidHttpUrl(cover)){
+    st.innerHTML = '<span class="err">// НЕКОРРЕКТНЫЙ URL ОБЛОЖКИ (ТРЕБУЕТСЯ HTTP/HTTPS)</span>';
+    toast('ОШИБКА: Некорректный URL обложки', true);
+    return;
+  }
+
   const images = [...$('#photos').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
+  for(const u of images){
+    if(!isValidHttpUrl(u)){
+      st.innerHTML = '<span class="err">// НЕКОРРЕКТНЫЙ URL ФОТО: '+esc(u)+'</span>';
+      toast('ОШИБКА: Некорректный URL фото', true);
+      return;
+    }
+  }
+
   const links = [...$('#links').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
+  for(const u of links){
+    if(!isValidHttpUrl(u)){
+      st.innerHTML = '<span class="err">// НЕКОРРЕКТНЫЙ URL МАТЕРИАЛОВ: '+esc(u)+'</span>';
+      toast('ОШИБКА: Некорректный URL ссылки', true);
+      return;
+    }
+  }
   
+  const cat = $('#fCat').value || 'concerts';
   const data = {
     title,
-    category: $('#fCat').value,
+    category: cat,
     cover,
     video_url: videoUrl,
     video_source: videoSrc,
-    thumbnail_url: thumbnailUrl,
-    video: videoUrl, // обратная совместимость
     images,
     links,
-    client: $('#fClient').value.trim(),
-    format: $('#fFormat').value.trim()
+    client: $('#fClient').value.trim() || 'ПРОПЕЛЛЕР',
+    format: $('#fFormat').value.trim() || (CATEGORIES[cat] || cat)
   };
   
   const btn = $('#btnSave');
@@ -1001,6 +1097,10 @@ $('#btnSave').onclick = async ()=>{
   try{
     if(editId){
       const p = DATA.projects.find(x=>String(x.id)===String(editId));
+      if(!p) throw new Error('Проект с id '+editId+' не найден');
+      // Удаляем устаревшие дублирующие поля для чистоты схемы
+      delete p.video;
+      delete p.thumbnail_url;
       Object.assign(p, data);
       await publish('portfolio: edit '+title);
     }else{
@@ -1014,6 +1114,7 @@ $('#btnSave').onclick = async ()=>{
     curCat = data.category;
     renderList(); show('scrList');
   }catch(err){
+    console.error('[PROJECT SAVE] Ошибка публикации:', err);
     st.innerHTML = '<span class="err">// ОШИБКА ПУБЛИКАЦИИ: '+esc(err.message)+'</span>';
     toast('ОШИБКА: '+err.message, true);
   }
@@ -1077,8 +1178,23 @@ $('#btnSaveCollab').onclick = async ()=>{
   st.textContent = '';
   const name = $('#fCollabName').value.trim();
   if(!name){ st.innerHTML = '<span class="err">// ИМЯ ОБЯЗАТЕЛЬНО</span>'; return; }
+  
   const img = $('#fCollabImg').value.trim();
+  if(img && !isValidHttpUrl(img)){
+    st.innerHTML = '<span class="err">// НЕКОРРЕКТНЫЙ URL ФОТО (ТРЕБУЕТСЯ HTTP/HTTPS)</span>';
+    toast('ОШИБКА: Некорректный URL фото', true);
+    return;
+  }
+  
   const links = [...$('#collabLinks').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
+  for(const u of links){
+    if(!isValidHttpUrl(u)){
+      st.innerHTML = '<span class="err">// НЕКОРРЕКТНЫЙ URL ССЫЛКИ: '+esc(u)+'</span>';
+      toast('ОШИБКА: Некорректный URL ссылки', true);
+      return;
+    }
+  }
+
   const data = { name, img, links };
   const btn = $('#btnSaveCollab');
   btn.disabled = true; btn.textContent = 'ПУБЛИКАЦИЯ…';
@@ -1093,6 +1209,7 @@ $('#btnSaveCollab').onclick = async ()=>{
     toast('ОПУБЛИКОВАНО ✓ САЙТ ОБНОВИТСЯ ЗА 1–2 МИН');
     renderDash(); show('scrDash');
   }catch(err){
+    console.error('[COLLAB SAVE] Ошибка публикации:', err);
     st.innerHTML = '<span class="err">// ОШИБКА ПУБЛИКАЦИИ: '+esc(err.message)+'</span>';
     toast('ОШИБКА: '+err.message, true);
   }
@@ -1111,7 +1228,12 @@ $('#btnSaveCollab').onclick = async ()=>{
       renderDash(); show('scrDash');
       return;
     }catch(e){
-      token = ''; localStorage.removeItem('pp_token');
+      console.error('[ADMIN INIT] Ошибка авто-входа:', e);
+      token = ''; 
+      sessionStorage.removeItem('pp_token');
+      sessionStorage.removeItem('pp_cfg');
+      localStorage.removeItem('pp_token');
+      localStorage.removeItem('pp_cfg');
       show('scrLogin');
       let errMsg = e.message || 'Неизвестная ошибка';
       if(errMsg.includes('401')){
