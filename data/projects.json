@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-08T12:36:16.003Z",
+  "updated": "2026-10-08T12:38:08.238Z",
   "projects": [
     {
       "id": "pmuzai7rfu5rc",
@@ -25,19 +25,6 @@
       "links": [],
       "client": "John However",
       "format": "рилсы к основному видео",
-      "added": "2026-09-05"
-    },
-    {
-      "id": "pmtopjig0vy2c",
-      "title": "СК КРЕПОСТЬ",
-      "category": "reels",
-      "cover": "https://i.ytimg.com/vi/rxxuZWrdUqE/maxresdefault.jpg",
-      "video_url": "https://youtube.com/shorts/rxxuZWrdUqE",
-      "video_source": "youtube",
-      "images": [],
-      "links": [],
-      "client": "СК КРЕПОСТЬ",
-      "format": "REELS",
       "added": "2026-09-05"
     },
     {
@@ -70,7 +57,7 @@
       "id": "pmtop78vc9i8q",
       "title": "PLAY GROUND",
       "category": "reels",
-      "cover": "https://img.youtube.com/vi/MQxRgPcWb_k/maxresdefault.jpg",
+      "cover": "https://i.ytimg.com/vi/MQxRgPcWb_k/maxresdefault.jpg",
       "video_url": "https://youtube.com/shorts/MQxRgPcWb_k",
       "video_source": "youtube",
       "images": [],
@@ -181,6 +168,19 @@
       "task": "Клип с характером при ограниченном бюджете.",
       "idea": "Одна локация, дым, лазеры и силуэт. Свет работает вместо декораций.",
       "process": "Раскадровка → съёмочная ночь → монтаж в ритм трека."
+    },
+    {
+      "id": "pmtopjig0vy2c",
+      "title": "СК КРЕПОСТЬ",
+      "category": "reels",
+      "cover": "https://i.ytimg.com/vi/rxxuZWrdUqE/maxresdefault.jpg",
+      "video_url": "https://youtube.com/shorts/rxxuZWrdUqE",
+      "video_source": "youtube",
+      "images": [],
+      "links": [],
+      "client": "СК КРЕПОСТЬ",
+      "format": "REELS",
+      "added": "2026-09-05"
     },
     {
       "id": "d6",
