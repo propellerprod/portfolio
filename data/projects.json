@@ -1,6 +1,19 @@
 {
-  "updated": "2026-10-02T19:18:33.869Z",
+  "updated": "2026-10-08T08:44:02.379Z",
   "projects": [
+    {
+      "id": "pmuzai7rfu5rc",
+      "added": "2026-10-08",
+      "title": "TWINS by Benzo Gang x Daily  Slime",
+      "category": "concerts",
+      "cover": "https://img.youtube.com/vi/OSmWgJstLyY/maxresdefault.jpg",
+      "video_url": "https://youtu.be/OSmWgJstLyY",
+      "video_source": "youtube",
+      "images": [],
+      "links": [],
+      "client": "Benzo Gang x Daily  Slime",
+      "format": "ДИДЖЕЙ СЕТЫ"
+    },
     {
       "id": "pmtosc69ngr7r",
       "title": "John However",
