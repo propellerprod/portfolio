@@ -1,19 +1,6 @@
 {
-  "updated": "2026-10-17T13:16:38.606Z",
+  "updated": "2026-10-20T15:02:29.156Z",
   "projects": [
-    {
-      "id": "pmvcf7gb2vz3z",
-      "added": "2026-10-17",
-      "title": "LILDRUGHILL MIKE",
-      "category": "concerts",
-      "cover": "https://img.youtube.com/vi/or8HCm6XuR0/maxresdefault.jpg",
-      "video_url": "https://youtu.be/or8HCm6XuR0",
-      "video_source": "youtube",
-      "images": [],
-      "links": [],
-      "client": "LILDRUGHILL",
-      "format": "ЗАКРЫТЫЙ ПОКАЗ АЛЬБОМА"
-    },
     {
       "id": "pmuzai7rfu5rc",
       "added": "2026-10-08",
@@ -26,6 +13,19 @@
       "links": [],
       "client": "Benzo Gang x Daily  Slime",
       "format": "ДИДЖЕЙ СЕТЫ"
+    },
+    {
+      "id": "pmvcf7gb2vz3z",
+      "added": "2026-10-17",
+      "title": "LILDRUGHILL MIKE",
+      "category": "concerts",
+      "cover": "https://img.youtube.com/vi/or8HCm6XuR0/maxresdefault.jpg",
+      "video_url": "https://youtu.be/or8HCm6XuR0",
+      "video_source": "youtube",
+      "images": [],
+      "links": [],
+      "client": "LILDRUGHILL",
+      "format": "ЗАКРЫТЫЙ ПОКАЗ АЛЬБОМА"
     },
     {
       "id": "pmtosc69ngr7r",
