@@ -24,22 +24,28 @@ jobs:
 
       - name: Verify HTML & JS Syntax
         run: |
-          node -e '
+          node --input-type=module -e '
           import fs from "node:fs";
-          
- // Check required HTML and validate admin HTML when present
-const files = ["index.html"];
 
-if (fs.existsSync("admin/index.html")) {
-  files.push("admin/index.html");
-}
+          // Validate the main HTML file
+          const files = ["index.html"];
 
-for (const file of files) {
-  const html = fs.readFileSync(file, "utf8");
+          // Validate the admin HTML file only if it exists
+          if (fs.existsSync("admin/index.html")) {
+            files.push("admin/index.html");
+          }
 
-  if (!html.includes("<!DOCTYPE html>")) {
-    throw new Error(`${file} must contain a valid DOCTYPE`);
-  }
-}
+          for (const file of files) {
+            if (!fs.existsSync(file)) {
+              throw new Error(`Required HTML file not found: ${file}`);
+            }
 
-console.log("HTML integrity check passed.");
+            const html = fs.readFileSync(file, "utf8");
+
+            if (!html.includes("<!DOCTYPE html>")) {
+              throw new Error(`${file} must contain a valid DOCTYPE`);
+            }
+          }
+
+          console.log("HTML integrity check passed.");
+          '
