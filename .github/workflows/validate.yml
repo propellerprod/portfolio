@@ -18,6 +18,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Validate JSON Data Schemas
         run: node scripts/validate-data.js
@@ -49,3 +53,9 @@ jobs:
 
           console.log("HTML integrity check passed.");
           '
+
+      - name: Lint & Typecheck
+        run: npm run lint
+
+      - name: Test Production Build
+        run: npm run build

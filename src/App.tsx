@@ -34,7 +34,8 @@ export const App: React.FC = () => {
     const checkAdmin = () => {
       const path = window.location.pathname;
       const hash = window.location.hash;
-      if (path.startsWith('/admin') || hash === '#admin') {
+      const isAdminPath = path.startsWith('/admin') || path.endsWith('/admin') || path.endsWith('/admin/');
+      if (isAdminPath || hash === '#admin') {
         setIsAdminView(true);
       } else {
         setIsAdminView(false);
@@ -50,13 +51,18 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  // Fetch projects and collabs from server
+  // Fetch projects and collabs from server or static data files
   useEffect(() => {
     const fetchData = async () => {
+      const base = import.meta.env.BASE_URL || '/';
+
       // 1. Projects
       try {
-        const res = await fetch('/api/projects');
-        if (res.ok) {
+        let res = await fetch('/api/projects').catch(() => null);
+        if (!res || !res.ok) {
+          res = await fetch(`${base}data/projects.json`).catch(() => null);
+        }
+        if (res && res.ok) {
           const data = await res.json();
           if (data && Array.isArray(data.projects) && data.projects.length) {
             setProjects(data.projects);
@@ -68,8 +74,11 @@ export const App: React.FC = () => {
 
       // 2. Collabs
       try {
-        const res = await fetch('/api/collabs');
-        if (res.ok) {
+        let res = await fetch('/api/collabs').catch(() => null);
+        if (!res || !res.ok) {
+          res = await fetch(`${base}data/collabs.json`).catch(() => null);
+        }
+        if (res && res.ok) {
           const data = await res.json();
           if (data && Array.isArray(data.collabs) && data.collabs.length) {
             setCollabs(data.collabs);
@@ -87,8 +96,10 @@ export const App: React.FC = () => {
   useEffect(() => {
     const checkHash = () => {
       const hash = window.location.hash || '';
+      const path = window.location.pathname;
+      const isAdminPath = path.startsWith('/admin') || path.endsWith('/admin') || path.endsWith('/admin/');
 
-      if (hash === '#admin' || window.location.pathname.startsWith('/admin')) {
+      if (hash === '#admin' || isAdminPath) {
         setIsAdminView(true);
         return;
       }
@@ -155,8 +166,9 @@ export const App: React.FC = () => {
           onClose={() => {
             setIsAdminView(false);
             try {
-              if (window.location.pathname.startsWith('/admin')) {
-                window.history.replaceState(null, '', '/');
+              const base = import.meta.env.BASE_URL || '/';
+              if (window.location.pathname.includes('/admin')) {
+                window.history.replaceState(null, '', base);
               } else if (window.location.hash === '#admin') {
                 window.history.replaceState(null, '', '#concerts');
               }
