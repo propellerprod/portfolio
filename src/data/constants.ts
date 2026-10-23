@@ -10,6 +10,7 @@ export const CATEGORIES: Record<string, string> = {
 
 export const CONTACTS = {
   telegram: 'https://t.me/propunion',
+  telegramChannel: 'https://t.me/propellerTG',
   whatsapp: 'https://wa.me/79102041086',
   vk: 'https://vk.ru/propeller.media',
   instagram: 'https://nethouse.id/propeller-prod',

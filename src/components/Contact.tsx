@@ -31,6 +31,30 @@ export const Contact: React.FC = () => {
           <span className="bw-section-subtitle">СВЯЗАТЬСЯ НАПРЯМУЮ С ПРОДАКШНОМ</span>
         </div>
 
+        {/* Большая плашка: НАШ ТЕЛЕГРАММ КАНАЛ */}
+        <a
+          href={CONTACTS.telegramChannel}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bw-tg-banner"
+          aria-label="Наш телеграмм канал t.me/propellerTG"
+        >
+          <div className="bw-tg-banner-left">
+            <span className="bw-tg-banner-tag">[ ОФИЦИАЛЬНЫЙ ТЕЛЕГРАМ-КАНАЛ ]</span>
+            <h3 className="bw-tg-banner-title">НАШ ТЕЛЕГРАММ КАНАЛ</h3>
+            <p className="bw-tg-banner-desc">
+              Бэкстейджи со съёмок, премьеры, анонсы релизов и закулисье продакшна в реальном времени.
+            </p>
+          </div>
+
+          <div className="bw-tg-banner-right">
+            <span className="bw-tg-banner-handle">t.me/propellerTG</span>
+            <span className="bw-tg-banner-btn">
+              ПОДПИСАТЬСЯ ↗
+            </span>
+          </div>
+        </a>
+
         <div className="bw-contact-grid">
           {contactChannels.map((item, idx) => (
             <a
