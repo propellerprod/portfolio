@@ -28,18 +28,18 @@ jobs:
           import fs from "node:fs";
           
  // Check required HTML and validate admin HTML when present
- const files = ["index.html"];
+const files = ["index.html"];
 
- if (fs.existsSync("admin/index.html")) {
-   files.push("admin/index.html");
- }
+if (fs.existsSync("admin/index.html")) {
+  files.push("admin/index.html");
+}
 
- for (const file of files) {
-   const html = fs.readFileSync(file, "utf8");
+for (const file of files) {
+  const html = fs.readFileSync(file, "utf8");
 
-   if (!html.includes("<!DOCTYPE html>")) {
-     throw new Error(`${file} must contain a valid DOCTYPE`);
-   }
- }
+  if (!html.includes("<!DOCTYPE html>")) {
+    throw new Error(`${file} must contain a valid DOCTYPE`);
+  }
+}
 
- console.log("HTML integrity check passed.");
+console.log("HTML integrity check passed.");
