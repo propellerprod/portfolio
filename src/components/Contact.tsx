@@ -10,18 +10,6 @@ export const Contact: React.FC = () => {
       href: CONTACTS.telegram,
     },
     {
-      label: 'WHATSAPP',
-      value: '+7 (910) 204-10-86',
-      note: 'ЧАТ И ВИДЕОЗВОНКИ',
-      href: CONTACTS.whatsapp,
-    },
-    {
-      label: 'VKONTAKTE',
-      value: 'vk.ru/propeller.media',
-      note: 'ОФИЦИАЛЬНОЕ СООБЩЕСТВО',
-      href: CONTACTS.vk,
-    },
-    {
       label: 'INSTAGRAM',
       value: 'НАШИ ПРОФИЛИ',
       note: 'БЭКСТЕЙДЖ И СТОРИС',
@@ -30,14 +18,8 @@ export const Contact: React.FC = () => {
     {
       label: 'EMAIL',
       value: 'BTDSTREAM@GMAIL.COM',
-      note: 'КП И СЦЕНАРИИ',
+      note: 'КП, СЦЕНАРИИ И СОТРУДНИЧЕСТВО',
       href: CONTACTS.email,
-    },
-    {
-      label: 'ТЕЛЕФОН',
-      value: '+7 (910) 204-10-86',
-      note: 'МОСКВА × ОРЁЛ',
-      href: CONTACTS.phone,
     },
   ];
 

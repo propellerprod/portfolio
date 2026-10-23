@@ -19,19 +19,19 @@ export function toEmbed(url?: string): string {
   const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,15})/i);
   if (ytMatch && ytMatch[1]) {
     const id = ytMatch[1];
-    return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&controls=1&playsinline=1`;
+    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&controls=1&playsinline=1&enablejsapi=1`;
   }
 
   // Rutube
   const rtMatch = url.match(/rutube\.ru\/(?:video\/private|video|play\/embed|shorts|pl|videos)\/([a-zA-Z0-9]{16,40})/i);
   if (rtMatch && rtMatch[1]) {
-    return `https://rutube.ru/play/embed/${rtMatch[1]}/`;
+    return `https://rutube.ru/play/embed/${rtMatch[1]}/?autoplay=1&playsinline=1`;
   }
 
   // Vimeo
   const vimMatch = url.match(/vimeo\.com\/(?:video\/)?(\d{5,12})/i);
   if (vimMatch && vimMatch[1]) {
-    return `https://player.vimeo.com/video/${vimMatch[1]}`;
+    return `https://player.vimeo.com/video/${vimMatch[1]}?autoplay=1&playsinline=1`;
   }
 
   // VK Video & VK Clips
@@ -39,7 +39,7 @@ export function toEmbed(url?: string): string {
                   url.match(/(?:vk\.com|vkvideo\.ru|vk\.ru)\/video_ext\.php\?(?:.*&)?oid=(-?\d+)(?:.*&)?id=(\d+)/i) ||
                   url.match(/[?&]z=(?:video|clip)(-?\d+)_(\d+)/i);
   if (vkMatch && vkMatch[1] && vkMatch[2]) {
-    return `https://vk.com/video_ext.php?oid=${vkMatch[1]}&id=${vkMatch[2]}&hd=2`;
+    return `https://vk.com/video_ext.php?oid=${vkMatch[1]}&id=${vkMatch[2]}&autoplay=1&hd=2`;
   }
 
   return '';
@@ -49,23 +49,23 @@ export function toMutedLoopEmbed(url?: string): string {
   if (!url) return '';
   url = url.trim();
 
-  // YouTube - strictly hide controls, info, branding, loop silently
+  // YouTube - instant autoplay, muted loop, playsinline, enablejsapi
   const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,15})/i);
   if (ytMatch && ytMatch[1]) {
     const id = ytMatch[1];
-    return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&disablekb=1&fs=0`;
+    return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&disablekb=1&fs=0&enablejsapi=1`;
   }
 
   // Rutube
   const rtMatch = url.match(/rutube\.ru\/(?:video\/private|video|play\/embed|shorts|pl|videos)\/([a-zA-Z0-9]{16,40})/i);
   if (rtMatch && rtMatch[1]) {
-    return `https://rutube.ru/play/embed/${rtMatch[1]}/?autoplay=1&mute=1&controls=0&loop=1`;
+    return `https://rutube.ru/play/embed/${rtMatch[1]}/?autoplay=1&mute=1&controls=0&loop=1&playsinline=1`;
   }
 
   // Vimeo
   const vimMatch = url.match(/vimeo\.com\/(?:video\/)?(\d{5,12})/i);
   if (vimMatch && vimMatch[1]) {
-    return `https://player.vimeo.com/video/${vimMatch[1]}?autoplay=1&muted=1&loop=1&background=1&autopause=0`;
+    return `https://player.vimeo.com/video/${vimMatch[1]}?autoplay=1&muted=1&loop=1&background=1&autopause=0&playsinline=1`;
   }
 
   // VK Video & VK Clips

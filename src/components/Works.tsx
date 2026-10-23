@@ -86,6 +86,12 @@ export const Works: React.FC<WorksProps> = ({
                           muted
                           playsInline
                           preload="auto"
+                          ref={(el) => {
+                            if (el) {
+                              el.muted = true;
+                              el.play().catch(() => {});
+                            }
+                          }}
                         >
                           <source src={directVideoSrc} type="video/mp4" />
                         </video>
@@ -94,13 +100,16 @@ export const Works: React.FC<WorksProps> = ({
                           <iframe
                             src={mutedEmbedUrl}
                             title={p.title}
-                            loading="lazy"
-                            allow="autoplay; encrypted-media; picture-in-picture"
+                            loading={idx < 8 ? 'eager' : 'lazy'}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             tabIndex={-1}
                             aria-hidden="true"
                           />
                         </div>
                       ) : null}
+
+                      {/* Delicate edge blend layer: softly blurs the perimeter transition into ambient light */}
+                      <div className="bw-video-edge-blend" aria-hidden="true" />
 
                       {/* Subtle Minimal Index */}
                       <span className="bw-badge-overlay">{indexStr}</span>

@@ -132,6 +132,9 @@ export const CaseModal: React.FC<CaseModalProps> = ({
                 }}
               />
             )}
+
+            {/* Subtle soft edge blend to blur the boundary into the ambient backlight */}
+            <div className="bw-popup-edge-blend" aria-hidden="true" />
           </div>
         </div>
 
