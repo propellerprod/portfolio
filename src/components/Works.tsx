@@ -54,54 +54,60 @@ export const Works: React.FC<WorksProps> = ({
                   }}
                   aria-label={`${p.title} — ${p.client || 'Пропеллер Union'}`}
                 >
-                  {/* 16:9 Video Box with Soft Feathered Blurred Edges & Direct Muted Autoplay */}
-                  <div className="bw-video-wrapper">
-                    {/* Fallback poster while video initializes */}
-                    <img
-                      className="bw-video-poster"
-                      src={cover}
-                      alt=""
+                  {/* 16:9 Video Box with Dynamic Ambient Light in video color */}
+                  <div className="bw-video-container">
+                    {/* Dynamic Ambient Glow Layer in video frame color */}
+                    <div
+                      className="bw-video-ambient"
+                      style={{ backgroundImage: `url(${cover})` }}
                       aria-hidden="true"
-                      loading={idx < 6 ? 'eager' : 'lazy'}
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = BACKSTAGE_DEFAULT_IMG;
-                      }}
                     />
 
-                    {/* Direct Autoplaying Muted Video Loop */}
-                    {directVideoSrc ? (
-                      <video
-                        className="bw-video-element"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        preload="auto"
-                      >
-                        <source src={directVideoSrc} type="video/mp4" />
-                      </video>
-                    ) : mutedEmbedUrl ? (
-                      <div className="bw-iframe-wrap">
-                        <iframe
-                          src={mutedEmbedUrl}
-                          title={p.title}
-                          loading="lazy"
-                          allow="autoplay; encrypted-media; picture-in-picture"
-                          tabIndex={-1}
-                          aria-hidden="true"
-                        />
-                      </div>
-                    ) : null}
+                    <div className="bw-video-wrapper">
+                      {/* Fallback poster while video initializes */}
+                      <img
+                        className="bw-video-poster"
+                        src={cover}
+                        alt=""
+                        aria-hidden="true"
+                        loading={idx < 6 ? 'eager' : 'lazy'}
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = BACKSTAGE_DEFAULT_IMG;
+                        }}
+                      />
 
-                    {/* Soft Edge Blur Overlay: dissolves hard borders into pure black */}
-                    <div className="bw-video-edge-blur" aria-hidden="true" />
+                      {/* Direct Autoplaying Muted Video Loop */}
+                      {directVideoSrc ? (
+                        <video
+                          className="bw-video-element"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          preload="auto"
+                        >
+                          <source src={directVideoSrc} type="video/mp4" />
+                        </video>
+                      ) : mutedEmbedUrl ? (
+                        <div className="bw-iframe-wrap">
+                          <iframe
+                            src={mutedEmbedUrl}
+                            title={p.title}
+                            loading="lazy"
+                            allow="autoplay; encrypted-media; picture-in-picture"
+                            tabIndex={-1}
+                            aria-hidden="true"
+                          />
+                        </div>
+                      ) : null}
 
-                    {/* Subtle Minimal Index */}
-                    <span className="bw-badge-overlay">{indexStr}</span>
+                      {/* Subtle Minimal Index */}
+                      <span className="bw-badge-overlay">{indexStr}</span>
 
-                    {/* Click capture layer to ensure modal opens cleanly */}
-                    <div className="bw-click-capture" />
+                      {/* Click capture layer to ensure modal opens cleanly */}
+                      <div className="bw-click-capture" />
+                    </div>
                   </div>
 
                   {/* Title: uppercase bold white */}

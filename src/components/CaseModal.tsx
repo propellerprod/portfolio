@@ -103,27 +103,36 @@ export const CaseModal: React.FC<CaseModalProps> = ({
       </div>
 
       <div className="bw-popup-container">
-        {/* Video Player Box with YouTube Interface Concealed */}
-        <div className={`bw-popup-player-wrap ${vertical ? 'vertical' : ''}`}>
-          {embed ? (
-            <iframe
-              src={embed.includes('?') ? `${embed}&autoplay=1` : `${embed}?autoplay=1`}
-              title={project.title}
-              loading="eager"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          ) : (
-            <img
-              src={cover}
-              alt={project.title}
-              className="bw-popup-poster-fallback"
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = BACKSTAGE_DEFAULT_IMG;
-              }}
-            />
-          )}
+        {/* Video Player Box with Ambient Light and Edge-to-Edge Frame */}
+        <div className="bw-popup-player-container">
+          {/* Dynamic Ambient Glow Layer in video frame color */}
+          <div
+            className="bw-popup-ambient"
+            style={{ backgroundImage: `url(${cover})` }}
+            aria-hidden="true"
+          />
+
+          <div className={`bw-popup-player-wrap ${vertical ? 'vertical' : ''}`}>
+            {embed ? (
+              <iframe
+                src={embed.includes('?') ? `${embed}&autoplay=1` : `${embed}?autoplay=1`}
+                title={project.title}
+                loading="eager"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            ) : (
+              <img
+                src={cover}
+                alt={project.title}
+                className="bw-popup-poster-fallback"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = BACKSTAGE_DEFAULT_IMG;
+                }}
+              />
+            )}
+          </div>
         </div>
 
         {/* Project Meta Bar under video */}
