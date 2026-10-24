@@ -19,11 +19,22 @@ export const CaseModal: React.FC<CaseModalProps> = ({
   onOpenPhoto,
   onContactClick,
 }) => {
+  const touchStartX = React.useRef<number | null>(null);
+  const touchStartY = React.useRef<number | null>(null);
+
   useEffect(() => {
     if (!project) return;
 
-    // Prevent background scrolling while modal is open
+    // Robust scroll locking for mobile iOS & desktop
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalWidth = document.body.style.width;
+    const scrollY = window.scrollY;
+
     document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -37,7 +48,11 @@ export const CaseModal: React.FC<CaseModalProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.width = originalWidth;
+      document.body.style.top = '';
+      window.scrollTo(0, scrollY);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [project, projectsList]);
@@ -68,6 +83,28 @@ export const CaseModal: React.FC<CaseModalProps> = ({
     onSelectProject(projectsList[nextIdx]);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    touchStartX.current = null;
+    touchStartY.current = null;
+
+    // Trigger next/prev on horizontal swipe if horizontal movement exceeds vertical
+    if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      if (deltaX < 0) {
+        navigate(1);
+      } else {
+        navigate(-1);
+      }
+    }
+  };
+
   return (
     <div
       className="bw-popup-overlay"
@@ -77,8 +114,10 @@ export const CaseModal: React.FC<CaseModalProps> = ({
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
-      {/* 23px Close Button SVG (Pure White) */}
+      {/* Accessible, Easy-to-Tap Close Button (Pure White on translucent backdrop) */}
       <div className="bw-popup-close-box">
         <button
           type="button"
@@ -87,28 +126,18 @@ export const CaseModal: React.FC<CaseModalProps> = ({
           aria-label="Закрыть окно"
         >
           <svg
-            width="23px"
-            height="23px"
-            viewBox="0 0 23 23"
-            version="1.1"
-            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
           >
-            <g stroke="none" strokeWidth="1" fill="#ffffff" fillRule="evenodd">
-              <rect
-                transform="translate(11.313708, 11.313708) rotate(-45.000000) translate(-11.313708, -11.313708)"
-                x="10.3137085"
-                y="-3.6862915"
-                width="2"
-                height="30"
-              />
-              <rect
-                transform="translate(11.313708, 11.313708) rotate(-315.000000) translate(-11.313708, -11.313708)"
-                x="10.3137085"
-                y="-3.6862915"
-                width="2"
-                height="30"
-              />
-            </g>
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       </div>

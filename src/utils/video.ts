@@ -83,15 +83,28 @@ export function isShorts(p?: Project | null): boolean {
   if (!p) return false;
   if (p.category === 'reels') return true;
   const f = (p.format || '').toUpperCase();
-  if (f.includes('REELS') || f.includes('SHORTS') || f.includes('TIKTOK') || f.includes('ВЕРТИКАЛ') || f.includes('КЛИП')) {
+  if (
+    f.includes('REELS') ||
+    f.includes('SHORTS') ||
+    f.includes('TIKTOK') ||
+    f.includes('ВЕРТИКАЛ') ||
+    f.includes('ВК КЛИП') ||
+    f.includes('VK КЛИП')
+  ) {
     return true;
   }
   const v = (p.video_url || p.video || '').toLowerCase();
-  if (v.includes('/shorts') || v.includes('/clip') || v.includes('clip-') || v.includes('tiktok.com')) {
+  if (
+    v.includes('/shorts/') ||
+    v.includes('tiktok.com') ||
+    v.includes('vk.com/clip-') ||
+    v.includes('vk.com/clips/') ||
+    v.includes('vkvideo.ru/clip-')
+  ) {
     return true;
   }
   const t = (p.title || '').toUpperCase();
-  if (t.includes('REELS') || t.includes('SHORTS')) {
+  if (t.includes('REELS') || t.includes('SHORTS') || t.includes('TIKTOK')) {
     return true;
   }
   return false;
