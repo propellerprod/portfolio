@@ -45,11 +45,22 @@ export const CaseModal: React.FC<CaseModalProps> = ({
   if (!project) return null;
 
   const currentIndex = projectsList.findIndex((p) => p.id === project.id);
-  const embed = toEmbed(project.video_url || project.video);
+  const rawVideoUrl = (project.video_url || project.video || '').trim();
+  const embed = toEmbed(rawVideoUrl);
   const vertical = isShorts(project);
   const cover = getCover(project);
   const photos = (project.images || []).filter(Boolean);
   const links = (project.links || []).filter(Boolean);
+
+  // Check if project has direct video file
+  const directVideoSrc = (project.video_source === 'direct' && project.video_url)
+    ? project.video_url
+    : (project as any).video_preview || (!embed && rawVideoUrl.match(/\.(mp4|webm|mov)(\?|$)/i) ? rawVideoUrl : null);
+
+  // Clean embed URL ensuring autoplay=1
+  const finalEmbedSrc = embed
+    ? (embed.includes('autoplay=') ? embed : (embed.includes('?') ? `${embed}&autoplay=1` : `${embed}?autoplay=1`))
+    : '';
 
   const navigate = (direction: number) => {
     if (projectsList.length <= 1) return;
@@ -105,7 +116,7 @@ export const CaseModal: React.FC<CaseModalProps> = ({
       <div className="bw-popup-container">
         {/* Video Player Box with Ambient Light and Edge-to-Edge Frame */}
         <div className="bw-popup-player-container">
-          {/* Dynamic Ambient Glow Layer in video frame color */}
+          {/* Dynamic Monochrome Ambient Glow Layer in video frame color */}
           <div
             className="bw-popup-ambient"
             style={{ backgroundImage: `url(${cover})` }}
@@ -113,13 +124,21 @@ export const CaseModal: React.FC<CaseModalProps> = ({
           />
 
           <div className={`bw-popup-player-wrap ${vertical ? 'vertical' : ''}`}>
-            {embed ? (
+            {finalEmbedSrc ? (
               <iframe
-                src={embed.includes('?') ? `${embed}&autoplay=1` : `${embed}?autoplay=1`}
+                src={finalEmbedSrc}
                 title={project.title}
                 loading="eager"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                 allowFullScreen
+              />
+            ) : directVideoSrc ? (
+              <video
+                src={directVideoSrc}
+                controls
+                autoPlay
+                playsInline
+                className="bw-popup-video-element"
               />
             ) : (
               <img
@@ -132,9 +151,6 @@ export const CaseModal: React.FC<CaseModalProps> = ({
                 }}
               />
             )}
-
-            {/* Subtle soft edge blend to blur the boundary into the ambient backlight */}
-            <div className="bw-popup-edge-blend" aria-hidden="true" />
           </div>
         </div>
 
@@ -161,6 +177,17 @@ export const CaseModal: React.FC<CaseModalProps> = ({
 
           {/* Controls */}
           <div className="bw-popup-controls">
+            {rawVideoUrl && (
+              <a
+                href={rawVideoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bw-popup-watch-link"
+                title="Смотреть оригинал видео"
+              >
+                СМОТРЕТЬ ↗
+              </a>
+            )}
             {projectsList.length > 1 && (
               <div className="bw-popup-arrows">
                 <button

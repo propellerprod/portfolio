@@ -16,8 +16,8 @@ export const App: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
   
-  // Default main screen category is 'concerts' as requested!
-  const [activeCategory, setActiveCategory] = useState<string>('concerts');
+  // Default main screen category is 'all' sorted by relevance (концерты -> блогеры -> клипы -> рилсы)
+  const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isAdminView, setIsAdminView] = useState<boolean>(false);
   const [pageTransitionHidden, setPageTransitionHidden] = useState<boolean>(false);
 

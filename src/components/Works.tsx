@@ -14,9 +14,25 @@ export const Works: React.FC<WorksProps> = ({
   activeCategory,
   onSelectProject,
 }) => {
-  // Filter projects by active category (or show all)
+  // Priority ordering when 'all' is selected:
+  // 1. Концерты (concerts)
+  // 2. Блогеры (commercials)
+  // 3. Клипы (clips)
+  // 4. Reels (reels)
+  const CATEGORY_RELEVANCE: Record<string, number> = {
+    concerts: 1,
+    commercials: 2,
+    clips: 3,
+    reels: 4,
+  };
+
+  // Filter projects by active category or sort by relevance for 'all'
   const filteredProjects = activeCategory === 'all'
-    ? projects
+    ? [...projects].sort((a, b) => {
+        const rankA = CATEGORY_RELEVANCE[a.category] ?? 99;
+        const rankB = CATEGORY_RELEVANCE[b.category] ?? 99;
+        return rankA - rankB;
+      })
     : projects.filter((p) => p.category === activeCategory);
 
   return (
@@ -55,7 +71,10 @@ export const Works: React.FC<WorksProps> = ({
                   aria-label={`${p.title} — ${p.client || 'Пропеллер Union'}`}
                 >
                   {/* 16:9 Video Box with Dynamic Ambient Light in video color */}
-                  <div className="bw-video-container">
+                  <div
+                    className="bw-video-container"
+                    onClick={() => onSelectProject(p)}
+                  >
                     {/* Dynamic Ambient Glow Layer in video frame color */}
                     <div
                       className="bw-video-ambient"
@@ -115,12 +134,23 @@ export const Works: React.FC<WorksProps> = ({
                       <span className="bw-badge-overlay">{indexStr}</span>
 
                       {/* Click capture layer to ensure modal opens cleanly */}
-                      <div className="bw-click-capture" />
+                      <div
+                        className="bw-click-capture"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectProject(p);
+                        }}
+                      />
                     </div>
                   </div>
 
                   {/* Title: uppercase bold white */}
-                  <h3 className="bw-card-title">{p.title}</h3>
+                  <h3
+                    className="bw-card-title"
+                    onClick={() => onSelectProject(p)}
+                  >
+                    {p.title}
+                  </h3>
 
                   {/* Subtitle / Artist / Client: uppercase muted gray */}
                   <div className="bw-card-subtitle">

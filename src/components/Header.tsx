@@ -13,19 +13,19 @@ export const Header: React.FC<HeaderProps> = ({
   onContactClick,
   onCollabsClick,
 }) => {
-  // Requested category tab order: Концерты -> Клипы -> Блогеры -> Reels -> Все
+  // Tab order: Все -> Концерты -> Блогеры -> Клипы -> Reels
   const categories = [
-    { key: 'concerts', label: 'КОНЦЕРТЫ' },
-    { key: 'clips', label: 'КЛИПЫ' },
-    { key: 'commercials', label: 'БЛОГЕРЫ' },
-    { key: 'reels', label: 'REELS' },
     { key: 'all', label: 'ВСЕ' },
+    { key: 'concerts', label: 'КОНЦЕРТЫ' },
+    { key: 'commercials', label: 'БЛОГЕРЫ' },
+    { key: 'clips', label: 'КЛИПЫ' },
+    { key: 'reels', label: 'REELS' },
   ];
 
   const handleHomeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    onSelectCategory('concerts');
+    onSelectCategory('all');
   };
 
   return (

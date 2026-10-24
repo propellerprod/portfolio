@@ -31,21 +31,21 @@ export const Footer: React.FC<FooterProps> = ({
               type="button"
               className="bw-footer-btn"
               onClick={() => {
-                onSelectCategory('concerts');
+                onSelectCategory('all');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              КОНЦЕРТЫ
+              ВСЕ
             </button>
             <button
               type="button"
               className="bw-footer-btn"
               onClick={() => {
-                onSelectCategory('clips');
+                onSelectCategory('concerts');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              КЛИПЫ
+              КОНЦЕРТЫ
             </button>
             <button
               type="button"
@@ -61,21 +61,21 @@ export const Footer: React.FC<FooterProps> = ({
               type="button"
               className="bw-footer-btn"
               onClick={() => {
-                onSelectCategory('reels');
+                onSelectCategory('clips');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              REELS
+              КЛИПЫ
             </button>
             <button
               type="button"
               className="bw-footer-btn"
               onClick={() => {
-                onSelectCategory('all');
+                onSelectCategory('reels');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              ВСЕ РАБОТЫ
+              REELS
             </button>
             <button
               type="button"

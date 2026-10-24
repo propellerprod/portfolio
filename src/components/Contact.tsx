@@ -41,7 +41,7 @@ export const Contact: React.FC = () => {
         >
           <div className="bw-tg-banner-left">
             <span className="bw-tg-banner-tag">[ ОФИЦИАЛЬНЫЙ ТЕЛЕГРАМ-КАНАЛ ]</span>
-            <h3 className="bw-tg-banner-title">НАШ ТЕЛЕГРАММ КАНАЛ</h3>
+            <h3 className="bw-tg-banner-title">НАШ ТЕЛЕГРАМ КАНАЛ</h3>
             <p className="bw-tg-banner-desc">
               Бэкстейджи со съёмок, премьеры, анонсы релизов и закулисье продакшна в реальном времени.
             </p>

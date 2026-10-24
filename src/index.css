@@ -83,14 +83,14 @@ button {
   opacity: 0;
 }
 
-/* Container */
+/* Container — Generous and expansive layout on desktop */
 .bw-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1680px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: clamp(20px, 3.5vw, 56px);
+  padding-right: clamp(20px, 3.5vw, 56px);
 }
 
 /* ==========================================================================
@@ -109,7 +109,7 @@ button {
 }
 
 .bw-header-main {
-  height: 58px;
+  height: clamp(56px, 4.5vw, 68px);
   display: flex;
   align-items: center;
 }
@@ -123,7 +123,7 @@ button {
 .bw-brand-title {
   margin: 0;
   color: var(--text-pure);
-  font-size: 20px;
+  font-size: clamp(20px, 1.8vw, 26px);
   font-weight: 700;
   letter-spacing: -0.4px;
   text-transform: uppercase;
@@ -143,7 +143,7 @@ button {
 /* Subnav with Tabs: Концерты -> Клипы -> Блогеры -> Reels -> Все */
 .bw-subnav {
   border-top: 1px solid var(--line-subtle);
-  padding: 10px 0 12px;
+  padding: clamp(10px, 1vw, 14px) 0;
 }
 
 .bw-subnav-inner {
@@ -157,21 +157,21 @@ button {
 .bw-categories-track {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: clamp(18px, 1.8vw, 30px);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .bw-cat-btn {
-  font-size: 11px;
+  font-size: clamp(12px, 0.85vw, 14px);
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
   transition: color 0.2s ease;
   white-space: nowrap;
   position: relative;
-  padding: 4px 0;
+  padding: 6px 0;
 }
 
 .bw-cat-btn:hover {
@@ -195,13 +195,13 @@ button {
 .bw-nav-secondary-links {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: clamp(16px, 1.6vw, 24px);
 }
 
 .bw-sec-link {
-  font-size: 11px;
+  font-size: clamp(12px, 0.85vw, 14px);
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
   transition: color 0.2s ease;
@@ -234,8 +234,8 @@ button {
    Works Grid Section & Soft-Edge Video Previews
    ========================================================================== */
 .bw-works-section {
-  padding-top: 130px;
-  padding-bottom: 70px;
+  padding-top: clamp(130px, 9vw, 160px);
+  padding-bottom: clamp(60px, 5vw, 90px);
   min-height: 80vh;
 }
 
@@ -248,15 +248,23 @@ button {
 .bw-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  column-gap: 24px;
-  row-gap: 44px;
+  column-gap: clamp(24px, 2.2vw, 42px);
+  row-gap: clamp(44px, 3.8vw, 68px);
 }
 
-@media screen and (max-width: 959px) {
+@media screen and (min-width: 768px) and (max-width: 1079px) {
+  .bw-grid {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 24px;
+    row-gap: 40px;
+  }
+}
+
+@media screen and (max-width: 767px) {
   .bw-grid {
     grid-template-columns: 1fr;
-    row-gap: 36px;
-    max-width: 620px;
+    row-gap: 34px;
+    max-width: 600px;
     margin-left: auto;
     margin-right: auto;
   }
@@ -413,10 +421,10 @@ button {
 
 /* Card Titles: Monochrome Clean */
 .bw-card-title {
-  font-size: 14px;
+  font-size: clamp(14px, 1.05vw, 18px);
   font-weight: 700;
   line-height: 1.25;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.3px;
   text-transform: uppercase;
   color: var(--text-pure);
   margin-top: 12px;
@@ -429,10 +437,10 @@ button {
 }
 
 .bw-card-subtitle {
-  font-size: 10px;
+  font-size: clamp(11px, 0.8vw, 13px);
   font-weight: 700;
   line-height: 1.25;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
   text-transform: uppercase;
   color: var(--text-muted);
   margin-top: 4px;
@@ -520,11 +528,12 @@ button {
 
 .bw-popup-container {
   width: 100%;
-  max-width: 960px;
+  max-width: 1360px;
+  width: min(1360px, 94vw);
   margin: auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 /* Modal Player Container with Dynamic Ambient Glow */
@@ -535,20 +544,20 @@ button {
 
 .bw-popup-ambient {
   position: absolute;
-  inset: -20px -20px -30px -20px;
+  inset: -24px -24px -36px -24px;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 20px;
+  border-radius: 24px;
   /* Strictly monochrome black & white ambient aura */
-  filter: grayscale(100%) blur(48px) brightness(0.8) contrast(1.25);
+  filter: grayscale(100%) blur(52px) brightness(0.85) contrast(1.25);
   opacity: 0.65;
   z-index: 0;
   pointer-events: none;
   transform: scale(1.03);
 }
 
-/* Video Player Box with Soft 5px Edge Blur into Ambient Glow */
+/* Video Player Box with Full View of Player Controls */
 .bw-popup-player-wrap {
   position: relative;
   width: 100%;
@@ -556,44 +565,38 @@ button {
   background-color: #000000;
   border-radius: var(--radius-card);
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.98);
   border: 1px solid var(--line-subtle);
   z-index: 1;
-  mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 5px, rgba(0,0,0,1) calc(100% - 5px), rgba(0,0,0,0) 100%),
-              linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 5px, rgba(0,0,0,1) calc(100% - 5px), rgba(0,0,0,0) 100%);
-  mask-composite: intersect;
-  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 5px, rgba(0,0,0,1) calc(100% - 5px), rgba(0,0,0,0) 100%),
-                      linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 5px, rgba(0,0,0,1) calc(100% - 5px), rgba(0,0,0,0) 100%);
-  -webkit-mask-composite: source-in;
-}
-
-.bw-popup-edge-blend {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 5;
-  border-radius: var(--radius-card);
-  box-shadow: inset 0 0 16px 2px rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .bw-popup-player-wrap.vertical {
-  max-width: 440px;
+  max-width: 480px;
   margin-left: auto;
   margin-right: auto;
   aspect-ratio: 9/16;
 }
 
-/* Scale iframe slightly so the YouTube header / avatar / share bar are clipped out */
+/* Unclipped iframe so all controls (play/pause, timeline scrubber, volume, fullscreen) are fully visible & clickable */
 .bw-popup-player-wrap iframe {
   position: absolute;
-  top: -8%;
-  left: -2%;
-  width: 104%;
-  height: 116%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   border: 0;
-  transform: scale(1.02);
-  transform-origin: center center;
+  z-index: 2;
+}
+
+.bw-popup-video-element {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000000;
+  z-index: 2;
 }
 
 .bw-popup-poster-fallback {
@@ -663,6 +666,29 @@ button {
   color: #ffffff;
   border-color: var(--line-medium);
   background: #1c1c1c;
+}
+
+.bw-popup-watch-link {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--line-medium);
+  padding: 8px 14px;
+  border-radius: var(--radius-card);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.bw-popup-watch-link:hover {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  border-color: #ffffff;
 }
 
 .bw-popup-contact-btn {
