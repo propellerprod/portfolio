@@ -92,7 +92,13 @@ export const App: React.FC = () => {
     fetchData();
   }, []);
 
-  // Handle URL hash changes
+  const projectsRef = React.useRef(projects);
+  projectsRef.current = projects;
+
+  const selectedProjectRef = React.useRef(selectedProject);
+  selectedProjectRef.current = selectedProject;
+
+  // Handle URL hash and popstate changes without closing newly opened projects
   useEffect(() => {
     const checkHash = () => {
       const hash = window.location.hash || '';
@@ -106,22 +112,50 @@ export const App: React.FC = () => {
 
       if (hash.startsWith('#project-')) {
         const targetId = decodeURIComponent(hash.slice(9));
-        const found = projects.find((p) => p.id === targetId);
+        const found = projectsRef.current.find((p) => p.id === targetId);
         if (found) {
           setSelectedProject(found);
         }
-      } else if (['#concerts', '#clips', '#commercials', '#reels', '#all'].includes(hash)) {
-        const cat = hash.slice(1);
-        setActiveCategory(cat);
-      } else if (!hash.startsWith('#project-') && selectedProject) {
-        setSelectedProject(null);
+      } else {
+        // If hash changed to something other than #project-, close modal if open
+        if (selectedProjectRef.current) {
+          setSelectedProject(null);
+        }
+        if (['#concerts', '#clips', '#commercials', '#reels', '#all'].includes(hash)) {
+          setActiveCategory(hash.slice(1));
+        }
       }
     };
 
     checkHash();
     window.addEventListener('hashchange', checkHash);
-    return () => window.removeEventListener('hashchange', checkHash);
-  }, [projects, selectedProject]);
+    window.addEventListener('popstate', checkHash);
+    return () => {
+      window.removeEventListener('hashchange', checkHash);
+      window.removeEventListener('popstate', checkHash);
+    };
+  }, []);
+
+  // When projects load asynchronously, check if the current hash requests a project
+  useEffect(() => {
+    const hash = window.location.hash || '';
+    if (!selectedProject && hash.startsWith('#project-')) {
+      const targetId = decodeURIComponent(hash.slice(9));
+      const found = projects.find((p) => p.id === targetId);
+      if (found) {
+        setSelectedProject(found);
+      }
+    }
+  }, [projects]);
+
+  const handleSelectProject = (project: Project) => {
+    setSelectedProject(project);
+    try {
+      window.history.pushState(null, '', `#project-${encodeURIComponent(project.id)}`);
+    } catch {
+      // Ignored
+    }
+  };
 
   const handleSelectCategory = (catKey: string) => {
     setActiveCategory(catKey);
@@ -138,14 +172,15 @@ export const App: React.FC = () => {
   };
 
   const handleCloseCase = () => {
+    setSelectedProject(null);
     if (window.location.hash.startsWith('#project-')) {
       try {
-        window.history.replaceState(null, '', `#${activeCategory}`);
+        const fallbackHash = activeCategory === 'all' ? '#' : `#${activeCategory}`;
+        window.history.replaceState(null, '', fallbackHash);
       } catch {
         // Ignored
       }
     }
-    setSelectedProject(null);
   };
 
   const CATEGORY_RELEVANCE: Record<string, number> = {
@@ -208,7 +243,7 @@ export const App: React.FC = () => {
               projects={activeProjects}
               activeCategory={activeCategory}
               onSelectCategory={handleSelectCategory}
-              onSelectProject={(p) => setSelectedProject(p)}
+              onSelectProject={handleSelectProject}
             />
 
             {/* Collaborations Section */}
@@ -233,7 +268,7 @@ export const App: React.FC = () => {
           project={selectedProject}
           projectsList={activeProjects}
           onClose={handleCloseCase}
-          onSelectProject={(p) => setSelectedProject(p)}
+          onSelectProject={handleSelectProject}
           onOpenPhoto={(url) => setLightboxImg(url)}
           onContactClick={() => {
             handleCloseCase();
