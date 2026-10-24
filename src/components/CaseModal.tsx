@@ -135,6 +135,7 @@ export const CaseModal: React.FC<CaseModalProps> = ({
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
+            style={{ pointerEvents: 'none' }}
           >
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
@@ -142,7 +143,7 @@ export const CaseModal: React.FC<CaseModalProps> = ({
         </button>
       </div>
 
-      <div className="bw-popup-container">
+      <div className="bw-popup-container" onClick={(e) => e.stopPropagation()}>
         {/* Video Player Box with Ambient Light and Edge-to-Edge Frame */}
         <div className="bw-popup-player-container">
           {/* Dynamic Monochrome Ambient Glow Layer in video frame color */}
@@ -167,6 +168,7 @@ export const CaseModal: React.FC<CaseModalProps> = ({
                 controls
                 autoPlay
                 playsInline
+                preload="metadata"
                 className="bw-popup-video-element"
               />
             ) : (

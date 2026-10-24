@@ -172,6 +172,13 @@ button {
   white-space: nowrap;
   position: relative;
   padding: 6px 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.bw-cat-btn span {
+  pointer-events: none;
 }
 
 .bw-cat-btn:hover {
@@ -206,6 +213,9 @@ button {
   color: var(--text-muted);
   transition: color 0.2s ease;
   white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .bw-sec-link:hover {
@@ -245,40 +255,129 @@ button {
   }
 }
 
+/* Base Grid */
 .bw-grid {
   display: grid;
+  width: 100%;
+}
+
+/* Horizontal 16:9 Grid — 3 Cards per Row on Desktop */
+.bw-grid-horizontal {
   grid-template-columns: repeat(3, 1fr);
   column-gap: clamp(24px, 2.2vw, 42px);
-  row-gap: clamp(44px, 3.8vw, 68px);
+  row-gap: clamp(40px, 3.5vw, 64px);
 }
 
 @media screen and (min-width: 768px) and (max-width: 1079px) {
-  .bw-grid {
+  .bw-grid-horizontal {
     grid-template-columns: repeat(2, 1fr);
     column-gap: 24px;
-    row-gap: 40px;
+    row-gap: 36px;
   }
 }
 
 @media screen and (max-width: 767px) {
-  .bw-grid {
+  .bw-grid-horizontal {
     grid-template-columns: 1fr;
-    row-gap: 34px;
+    row-gap: 32px;
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
   }
 }
 
-/* Card Container */
+/* Reels 9:16 Grid — 4 Cards per Row on Desktop */
+.bw-grid-reels {
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: clamp(18px, 1.8vw, 32px);
+  row-gap: clamp(34px, 3vw, 54px);
+}
+
+@media screen and (min-width: 860px) and (max-width: 1199px) {
+  .bw-grid-reels {
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 20px;
+    row-gap: 32px;
+  }
+}
+
+@media screen and (min-width: 480px) and (max-width: 859px) {
+  .bw-grid-reels {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 16px;
+    row-gap: 26px;
+  }
+}
+
+@media screen and (max-width: 479px) {
+  .bw-grid-reels {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 12px;
+    row-gap: 22px;
+  }
+}
+
+/* Reels Section Divider in All view */
+.bw-reels-section {
+  margin-top: clamp(48px, 4.5vw, 76px);
+}
+
+.bw-reels-header {
+  margin-bottom: clamp(20px, 2vw, 32px);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.bw-reels-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.bw-reels-heading {
+  font-size: clamp(15px, 1.2vw, 18px);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+  color: var(--text-pure);
+  margin: 0;
+}
+
+/* Card Container — Semantic Button for 100% Safari Click Reliability */
 .bw-card {
   display: flex;
   flex-direction: column;
   cursor: pointer;
   outline: none;
   position: relative;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  -webkit-appearance: none;
+  appearance: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Critical Safari Protection: prevents any child from swallowing, delaying, or canceling clicks */
+.bw-card * {
+  pointer-events: none !important;
 }
 
 .bw-card:focus-visible .bw-video-wrapper {
@@ -286,7 +385,7 @@ button {
   outline-offset: 4px;
 }
 
-/* Video Container with Dynamic Ambient Light in video color */
+/* Video Container */
 .bw-video-container {
   position: relative;
   width: 100%;
@@ -301,7 +400,6 @@ button {
   background-position: center;
   background-repeat: no-repeat;
   border-radius: 14px;
-  /* Strictly monochrome black & white ambient aura */
   filter: grayscale(100%) blur(26px) brightness(0.85) contrast(1.2);
   opacity: 0.55;
   transform: scale(1.02);
@@ -309,7 +407,7 @@ button {
               filter 0.4s ease,
               transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 0;
-  pointer-events: none;
+  pointer-events: none !important;
   will-change: transform, opacity, filter;
 }
 
@@ -319,7 +417,7 @@ button {
   transform: scale(1.06);
 }
 
-/* 16:9 Video Wrapper with Soft 4px Edge Blur into Ambient Glow */
+/* Video Wrapper: 16:9 for Horizontal, 9:16 for Reels */
 .bw-video-wrapper {
   position: relative;
   width: 100%;
@@ -329,6 +427,7 @@ button {
   background-color: #050505;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
   z-index: 1;
+  pointer-events: none !important;
   /* Soft 4px boundary feathering: blurs the perimeter transition into ambient light */
   mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 4px, rgba(0,0,0,1) calc(100% - 4px), rgba(0,0,0,0) 100%),
               linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 4px, rgba(0,0,0,1) calc(100% - 4px), rgba(0,0,0,0) 100%);
@@ -336,6 +435,12 @@ button {
   -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 4px, rgba(0,0,0,1) calc(100% - 4px), rgba(0,0,0,0) 100%),
                       linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 4px, rgba(0,0,0,1) calc(100% - 4px), rgba(0,0,0,0) 100%);
   -webkit-mask-composite: source-in;
+}
+
+/* Reels Vertical 9:16 Aspect Ratio */
+.bw-video-wrapper.is-reels,
+.bw-card.is-reels .bw-video-wrapper {
+  aspect-ratio: 9/16;
 }
 
 .bw-card:hover .bw-video-wrapper {
@@ -347,7 +452,7 @@ button {
 .bw-video-edge-blend {
   position: absolute;
   inset: 0;
-  pointer-events: none;
+  pointer-events: none !important;
   z-index: 4;
   border-radius: var(--radius-card);
   box-shadow: inset 0 0 10px 1px rgba(0, 0, 0, 0.45);
@@ -361,9 +466,24 @@ button {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   border-radius: var(--radius-card);
   z-index: 1;
   filter: contrast(1.05) brightness(0.95);
+  pointer-events: none !important;
+}
+
+/* YouTube Shorts Letterbox-Free Zoom for 9:16 Cards */
+.bw-poster-yt-short {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 316.05%;
+  height: 106%;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  object-position: center;
+  max-width: none;
 }
 
 /* Direct Video Element */
@@ -373,8 +493,10 @@ button {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   border-radius: var(--radius-card);
   z-index: 2;
+  pointer-events: none !important;
 }
 
 /* Scaled Video Frame to Hide YouTube Top & Controls Interface */
@@ -385,18 +507,32 @@ button {
   height: 100%;
   z-index: 2;
   overflow: hidden;
+  pointer-events: none !important;
 }
 
-.bw-iframe-wrap iframe {
+/* Horizontal 16:9 iframe */
+.bw-iframe-wrap.is-horizontal iframe {
   position: absolute;
   top: -16%;
   left: -6%;
   width: 112%;
   height: 132%;
   border: 0;
-  pointer-events: none;
+  pointer-events: none !important;
   transform: scale(1.06);
   transform-origin: center center;
+}
+
+/* Reels 9:16 iframe: centers 9:16 vertical video inside YouTube 16:9 player, filling 9:16 container with ZERO black bars */
+.bw-iframe-wrap.is-reels iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 316.05%;
+  height: 106%;
+  transform: translate(-50%, -50%);
+  border: 0;
+  pointer-events: none !important;
 }
 
 /* Subtle Corner Index Indicator (Minimalist Monochrome) */
@@ -409,18 +545,7 @@ button {
   font-size: 9px;
   letter-spacing: 0.08em;
   color: rgba(255, 255, 255, 0.6);
-  pointer-events: none;
-}
-
-/* Click capture layer */
-.bw-click-capture {
-  position: absolute;
-  inset: 0;
-  z-index: 7;
-  cursor: pointer;
-  background: transparent;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+  pointer-events: none !important;
 }
 
 /* Card Titles: Monochrome Clean */
@@ -434,6 +559,12 @@ button {
   margin-top: 12px;
   margin-bottom: 0;
   transition: opacity 0.2s ease;
+  pointer-events: none !important;
+}
+
+.bw-card.is-reels .bw-card-title {
+  font-size: clamp(13px, 0.95vw, 16px);
+  margin-top: 10px;
 }
 
 .bw-card:hover .bw-card-title {
@@ -452,18 +583,26 @@ button {
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+  pointer-events: none !important;
+}
+
+.bw-card.is-reels .bw-card-subtitle {
+  font-size: clamp(10px, 0.72vw, 12px);
 }
 
 .bw-client-name {
   color: var(--text-muted);
+  pointer-events: none !important;
 }
 
 .bw-meta-dot {
   color: var(--text-subtle);
+  pointer-events: none !important;
 }
 
 .bw-format-name {
   color: var(--text-subtle);
+  pointer-events: none !important;
 }
 
 .bw-empty-state {
@@ -499,6 +638,9 @@ button {
   -webkit-overflow-scrolling: touch;
   padding: 40px 20px;
   animation: bwPopupFade 0.2s ease-out;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 @keyframes bwPopupFade {
@@ -523,6 +665,10 @@ button {
   justify-content: center;
   opacity: 0.8;
   transition: opacity 0.2s ease, transform 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .bw-popup-close-btn:hover {
@@ -538,6 +684,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  cursor: default;
 }
 
 /* Modal Player Container with Dynamic Ambient Glow */
@@ -606,10 +753,17 @@ button {
   z-index: 2;
 }
 
+/* Reels in modal: fill container edge-to-edge without black letterbox bars */
+.bw-popup-player-wrap.vertical .bw-popup-video-element {
+  object-fit: cover;
+  object-position: center;
+}
+
 .bw-popup-poster-fallback {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 /* Modal Metadata Bar */
@@ -1254,11 +1408,45 @@ button {
   inset: 0;
   z-index: 100002;
   background-color: rgba(0, 0, 0, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
   cursor: zoom-out;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.photo-lightbox-overlay .v-popup-close-box {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top, 16px));
+  right: max(18px, env(safe-area-inset-right, 18px));
+  z-index: 100003;
+}
+
+.photo-lightbox-overlay .v-popup-close-btn {
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.photo-lightbox-overlay .v-popup-close-btn:hover {
+  transform: scale(1.08);
 }
 
 .photo-lightbox-img {
@@ -1268,6 +1456,7 @@ button {
   border-radius: var(--radius-card);
   border: 1px solid var(--line-subtle);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+  cursor: default;
 }
 
 /* ==========================================================================

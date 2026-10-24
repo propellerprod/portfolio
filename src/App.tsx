@@ -148,6 +148,21 @@ export const App: React.FC = () => {
     setSelectedProject(null);
   };
 
+  const CATEGORY_RELEVANCE: Record<string, number> = {
+    concerts: 1,
+    commercials: 2,
+    clips: 3,
+    reels: 4,
+  };
+
+  const activeProjects = activeCategory === 'all'
+    ? [...projects].sort((a, b) => {
+        const rankA = CATEGORY_RELEVANCE[a.category] ?? 99;
+        const rankB = CATEGORY_RELEVANCE[b.category] ?? 99;
+        return rankA - rankB;
+      })
+    : projects.filter((p) => p.category === activeCategory);
+
   return (
     <>
       {/* Clean Page Transition */}
@@ -190,7 +205,7 @@ export const App: React.FC = () => {
           <main id="top">
             {/* Direct Muted Video Autoplay Grid with Soft Feathered Edges */}
             <Works
-              projects={projects}
+              projects={activeProjects}
               activeCategory={activeCategory}
               onSelectCategory={handleSelectCategory}
               onSelectProject={(p) => setSelectedProject(p)}
@@ -216,17 +231,13 @@ export const App: React.FC = () => {
       {selectedProject && (
         <CaseModal
           project={selectedProject}
-          projectsList={
-            activeCategory === 'all'
-              ? projects
-              : projects.filter((p) => p.category === activeCategory)
-          }
+          projectsList={activeProjects}
           onClose={handleCloseCase}
           onSelectProject={(p) => setSelectedProject(p)}
           onOpenPhoto={(url) => setLightboxImg(url)}
           onContactClick={() => {
             handleCloseCase();
-            scrollTo('contact');
+            setTimeout(() => scrollTo('contact'), 60);
           }}
         />
       )}
