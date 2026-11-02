@@ -1,6 +1,18 @@
 {
-  "updated": "2026-11-02T17:26:55.852Z",
+  "updated": "2026-11-02T17:27:55.152Z",
   "projects": [
+    {
+      "id": "ptb1cprhaz",
+      "title": "ARUSH CLIP",
+      "category": "clips",
+      "cover": "https://avatars.yandex.net/get-music-content/16485602/61c42506.a.41514784-1/600x600",
+      "thumbnail_url": "https://avatars.yandex.net/get-music-content/16485602/61c42506.a.41514784-1/600x600",
+      "video_url": "https://youtu.be/gOd90jXk-ek",
+      "client": "ARUSH",
+      "images": [],
+      "links": [],
+      "added": "2026-11-02"
+    },
     {
       "id": "ploacikfra",
       "title": "RAREMOD",
