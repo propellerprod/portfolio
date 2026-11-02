@@ -1,6 +1,19 @@
 {
-  "updated": "2026-11-02T17:04:17.256Z",
+  "updated": "2026-11-02T17:10:19.398Z",
   "projects": [
+    {
+      "id": "p4ong7yu1t",
+      "title": "Back soyuz77",
+      "category": "clips",
+      "cover": "https://img.youtube.com/vi/YxM_4UciRgw/hqdefault.jpg",
+      "thumbnail_url": "https://img.youtube.com/vi/YxM_4UciRgw/hqdefault.jpg",
+      "video_url": "https://youtube.com/shorts/YxM_4UciRgw?feature=share",
+      "video_source": "youtube",
+      "client": "soyuz__77",
+      "images": [],
+      "links": [],
+      "added": "2026-11-02"
+    },
     {
       "id": "ploacikfra",
       "title": "RAREMOD",
