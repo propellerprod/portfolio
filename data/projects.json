@@ -1,18 +1,21 @@
 {
-  "updated": "2026-11-02T17:12:28.251Z",
+  "updated": "2026-11-02T17:12:33.744Z",
   "projects": [
     {
-      "id": "p4ong7yu1t",
-      "title": "Back soyuz77",
+      "id": "d2",
+      "title": "ARUSH",
       "category": "clips",
-      "cover": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
-      "thumbnail_url": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
-      "video_url": "https://youtube.com/shorts/YxM_4UciRgw?feature=share",
+      "cover": "https://avatars.yandex.net/get-music-content/16485602/61c42506.a.41514784-1/600x600",
+      "video_url": "https://youtu.be/gOd90jXk-ek",
       "video_source": "youtube",
-      "client": "soyuz__77",
       "images": [],
       "links": [],
-      "added": "2026-11-02"
+      "client": "ARUSH",
+      "format": "КЛИП",
+      "added": "2025-11-20",
+      "task": "Клип с характером при ограниченном бюджете.",
+      "idea": "Одна локация, дым, лазеры и силуэт. Свет работает вместо декораций.",
+      "process": "Раскадровка → съёмочная ночь → монтаж в ритм трека."
     },
     {
       "id": "ploacikfra",
@@ -148,17 +151,17 @@
       "added": "2026-09-05"
     },
     {
-      "id": "pmtonscgmp804",
-      "title": "МЕЛАНЖ",
+      "id": "p4ong7yu1t",
+      "title": "Back soyuz77",
       "category": "clips",
-      "cover": "https://img.youtube.com/vi/slvzvDgFoHo/maxresdefault.jpg",
-      "video_url": "https://youtu.be/slvzvDgFoHo",
+      "cover": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
+      "thumbnail_url": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
+      "video_url": "https://youtube.com/shorts/YxM_4UciRgw?feature=share",
       "video_source": "youtube",
+      "client": "soyuz__77",
       "images": [],
       "links": [],
-      "client": "МЕЛАНЖ",
-      "format": "ТАНЦЫ",
-      "added": "2026-09-05"
+      "added": "2026-11-02"
     },
     {
       "id": "d4",
@@ -193,20 +196,17 @@
       "process": "Концепция → локация → съёмка вдвоём (2 камеры) → монтаж и цвет в плёночном грейде."
     },
     {
-      "id": "d2",
-      "title": "ARUSH",
+      "id": "pmtonscgmp804",
+      "title": "МЕЛАНЖ",
       "category": "clips",
-      "cover": "https://avatars.yandex.net/get-music-content/16485602/61c42506.a.41514784-1/600x600",
-      "video_url": "https://youtu.be/gOd90jXk-ek",
+      "cover": "https://img.youtube.com/vi/slvzvDgFoHo/maxresdefault.jpg",
+      "video_url": "https://youtu.be/slvzvDgFoHo",
       "video_source": "youtube",
       "images": [],
       "links": [],
-      "client": "ARUSH",
-      "format": "КЛИП",
-      "added": "2025-11-20",
-      "task": "Клип с характером при ограниченном бюджете.",
-      "idea": "Одна локация, дым, лазеры и силуэт. Свет работает вместо декораций.",
-      "process": "Раскадровка → съёмочная ночь → монтаж в ритм трека."
+      "client": "МЕЛАНЖ",
+      "format": "ТАНЦЫ",
+      "added": "2026-09-05"
     },
     {
       "id": "pmtopjig0vy2c",
