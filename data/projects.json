@@ -1,18 +1,18 @@
 {
-  "updated": "2026-11-02T17:12:04.212Z",
+  "updated": "2026-11-02T17:12:19.046Z",
   "projects": [
     {
-      "id": "p4ong7yu1t",
-      "title": "Back soyuz77",
+      "id": "pmtonscgmp804",
+      "title": "МЕЛАНЖ",
       "category": "clips",
-      "cover": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
-      "thumbnail_url": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
-      "video_url": "https://youtube.com/shorts/YxM_4UciRgw?feature=share",
+      "cover": "https://img.youtube.com/vi/slvzvDgFoHo/maxresdefault.jpg",
+      "video_url": "https://youtu.be/slvzvDgFoHo",
       "video_source": "youtube",
-      "client": "soyuz__77",
       "images": [],
       "links": [],
-      "added": "2026-11-02"
+      "client": "МЕЛАНЖ",
+      "format": "ТАНЦЫ",
+      "added": "2026-09-05"
     },
     {
       "id": "ploacikfra",
@@ -148,17 +148,17 @@
       "added": "2026-09-05"
     },
     {
-      "id": "pmtonscgmp804",
-      "title": "МЕЛАНЖ",
+      "id": "p4ong7yu1t",
+      "title": "Back soyuz77",
       "category": "clips",
-      "cover": "https://img.youtube.com/vi/slvzvDgFoHo/maxresdefault.jpg",
-      "video_url": "https://youtu.be/slvzvDgFoHo",
+      "cover": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
+      "thumbnail_url": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
+      "video_url": "https://youtube.com/shorts/YxM_4UciRgw?feature=share",
       "video_source": "youtube",
+      "client": "soyuz__77",
       "images": [],
       "links": [],
-      "client": "МЕЛАНЖ",
-      "format": "ТАНЦЫ",
-      "added": "2026-09-05"
+      "added": "2026-11-02"
     },
     {
       "id": "d4",
