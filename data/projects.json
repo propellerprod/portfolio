@@ -1,10 +1,10 @@
 {
-  "updated": "2026-11-02T17:14:45.543Z",
+  "updated": "2026-11-02T17:19:17.592Z",
   "projects": [
     {
       "id": "d2",
       "title": "ARUSH",
-      "category": "clips",
+      "category": "reels",
       "cover": "https://avatars.yandex.net/get-music-content/16485602/61c42506.a.41514784-1/600x600",
       "video_url": "https://youtu.be/gOd90jXk-ek",
       "video_source": "youtube",
@@ -15,7 +15,8 @@
       "added": "2025-11-20",
       "task": "Клип с характером при ограниченном бюджете.",
       "idea": "Одна локация, дым, лазеры и силуэт. Свет работает вместо декораций.",
-      "process": "Раскадровка → съёмочная ночь → монтаж в ритм трека."
+      "process": "Раскадровка → съёмочная ночь → монтаж в ритм трека.",
+      "thumbnail_url": "https://avatars.yandex.net/get-music-content/16485602/61c42506.a.41514784-1/600x600"
     },
     {
       "id": "ploacikfra",
