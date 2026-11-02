@@ -1,13 +1,14 @@
 {
-  "updated": "2026-11-02T17:03:52.874Z",
+  "updated": "2026-11-02T17:04:06.789Z",
   "projects": [
     {
       "id": "ploacikfra",
       "title": "RAREMOD",
       "category": "reels",
-      "cover": "",
-      "thumbnail_url": "",
+      "cover": "https://img.youtube.com/vi/Z-c-FAZVGgg/hqdefault.jpg",
+      "thumbnail_url": "https://img.youtube.com/vi/Z-c-FAZVGgg/hqdefault.jpg",
       "video_url": "https://youtube.com/shorts/Z-c-FAZVGgg",
+      "video_source": "youtube",
       "client": "RAREMOD",
       "images": [],
       "links": [],
