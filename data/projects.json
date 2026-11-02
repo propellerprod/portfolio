@@ -1,23 +1,6 @@
 {
-  "updated": "2026-11-02T17:25:46.371Z",
+  "updated": "2026-11-02T17:26:55.852Z",
   "projects": [
-    {
-      "id": "d2",
-      "title": "ARUSH",
-      "category": "reels",
-      "cover": "https://avatars.yandex.net/get-music-content/16485602/61c42506.a.41514784-1/600x600",
-      "video_url": "https://youtu.be/gOd90jXk-ek",
-      "video_source": "youtube",
-      "images": [],
-      "links": [],
-      "client": "ARUSH",
-      "format": "КЛИП",
-      "added": "2025-11-20",
-      "task": "Клип с характером при ограниченном бюджете.",
-      "idea": "Одна локация, дым, лазеры и силуэт. Свет работает вместо декораций.",
-      "process": "Раскадровка → съёмочная ночь → монтаж в ритм трека.",
-      "thumbnail_url": "https://avatars.yandex.net/get-music-content/16485602/61c42506.a.41514784-1/600x600"
-    },
     {
       "id": "ploacikfra",
       "title": "RAREMOD",
@@ -97,17 +80,17 @@
       "added": "2026-09-05"
     },
     {
-      "id": "p4ong7yu1t",
-      "title": "Back soyuz77",
+      "id": "pmtop78vc9i8q",
+      "title": "PLAY GROUND",
       "category": "reels",
-      "cover": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
-      "thumbnail_url": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
-      "video_url": "https://youtube.com/shorts/YxM_4UciRgw?feature=share",
+      "cover": "https://i.ytimg.com/vi/MQxRgPcWb_k/maxresdefault.jpg",
+      "video_url": "https://youtube.com/shorts/MQxRgPcWb_k",
       "video_source": "youtube",
-      "client": "soyuz__77",
       "images": [],
       "links": [],
-      "added": "2026-11-02"
+      "client": "PLAY GROUND",
+      "format": "REELS",
+      "added": "2026-09-05"
     },
     {
       "id": "d5",
@@ -152,17 +135,17 @@
       "added": "2026-09-05"
     },
     {
-      "id": "pmtop78vc9i8q",
-      "title": "PLAY GROUND",
+      "id": "p4ong7yu1t",
+      "title": "Back soyuz77",
       "category": "reels",
-      "cover": "https://i.ytimg.com/vi/MQxRgPcWb_k/maxresdefault.jpg",
-      "video_url": "https://youtube.com/shorts/MQxRgPcWb_k",
+      "cover": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
+      "thumbnail_url": "https://img.youtube.com/vi/YxM_4UciRgw/maxresdefault.jpg",
+      "video_url": "https://youtube.com/shorts/YxM_4UciRgw?feature=share",
       "video_source": "youtube",
+      "client": "soyuz__77",
       "images": [],
       "links": [],
-      "client": "PLAY GROUND",
-      "format": "REELS",
-      "added": "2026-09-05"
+      "added": "2026-11-02"
     },
     {
       "id": "d4",
