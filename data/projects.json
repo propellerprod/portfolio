@@ -1,6 +1,18 @@
 {
-  "updated": "2026-11-04T19:39:42.938Z",
+  "updated": "2026-11-04T20:07:06.801Z",
   "projects": [
+    {
+      "id": "p3q52k0bi6",
+      "title": "Optimum System",
+      "category": "reels",
+      "cover": "https://img.youtube.com/vi/DFLksobeoFM/hqdefault.jpg",
+      "thumbnail_url": "https://img.youtube.com/vi/DFLksobeoFM/hqdefault.jpg",
+      "video_url": "https://youtube.com/shorts/DFLksobeoFM",
+      "video_source": "youtube",
+      "images": [],
+      "links": [],
+      "added": "2026-11-04"
+    },
     {
       "id": "pfla6wenii",
       "title": "Optimum System 2",
