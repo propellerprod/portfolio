@@ -1,12 +1,12 @@
 {
-  "updated": "2026-11-04T19:27:17.934Z",
+  "updated": "2026-11-04T19:29:45.648Z",
   "projects": [
     {
       "id": "pfla6wenii",
       "title": "Optimum System",
       "category": "reels",
-      "cover": "https://img.youtube.com/vi/-hKOtQ0JKSQ/hqdefault.jpg",
-      "thumbnail_url": "https://img.youtube.com/vi/-hKOtQ0JKSQ/hqdefault.jpg",
+      "cover": "https://i.ytimg.com/vi/-hKOtQ0JKSQ/maxresdefault.jpg",
+      "thumbnail_url": "https://i.ytimg.com/vi/-hKOtQ0JKSQ/maxresdefault.jpg",
       "video_url": "https://youtube.com/shorts/-hKOtQ0JKSQ",
       "video_source": "youtube",
       "client": "Optimum System",
