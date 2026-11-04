@@ -55,12 +55,19 @@ export const App: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       const base = import.meta.env.BASE_URL || '/';
+      const cacheBust = `?t=${Date.now()}`;
 
       // 1. Projects
       try {
-        let res = await fetch('/api/projects').catch(() => null);
+        let res: Response | null = null;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          res = await fetch('/api/projects').catch(() => null);
+        }
         if (!res || !res.ok) {
-          res = await fetch(`${base}data/projects.json`).catch(() => null);
+          res = await fetch(`${base}data/projects.json${cacheBust}`, {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' },
+          }).catch(() => null);
         }
         if (res && res.ok) {
           const data = await res.json();
@@ -74,9 +81,15 @@ export const App: React.FC = () => {
 
       // 2. Collabs
       try {
-        let res = await fetch('/api/collabs').catch(() => null);
+        let res: Response | null = null;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          res = await fetch('/api/collabs').catch(() => null);
+        }
         if (!res || !res.ok) {
-          res = await fetch(`${base}data/collabs.json`).catch(() => null);
+          res = await fetch(`${base}data/collabs.json${cacheBust}`, {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' },
+          }).catch(() => null);
         }
         if (res && res.ok) {
           const data = await res.json();
