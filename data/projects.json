@@ -1,36 +1,12 @@
 {
-  "updated": "2026-11-04T19:38:26.220Z",
+  "updated": "2026-11-04T19:39:42.938Z",
   "projects": [
     {
-      "id": "p5cm9et6gc",
-      "title": "Optimum System",
-      "category": "reels",
-      "cover": "https://img.youtube.com/vi/iuZf2pYXB7I/hqdefault.jpg",
-      "thumbnail_url": "https://img.youtube.com/vi/iuZf2pYXB7I/hqdefault.jpg",
-      "video_url": "https://youtube.com/shorts/iuZf2pYXB7I",
-      "video_source": "youtube",
-      "images": [],
-      "links": [],
-      "added": "2026-11-04"
-    },
-    {
-      "id": "pm6eol7kig",
-      "title": "Optimum System",
-      "category": "reels",
-      "cover": "https://img.youtube.com/vi/DFLksobeoFM/hqdefault.jpg",
-      "thumbnail_url": "https://img.youtube.com/vi/DFLksobeoFM/hqdefault.jpg",
-      "video_url": "https://youtube.com/shorts/DFLksobeoFM",
-      "video_source": "youtube",
-      "images": [],
-      "links": [],
-      "added": "2026-11-04"
-    },
-    {
       "id": "pfla6wenii",
-      "title": "Optimum System",
+      "title": "Optimum System 2",
       "category": "reels",
-      "cover": "https://i.ytimg.com/vi/-hKOtQ0JKSQ/maxresdefault.jpg",
-      "thumbnail_url": "https://i.ytimg.com/vi/-hKOtQ0JKSQ/maxresdefault.jpg",
+      "cover": "https://img.youtube.com/vi/-hKOtQ0JKSQ/hqdefault.jpg",
+      "thumbnail_url": "https://img.youtube.com/vi/-hKOtQ0JKSQ/hqdefault.jpg",
       "video_url": "https://youtube.com/shorts/-hKOtQ0JKSQ",
       "video_source": "youtube",
       "client": "Optimum System",
