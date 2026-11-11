@@ -1,6 +1,19 @@
 {
-  "updated": "2026-11-04T20:08:11.031Z",
+  "updated": "2026-11-11T19:12:14.297Z",
   "projects": [
+    {
+      "id": "pjjx1rzfre",
+      "title": "LILDRUGHILL MOSCOW SHOW RECAP 2026",
+      "category": "concerts",
+      "cover": "https://img.youtube.com/vi/yB69SrLXKDg/hqdefault.jpg",
+      "thumbnail_url": "https://img.youtube.com/vi/yB69SrLXKDg/hqdefault.jpg",
+      "video_url": "https://youtu.be/yB69SrLXKDg?si=CG-tOe76s-nzcwVO",
+      "video_source": "youtube",
+      "client": "LILDRUGHILL",
+      "images": [],
+      "links": [],
+      "added": "2026-11-11"
+    },
     {
       "id": "p0z1pc1tt0",
       "title": "Optimum System 3",
